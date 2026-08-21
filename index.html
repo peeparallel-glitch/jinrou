@@ -8,7 +8,7 @@
     :root {
       --bg-color: #0c0e17;
       --card-bg: #161927;
-      --card-border: #282d43;
+      --card-border: #262b42;
       --text-main: #e2e8f0;
       --text-muted: #94a3b8;
       --accent-red: #e11d48;
@@ -20,6 +20,8 @@
       --accent-purple: #a855f7;
       --medium-color: #06b6d4;
       --baker-color: #f97316;
+      --freemason-color: #34d399;
+      --fox-color: #f43f5e;
       --dead-color: #64748b;
     }
 
@@ -65,7 +67,7 @@
     }
 
     .title-box {
-      max-width: 440px;
+      max-width: 460px;
       width: 100%;
       background: var(--card-bg);
       border: 2px solid var(--card-border);
@@ -109,7 +111,7 @@
       background: #1f2338;
       border: 2px solid var(--card-border);
       border-radius: 10px;
-      padding: 0.9rem;
+      padding: 0.85rem;
       color: var(--text-main);
       cursor: pointer;
       text-align: left;
@@ -127,13 +129,14 @@
       justify-content: space-between;
       align-items: center;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 0.95rem;
       margin-bottom: 0.2rem;
     }
 
     .mode-desc {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
+      line-height: 1.3;
     }
 
     .btn-start-game {
@@ -256,15 +259,18 @@
     /* Page 1: Character List & Interrogation */
     .character-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 0.6rem;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 0.5rem;
+      max-height: 270px;
+      overflow-y: auto;
+      padding-right: 0.2rem;
     }
 
     .char-card {
       background-color: var(--card-bg);
       border: 2px solid var(--card-border);
       border-radius: 8px;
-      padding: 0.6rem 0.4rem;
+      padding: 0.5rem 0.3rem;
       text-align: center;
       cursor: pointer;
       position: relative;
@@ -282,31 +288,31 @@
     }
 
     .char-avatar {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background-color: #23273c;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: bold;
-      margin: 0 auto 0.3rem;
+      margin: 0 auto 0.2rem;
     }
 
     .char-name {
       font-weight: bold;
-      font-size: 0.9rem;
-      margin-bottom: 0.2rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.15rem;
     }
 
     .char-co-badge {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: bold;
-      padding: 0.1rem 0.3rem;
-      border-radius: 8px;
+      padding: 0.1rem 0.25rem;
+      border-radius: 6px;
       display: inline-block;
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.15rem;
     }
 
     .co-grey {
@@ -327,10 +333,16 @@
       border: 1px solid var(--medium-color);
     }
 
+    .co-freemason {
+      background-color: rgba(52, 211, 153, 0.15);
+      color: var(--freemason-color);
+      border: 1px solid var(--freemason-color);
+    }
+
     .char-status {
-      font-size: 0.7rem;
-      padding: 0.1rem 0.3rem;
-      border-radius: 10px;
+      font-size: 0.68rem;
+      padding: 0.1rem 0.25rem;
+      border-radius: 8px;
       background: #1c2033;
       color: var(--text-muted);
       display: block;
@@ -364,6 +376,12 @@
       gap: 0.4rem;
     }
 
+    .execute-action-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
     .btn {
       padding: 0.65rem 0.8rem;
       border-radius: 6px;
@@ -386,9 +404,20 @@
     }
 
     .btn-execute {
+      flex: 1;
       background-color: var(--accent-red);
       color: white;
-      margin-top: 0.3rem;
+    }
+
+    .btn-skip-execute {
+      flex: 1;
+      background-color: #2b304a;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-skip-execute:hover:not(:disabled) {
+      background-color: #3b4266;
     }
 
     /* Page 2: Bulletin & Comments & Log Timeline */
@@ -420,6 +449,9 @@
       padding: 0.3rem 0.5rem;
       background: rgba(255, 255, 255, 0.04);
       border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .morning-comments-box {
@@ -454,6 +486,26 @@
       border-radius: 6px;
       border-left: 3px solid var(--accent-blue);
       line-height: 1.35;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-speak {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-left: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .btn-speak:hover {
+      background: var(--accent-blue);
+      color: white;
     }
 
     .log-timeline {
@@ -496,9 +548,12 @@
     .log-answer {
       color: var(--text-main);
       line-height: 1.35;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
     }
 
-    /* --- Enhanced Seamless Night -> Morning Overlay --- */
+    /* Enhanced Seamless Night Overlay */
     .seamless-overlay {
       position: fixed;
       top: 0;
@@ -524,7 +579,6 @@
       pointer-events: auto;
     }
 
-    /* Moon Graphic */
     .moon-graphic {
       width: 80px;
       height: 80px;
@@ -540,7 +594,6 @@
       100% { transform: scale(1.05) translateY(-5px); box-shadow: 0 0 35px rgba(234, 179, 8, 0.8); }
     }
 
-    /* Glowing Red Wolf Eyes */
     .wolf-eyes-container {
       display: flex;
       gap: 30px;
@@ -649,7 +702,7 @@
   <div id="title-screen" class="screen">
     <div class="title-box">
       <h1>人狼審判 <span>- Wolf Judge -</span></h1>
-      <div class="title-subtitle">1人用 推理裁判パズル（演出強化版）</div>
+      <div class="title-subtitle">1人用 推理裁判パズル（裁判長音声機能対応版）</div>
 
       <div class="mode-select-title">村の規模を選択してください</div>
       <div class="mode-buttons">
@@ -658,7 +711,7 @@
             <span>【6人村】 Beginner</span>
             <span>誤処刑限界: 2回</span>
           </div>
-          <div class="mode-desc">配役: 人狼2 / 占い師1 / 霊媒師1 / 市民2</div>
+          <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 市民2</div>
         </div>
 
         <div class="mode-btn" id="mode-8" onclick="selectVillageMode(8)">
@@ -666,7 +719,7 @@
             <span>【8人村】 Standard</span>
             <span>誤処刑限界: 2回</span>
           </div>
-          <div class="mode-desc">配役: 人狼2 / 占い師1 / 霊媒師1 / 騎士1 / 狂人1 / 市民2</div>
+          <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / 市民2</div>
         </div>
 
         <div class="mode-btn" id="mode-10" onclick="selectVillageMode(10)">
@@ -674,7 +727,15 @@
             <span>【10人村】 Expert</span>
             <span>誤処刑限界: 3回</span>
           </div>
-          <div class="mode-desc">配役: 人狼2 / 占い師1 / 霊媒師1 / 騎士1 / 狂人1 / パン屋1 / 市民3</div>
+          <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 市民3</div>
+        </div>
+
+        <div class="mode-btn" id="mode-15" onclick="selectVillageMode(15)">
+          <div class="mode-header">
+            <span>【15人村】 Ultimate (超上級)</span>
+            <span>誤処刑限界: 4回</span>
+          </div>
+          <div class="mode-desc">配役: 人狼3 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 共有2 / 妖狐1 / 市民4</div>
         </div>
       </div>
 
@@ -708,9 +769,8 @@
       </button>
     </div>
 
-    <!-- Viewport Area (100vw overflow hidden) -->
+    <!-- Viewport Area -->
     <div class="viewport-area" id="viewport-area">
-      <!-- Carousel Container (Strictly 200vw width = 2 pages max) -->
       <div class="carousel-container" id="carousel-container">
         
         <!-- PAGE 0: Character List & Interrogation -->
@@ -735,12 +795,17 @@
               </button>
             </div>
 
-            <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
-              この人物を処刑する
-            </button>
+            <div class="execute-action-row">
+              <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
+                選択者を処刑
+              </button>
+              <button class="btn btn-skip-execute" id="btn-skip-execute" onclick="skipExecution()" disabled>
+                誰も処刑しない
+              </button>
+            </div>
             
             <div id="action-warning" class="warning-box" style="display: none;">
-              ⚠️ 質問権を使い切りました。処刑を実行して夜を迎えましょう。
+              ⚠️ 質問権を使い切りました。本日の処刑を実行（またはスキップ）してください。
             </div>
           </div>
         </div>
@@ -773,7 +838,7 @@
     </div>
   </div>
 
-  <!-- ENHANCED SEAMLESS NIGHT -> MORNING OVERLAY -->
+  <!-- ENHANCED SEAMLESS NIGHT OVERLAY -->
   <div id="seamless-overlay" class="seamless-overlay">
     <div class="moon-graphic" id="moon-graphic"></div>
     <div class="wolf-eyes-container" id="wolf-eyes">
@@ -781,7 +846,7 @@
       <div class="wolf-eye"></div>
     </div>
     <div class="seamless-title" id="seamless-title">🌕 夜の暗躍 🌕</div>
-    <div class="seamless-desc" id="seamless-desc">― 夜が訪れました ―<br>人狼たちが暗闇の中で暗躍しています…</div>
+    <div class="seamless-desc" id="seamless-desc">― 夜が訪れました ―<br>人狼たちが暗闇の中で目を光らせ、暗躍しています…</div>
   </div>
 
   <!-- Modal Result Screen -->
@@ -807,7 +872,6 @@
       }
     }
 
-    // Play Wolf Howl Sound Effect
     function playWolfHowlSE() {
       try {
         initAudio();
@@ -834,7 +898,6 @@
       }
     }
 
-    // Play Rooster Crow Sound Effect
     function playRoosterCrowSE() {
       try {
         initAudio();
@@ -862,16 +925,90 @@
       }
     }
 
+    // --- Natural Speech Synthesis (TTS) Engine ---
+    let preferredJapaneseVoice = null;
+
+    function initVoice() {
+      if (!('speechSynthesis' in window)) return;
+
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const jaVoices = voices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
+
+        preferredJapaneseVoice = 
+          jaVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Advanced') || v.name.includes('Natural')) ||
+          jaVoices.find(v => v.name.includes('Kyoko') || v.name.includes('Otoya') || v.name.includes('Hattori')) ||
+          jaVoices[0] ||
+          null;
+      };
+
+      loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+    }
+
+    // Advanced Natural TTS Generator with Queue Management & Interrupt Handling
+    function speakText(text, onEndCallback = null, isNarration = false, charSeed = null) {
+      if (!('speechSynthesis' in window)) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
+      // Smoothly cancel existing queue before new narration/announcement
+      window.speechSynthesis.cancel();
+
+      let cleanedText = text.replace(/<[^>]*>?/gm, '').replace(/[\u1F60-\u1F64]|[\u2702-\u27B0]|[\u1F68-\u1F6C]|[\u1F30-\u1F5F]/g, '');
+
+      cleanedText = cleanedText
+        .replace(/、/g, '、 ')
+        .replace(/。/g, '。 ')
+        .replace(/！/g, '！ ')
+        .replace(/？/g, '？ ');
+
+      const utterance = new SpeechSynthesisUtterance(cleanedText);
+      utterance.lang = 'ja-JP';
+
+      if (preferredJapaneseVoice) {
+        utterance.voice = preferredJapaneseVoice;
+      }
+
+      if (isNarration) {
+        utterance.rate = 0.92;
+        utterance.pitch = 0.90;
+      } else {
+        utterance.rate = 0.92;
+        if (charSeed === 'judge') {
+          // Dignified Judge Pitch
+          utterance.pitch = 0.85;
+          utterance.rate = 0.90;
+        } else if (charSeed) {
+          const charCode = charSeed.charCodeAt(0) || 65;
+          utterance.pitch = 0.90 + ((charCode % 5) * 0.05);
+        } else {
+          utterance.pitch = 1.0;
+        }
+      }
+
+      if (onEndCallback) {
+        utterance.onend = onEndCallback;
+        utterance.onerror = onEndCallback;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
     // Config Constants
-    const CHAR_NAMES_10 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const CHAR_NAMES_15 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
     const QUESTIONS_PER_DAY = 3;
-    const PLACES = ['時計塔', '広場', '教会', '井戸端', '西の森', '見張り台', '裏路地', '風車小屋'];
+    const PLACES = ['時計塔', '広場', '教会', '井戸端', '西の森', '見張り台', '裏路地', '風車小屋', '廃校校舎', '裏山小屋'];
 
     let selectedVillageSize = 6;
     let currentViewIndex = 0;
 
     let gameState = {
       villageSize: 6,
+      targetWolvesCount: 2,
       charList: [],
       day: 1,
       phase: '朝',
@@ -889,6 +1026,7 @@
       morningComments: {},
       status: {},
       revealedRoles: {},
+      lastNightVictims: [],
       gameOver: false
     };
 
@@ -896,7 +1034,7 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // --- Strict 2-View Carousel Switching ---
+    // Strict 2-View Carousel Switching
     function switchView(index) {
       if (index < 0) index = 0;
       if (index > 1) index = 1;
@@ -934,7 +1072,7 @@
       }
     }
 
-    // --- Title Screen Logic ---
+    // Mode Selection & Title Screen
     function selectVillageMode(size) {
       selectedVillageSize = size;
       document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('selected'));
@@ -942,26 +1080,41 @@
     }
 
     function showTitleScreen() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       document.getElementById('title-screen').classList.remove('hidden');
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('seamless-overlay').classList.remove('active');
     }
 
-    // --- Start Game ---
+    // Start Game
     function startGame() {
       initAudio();
+      initVoice();
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
       document.getElementById('title-screen').classList.add('hidden');
       document.getElementById('game-screen').classList.remove('hidden');
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('seamless-overlay').classList.remove('active');
 
       const size = selectedVillageSize;
-      const chars = CHAR_NAMES_10.slice(0, size);
-      let maxMistakes = size === 10 ? 3 : 2;
+      const chars = CHAR_NAMES_15.slice(0, size);
+      
+      let maxMistakes = 2;
+      let targetWolves = 2;
+      if (size === 10) maxMistakes = 3;
+      if (size === 15) {
+        maxMistakes = 4;
+        targetWolves = 3;
+      }
 
       gameState = {
         villageSize: size,
+        targetWolvesCount: targetWolves,
         charList: chars,
         day: 1,
         phase: '朝',
@@ -979,45 +1132,70 @@
         morningComments: {},
         status: {},
         revealedRoles: {},
+        lastNightVictims: [],
         gameOver: false
       };
 
       // Role Assignment
       const shuffled = [...chars].sort(() => 0.5 - Math.random());
-      const wolves = [shuffled[0], shuffled[1]];
-      const seer = shuffled[2];
-      const medium = shuffled[3];
-
-      wolves.forEach(w => gameState.roles[w] = 'wolf');
-      gameState.roles[seer] = 'seer';
-      gameState.roles[medium] = 'medium';
 
       if (size === 6) {
+        [shuffled[0], shuffled[1]].forEach(w => gameState.roles[w] = 'wolf');
+        gameState.roles[shuffled[2]] = 'seer';
+        gameState.roles[shuffled[3]] = 'medium';
         gameState.roles[shuffled[4]] = 'citizen';
         gameState.roles[shuffled[5]] = 'citizen';
       } else if (size === 8) {
+        [shuffled[0], shuffled[1]].forEach(w => gameState.roles[w] = 'wolf');
+        gameState.roles[shuffled[2]] = 'seer';
+        gameState.roles[shuffled[3]] = 'medium';
         gameState.roles[shuffled[4]] = 'knight';
         gameState.roles[shuffled[5]] = 'madman';
         gameState.roles[shuffled[6]] = 'citizen';
         gameState.roles[shuffled[7]] = 'citizen';
       } else if (size === 10) {
+        [shuffled[0], shuffled[1]].forEach(w => gameState.roles[w] = 'wolf');
+        gameState.roles[shuffled[2]] = 'seer';
+        gameState.roles[shuffled[3]] = 'medium';
         gameState.roles[shuffled[4]] = 'knight';
         gameState.roles[shuffled[5]] = 'madman';
         gameState.roles[shuffled[6]] = 'baker';
         gameState.roles[shuffled[7]] = 'citizen';
         gameState.roles[shuffled[8]] = 'citizen';
         gameState.roles[shuffled[9]] = 'citizen';
+      } else if (size === 15) {
+        [shuffled[0], shuffled[1], shuffled[2]].forEach(w => gameState.roles[w] = 'wolf');
+        gameState.roles[shuffled[3]] = 'seer';
+        gameState.roles[shuffled[4]] = 'medium';
+        gameState.roles[shuffled[5]] = 'knight';
+        gameState.roles[shuffled[6]] = 'madman';
+        gameState.roles[shuffled[7]] = 'baker';
+        gameState.roles[shuffled[8]] = 'freemason';
+        gameState.roles[shuffled[9]] = 'freemason';
+        gameState.roles[shuffled[10]] = 'fox';
+        gameState.roles[shuffled[11]] = 'citizen';
+        gameState.roles[shuffled[12]] = 'citizen';
+        gameState.roles[shuffled[13]] = 'citizen';
+        gameState.roles[shuffled[14]] = 'citizen';
       }
 
       chars.forEach(c => gameState.status[c] = 'alive');
 
       // Setup CO Roles
       chars.forEach(c => gameState.coRoles[c] = 'grey');
-      gameState.coRoles[seer] = 'seer';
-      gameState.coRoles[medium] = 'medium';
+      
+      const seerChar = chars.find(c => gameState.roles[c] === 'seer');
+      const mediumChar = chars.find(c => gameState.roles[c] === 'medium');
+      if (seerChar) gameState.coRoles[seerChar] = 'seer';
+      if (mediumChar) gameState.coRoles[mediumChar] = 'medium';
+
+      const masons = chars.filter(c => gameState.roles[c] === 'freemason');
+      if (masons.length === 2) {
+        masons.forEach(m => gameState.coRoles[m] = 'freemason');
+      }
 
       const fakeCandidates = chars.filter(c => gameState.roles[c] === 'wolf' || gameState.roles[c] === 'madman');
-      if (fakeCandidates.length > 0 && Math.random() < 0.8) {
+      if (fakeCandidates.length > 0 && Math.random() < 0.85) {
         const fake1 = pickRandom(fakeCandidates);
         gameState.coRoles[fake1] = pickRandom(['seer', 'medium']);
       }
@@ -1033,7 +1211,7 @@
       startMorning();
     }
 
-    // --- Morning Phase Process ---
+    // Morning Phase Process
     function startMorning() {
       gameState.phase = '朝';
       gameState.questionsLeft = QUESTIONS_PER_DAY;
@@ -1042,26 +1220,32 @@
       gameState.dailyMediumReports = {};
       gameState.morningComments = {};
 
-      addLogItem('裁判長アナウンス', '', `--- Day ${gameState.day} の朝が訪れました ---`, 'system');
+      // [Target #1] Judge Announcement Auto Read (Dignified Judge Voice)
+      addLogItem('裁判長アナウンス', '', `これより第 ${gameState.day} 日の審判を開始します。質問権を行使して可疑者を特定してください。`, 'system', 'judge', true);
 
       // Victim & Baker Reports
       const bakerChar = gameState.charList.find(c => gameState.roles[c] === 'baker');
       if (bakerChar && gameState.status[bakerChar] === 'alive') {
-        addLogItem('🍞 パン屋より', '', '「今朝もおいしい焼きたてパンが焼き上がりました！」', 'baker');
+        addLogItem('🍞 パン屋より', '', '「今朝もおいしい焼きたてパンが焼き上がりました！」', 'baker', null, false);
       }
 
+      const victims = gameState.lastNightVictims || [];
+
+      // [Target #3] News Log Auto Read
       if (gameState.day === 1) {
-        addLogItem('事件報', '', '初日の朝：昨夜の犠牲者は居ませんでした。全員無事です。', 'system');
-      } else if (gameState._lastAttackSuccess === false) {
-        addLogItem('事件報（平穏な朝）', '', '昨夜は騎士の護衛が成功し、犠牲者は誰もいませんでした！', 'system');
-      } else if (gameState._lastVictim) {
-        addLogItem('事件報（犠牲者発生）', '', `今朝、村人 ${gameState._lastVictim} が冷たい遺体となって発見されました…`, 'attack');
-        gameState._lastVictim = null;
+        addLogItem('事件報', '', '初日の朝：昨夜の犠牲者は居ませんでした。全員無事です。', 'system', null, true);
+      } else if (victims.length === 0) {
+        addLogItem('事件報（平穏な朝）', '', '昨夜は死者がでませんでした。平和な朝です！', 'system', null, true);
+      } else if (victims.length === 1) {
+        addLogItem('事件報（犠牲者発生）', '', `今朝、村人 ${victims[0]} が冷たい遺体となって発見されました…`, 'attack', null, true);
+      } else if (victims.length >= 2) {
+        addLogItem('事件報（惨劇の朝）', '', `昨夜は惨事となりました…村人 ${victims.join(' と 村人 ')} の2名もの犠牲者が発見されました！`, 'attack', null, true);
       }
 
       performNightAbilities();
       generateMorningComments();
 
+      // Render Bulletin Board & Morning Comments WITHOUT Auto TTS (Manual Only via 🔊)
       renderBulletinBoard();
       renderMorningCommentsBox();
 
@@ -1074,6 +1258,7 @@
     // Ability Calculations
     function performNightAbilities() {
       const seerCOs = gameState.charList.filter(c => gameState.coRoles[c] === 'seer' && gameState.status[c] === 'alive');
+      
       seerCOs.forEach(char => {
         const realRole = gameState.roles[char];
         const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
@@ -1139,11 +1324,16 @@
           } else {
             gameState.morningComments[char] = `「私は霊媒師です。処刑された人物の正体を明らかにしていきます。」`;
           }
+        } else if (coRole === 'freemason') {
+          const partnerMason = gameState.charList.find(c => c !== char && gameState.roles[c] === 'freemason');
+          gameState.morningComments[char] = `「私たちは【共有者】です（相方: 村人 ${partnerMason}）。二人とも潔白な人間です。」`;
         } else {
           if (realRole === 'wolf') {
             gameState.morningComments[char] = `「昨夜は無事でしたね。村人 ${target} さんの発言に少し不自然さを感じます。」`;
           } else if (realRole === 'madman') {
             gameState.morningComments[char] = `「村人 ${target} さんが怪しい動きをしている気がします。注意すべきです。」`;
+          } else if (realRole === 'fox') {
+            gameState.morningComments[char] = `「人狼の偽りの証言に騙されないよう、発言の整合性をしっかり見分けましょう。」`;
           } else {
             gameState.morningComments[char] = `「無事に朝を迎えられて良かったです。${target} さんの意見に矛盾がないか注目しています。」`;
           }
@@ -1160,18 +1350,26 @@
       Object.keys(gameState.dailySeerReports).forEach(char => {
         hasReport = true;
         const rep = gameState.dailySeerReports[char];
+        const text = `村人 ${char} 占いCO。村人 ${rep.target} は ${rep.result} でした。`;
         const item = document.createElement('div');
         item.className = 'bulletin-item';
-        item.innerHTML = `🔮 <strong>村人 ${char} (占いCO)</strong> ➡️ 村人 <strong>${rep.target}</strong> は【<span style="color:${rep.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${rep.result}</span>】`;
+        item.innerHTML = `
+          <div>🔮 <strong>村人 ${char} (占いCO)</strong> ➡️ 村人 <strong>${rep.target}</strong> は【<span style="color:${rep.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${rep.result}</span>】</div>
+          <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
+        `;
         list.appendChild(item);
       });
 
       Object.keys(gameState.dailyMediumReports).forEach(char => {
         hasReport = true;
         const rep = gameState.dailyMediumReports[char];
+        const text = `村人 ${char} 霊媒CO。処刑された ${rep.target} は ${rep.result} でした。`;
         const item = document.createElement('div');
         item.className = 'bulletin-item';
-        item.innerHTML = `👻 <strong>村人 ${char} (霊媒CO)</strong> ➡️ 処刑者 <strong>${rep.target}</strong> は【<span style="color:${rep.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${rep.result}</span>】`;
+        item.innerHTML = `
+          <div>👻 <strong>村人 ${char} (霊媒CO)</strong> ➡️ 処刑者 <strong>${rep.target}</strong> は【<span style="color:${rep.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${rep.result}</span>】</div>
+          <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
+        `;
         list.appendChild(item);
       });
 
@@ -1180,7 +1378,7 @@
       }
     }
 
-    // Render Morning Comments Block
+    // Render Morning Comments Box
     function renderMorningCommentsBox() {
       const list = document.getElementById('morning-comments-list');
       list.innerHTML = '';
@@ -1188,8 +1386,18 @@
       Object.keys(gameState.morningComments).forEach(char => {
         const item = document.createElement('div');
         item.className = 'morning-comment-item';
-        const coText = gameState.coRoles[char] === 'seer' ? '占いCO' : (gameState.coRoles[char] === 'medium' ? '霊媒CO' : 'グレー');
-        item.innerHTML = `<strong>村人 ${char} (${coText})</strong>: ${gameState.morningComments[char]}`;
+        let coText = 'グレー';
+        if (gameState.coRoles[char] === 'seer') coText = '占いCO';
+        if (gameState.coRoles[char] === 'medium') coText = '霊媒CO';
+        if (gameState.coRoles[char] === 'freemason') coText = '共有CO';
+
+        const comment = gameState.morningComments[char];
+        const speakMsg = `村人 ${char}。${comment}`;
+
+        item.innerHTML = `
+          <div><strong>村人 ${char} (${coText})</strong>: ${comment}</div>
+          <button class="btn-speak" onclick="speakText('${speakMsg}', null, false, '${char}')">🔊</button>
+        `;
         list.appendChild(item);
       });
     }
@@ -1201,6 +1409,14 @@
       document.getElementById('life-display').textContent = `残り${gameState.mistakesLeft}回`;
 
       const warning = document.getElementById('action-warning');
+      const btnSkip = document.getElementById('btn-skip-execute');
+
+      if (!gameState.executedToday && !gameState.gameOver) {
+        btnSkip.disabled = false;
+      } else {
+        btnSkip.disabled = true;
+      }
+
       if (gameState.questionsLeft === 0 && !gameState.executedToday && !gameState.gameOver) {
         warning.style.display = 'block';
       } else {
@@ -1231,12 +1447,15 @@
         } else if (coRole === 'medium') {
           coBadgeClass = 'co-medium';
           coBadgeText = '👻 霊媒CO';
+        } else if (coRole === 'freemason') {
+          coBadgeClass = 'co-freemason';
+          coBadgeText = '🤝 共有CO';
         }
 
         let statusText = '生存';
         let statusClass = 'status-alive';
 
-        if (gameState.status[char] === 'attacked') {
+        if (gameState.status[char] === 'attacked' || gameState.status[char] === 'cursed') {
           statusText = '【犠牲者】死亡';
           statusClass = 'status-attacked';
         } else if (gameState.status[char] === 'executed') {
@@ -1271,9 +1490,14 @@
       const btnQ2 = document.getElementById('btn-q2');
       const btnQ3 = document.getElementById('btn-q3');
       const btnExec = document.getElementById('btn-execute');
+      const btnSkip = document.getElementById('btn-skip-execute');
 
       if (char) {
-        const coText = gameState.coRoles[char] === 'seer' ? '（占いCO）' : (gameState.coRoles[char] === 'medium' ? '（霊媒CO）' : '（グレー）');
+        let coText = '（グレー）';
+        if (gameState.coRoles[char] === 'seer') coText = '（占いCO）';
+        if (gameState.coRoles[char] === 'medium') coText = '（霊媒CO）';
+        if (gameState.coRoles[char] === 'freemason') coText = '（共有CO）';
+
         targetInfo.textContent = `選択中: 村人 ${char} ${coText}`;
 
         const canAsk = gameState.questionsLeft > 0 && !gameState.executedToday;
@@ -1281,12 +1505,14 @@
         btnQ2.disabled = !canAsk;
         btnQ3.disabled = !canAsk;
         btnExec.disabled = gameState.executedToday;
+        btnSkip.disabled = gameState.executedToday;
       } else {
         targetInfo.textContent = '尋問・処刑する人物を選択してください';
         btnQ1.disabled = true;
         btnQ2.disabled = true;
         btnQ3.disabled = true;
         btnExec.disabled = true;
+        btnSkip.disabled = gameState.executedToday;
       }
     }
 
@@ -1313,7 +1539,7 @@
       }
     }
 
-    // Ask Question Handler
+    // [Target #4] Interrogation Answers Auto Read
     function askQuestion(questionId) {
       if (!gameState.selectedChar || gameState.questionsLeft <= 0 || gameState.executedToday || gameState.gameOver) return;
 
@@ -1323,32 +1549,41 @@
 
       gameState.questionsLeft--;
 
-      addLogItem(`審判員 ➡️ 村人 ${char}`, questionText, answerText);
+      addLogItem(`審判員 ➡️ 村人 ${char}`, questionText, answerText, '', char, true);
 
       renderStatus();
       selectCharacter(gameState.selectedChar);
     }
 
-    // Add Log Entry
-    function addLogItem(title, question, answer, typeClass = '') {
+    // Add Log Entry (Supports Auto Speech Flag)
+    function addLogItem(title, question, answer, typeClass = '', charSeed = null, autoSpeak = false) {
       const timeline = document.getElementById('log-timeline');
       const item = document.createElement('div');
       item.className = `log-item ${typeClass}`;
       
+      const speakMsg = `${title}。${question ? question : ''} ${answer}`;
+
       item.innerHTML = `
         <div class="log-header">
           <span>${title}</span>
           <span>Day ${gameState.day} (${gameState.phase})</span>
         </div>
         ${question ? `<div class="log-question">${question}</div>` : ''}
-        <div class="log-answer">${answer}</div>
+        <div class="log-answer">
+          <div>${answer}</div>
+          <button class="btn-speak" onclick="speakText('${speakMsg}', null, false, '${charSeed || 'A'}')">🔊</button>
+        </div>
       `;
 
       timeline.appendChild(item);
       timeline.scrollTop = timeline.scrollHeight;
+
+      if (autoSpeak) {
+        speakText(speakMsg, null, false, charSeed);
+      }
     }
 
-    // --- Execute Character & Trigger Enhanced Seamless Sequence ---
+    // Execute Selected Character
     function executeSelected() {
       const char = gameState.selectedChar;
       if (!char || gameState.status[char] !== 'alive' || gameState.executedToday || gameState.gameOver) return;
@@ -1366,11 +1601,14 @@
         gameState.mistakesLeft--;
       }
 
+      // [Target #1] Judge Execution Announcement Auto Read
       addLogItem(
         `【判決：処刑実行】村人 ${char}`, 
         '', 
-        `村人 ${char} の処刑を執り行いました。正体は明かされません。（翌朝の霊媒結果をお待ちください）`,
-        'execution'
+        `審判を下します。村人 ${char} の処刑を執り行いました。正体は明かされません。（翌朝の霊媒結果をお待ちください）`,
+        'execution',
+        'judge',
+        true
       );
 
       selectCharacter(null);
@@ -1379,14 +1617,45 @@
 
       const isEnd = checkGameEnd();
       if (!isEnd) {
-        // Trigger Enhanced Seamless Night -> Morning Sequence (after 1.2s delay)
         setTimeout(() => {
           runEnhancedSeamlessSequence();
         }, 1200);
       }
     }
 
-    // Enhanced Seamless Night -> Morning Sequence Timeline (Longer & Graphic Animation)
+    // Skip Execution Handler
+    function skipExecution() {
+      if (gameState.executedToday || gameState.gameOver) return;
+
+      gameState.executedToday = true;
+      gameState.lastExecutedChar = null;
+      gameState.phase = '夕方';
+
+      const skipMsg = '本日の処刑を見送ります。誰も処刑されません。そのまま夜を迎えてください。';
+
+      // [Target #1] Judge Skip Announcement Auto Read
+      addLogItem(
+        `【判決：処刑見送り】`,
+        '',
+        skipMsg,
+        'system',
+        'judge',
+        true
+      );
+
+      selectCharacter(null);
+      renderStatus();
+      renderCharacters();
+
+      const isEnd = checkGameEnd();
+      if (!isEnd) {
+        setTimeout(() => {
+          runEnhancedSeamlessSequence();
+        }, 1500);
+      }
+    }
+
+    // [Target #2] Morning Overlay Narration Auto Read
     function runEnhancedSeamlessSequence() {
       gameState.phase = '夜';
       renderStatus();
@@ -1396,16 +1665,16 @@
       const descEl = document.getElementById('seamless-desc');
       const wolfEyes = document.getElementById('wolf-eyes');
 
-      // 1. [0.0s] Activate Overlay (Darkness & Glowing Red Eyes)
       titleEl.textContent = '🌕 夜の暗躍 🌕';
       descEl.innerHTML = '― 夜が訪れました ―<br>人狼たちが暗闇の中で目を光らせ、暗躍しています…';
       wolfEyes.classList.add('visible');
       overlay.classList.add('active');
 
-      // Play Wolf Howl SE
       playWolfHowlSE();
 
-      // Perform Night Calculations in background
+      // Night Action Processing
+      const nightVictims = [];
+
       const knightChar = gameState.charList.find(c => gameState.roles[c] === 'knight' && gameState.status[c] === 'alive');
       let guardedChar = null;
       if (knightChar) {
@@ -1417,65 +1686,102 @@
       const aliveNonWolves = gameState.charList.filter(c => gameState.roles[c] !== 'wolf' && gameState.status[c] === 'alive');
 
       if (aliveWolves.length > 0 && aliveNonWolves.length > 0) {
-        const victim = pickRandom(aliveNonWolves);
+        const attackTarget = pickRandom(aliveNonWolves);
 
-        if (guardedChar && victim === guardedChar) {
-          gameState._lastAttackSuccess = false;
-          gameState._lastVictim = null;
+        if (guardedChar && attackTarget === guardedChar) {
+          // Guarded!
+        } else if (gameState.roles[attackTarget] === 'fox') {
+          // Immune!
         } else {
-          gameState.status[victim] = 'attacked';
-          gameState._lastAttackSuccess = true;
-          gameState._lastVictim = victim;
+          gameState.status[attackTarget] = 'attacked';
+          nightVictims.push(attackTarget);
         }
-      } else {
-        gameState._lastAttackSuccess = false;
-        gameState._lastVictim = null;
       }
 
-      // 2. [3.5s] Seamlessly transition to Morning Narrative inside the same Dark Overlay
+      const trueSeerChar = gameState.charList.find(c => gameState.roles[c] === 'seer' && gameState.status[c] === 'alive');
+      if (trueSeerChar) {
+        const aliveOthers = gameState.charList.filter(c => c !== trueSeerChar && gameState.status[c] === 'alive');
+        if (aliveOthers.length > 0) {
+          const seerTarget = pickRandom(aliveOthers);
+          if (gameState.roles[seerTarget] === 'fox') {
+            gameState.status[seerTarget] = 'cursed';
+            if (!nightVictims.includes(seerTarget)) {
+              nightVictims.push(seerTarget);
+            }
+          }
+        }
+      }
+
+      gameState.lastNightVictims = nightVictims;
+
+      // Morning Transition & Narration TTS
       setTimeout(() => {
         gameState.day++;
         wolfEyes.classList.remove('visible');
         playRoosterCrowSE();
 
         titleEl.textContent = '☀️ 黎明の訪れ ☀️';
-        if (gameState._lastVictim) {
-          descEl.innerHTML = `― 夜が明け、第 ${gameState.day} 日の朝が来ました ―<br>村人は広場に集まりましたが、<strong>村人 ${gameState._lastVictim}</strong> の姿がありません…`;
-        } else {
-          descEl.innerHTML = `― 夜が明け、第 ${gameState.day} 日の朝が来ました ―<br>昨夜は平和な夜だったようです。全員無事に広場に姿を現しました。`;
-        }
-      }, 3500);
+        let spokenText = '';
 
-      // 3. [7.0s] Fade Out Overlay & Smoothly Switch to Log View (Page 1)
-      setTimeout(() => {
-        overlay.classList.remove('active');
-        startMorning();
-        switchView(1);
-        checkGameEnd();
-      }, 7000);
+        if (nightVictims.length === 0) {
+          descEl.innerHTML = `― 夜が明け、第 ${gameState.day} 日の朝が来ました ―<br>昨夜は死者がでませんでした。平和な朝です！`;
+          spokenText = `夜が明け、第 ${gameState.day} 日の朝が来ました。昨夜は死者がでませんでした。全員無事です。`;
+        } else if (nightVictims.length === 1) {
+          descEl.innerHTML = `― 夜が明け、第 ${gameState.day} 日の朝が来ました ―<br>広場に集まった村人ですが、<strong>村人 ${nightVictims[0]}</strong> が遺体となって発見されました…`;
+          spokenText = `夜が明け、第 ${gameState.day} 日の朝が来ました。今朝、村人 ${nightVictims[0]} が冷たい遺体となって発見されました。`;
+        } else {
+          descEl.innerHTML = `― 夜が明け、第 ${gameState.day} 日の朝が来ました ―<br>昨夜は惨劇が起きました… <strong>村人 ${nightVictims.join(' と 村人 ')}</strong> の2名もの犠牲者が発見されました！`;
+          spokenText = `夜が明け、第 ${gameState.day} 日の朝が来ました。昨夜は惨劇が起き、村人 ${nightVictims.join(' と 村人 ')} の2名もの犠牲者が発見されました。`;
+        }
+
+        speakText(spokenText, () => {
+          setTimeout(() => {
+            overlay.classList.remove('active');
+            startMorning();
+            switchView(1);
+            checkGameEnd();
+          }, 800);
+        }, true);
+
+      }, 3500);
     }
 
-    // Check Win/Lose Conditions
+    // Check Win/Lose/Fox Conditions
     function checkGameEnd() {
       const aliveWolves = gameState.charList.filter(c => gameState.roles[c] === 'wolf' && gameState.status[c] === 'alive').length;
       const aliveTotal = gameState.charList.filter(c => gameState.status[c] === 'alive').length;
+      const aliveFoxes = gameState.charList.filter(c => gameState.roles[c] === 'fox' && gameState.status[c] === 'alive').length;
       const aliveNonWolves = aliveTotal - aliveWolves;
 
-      if (gameState.wolvesExecuted >= 2) {
-        endGame(true, '見事に2人の人狼を特定し全滅させました！村に平和が戻りました！');
+      if (gameState.wolvesExecuted >= gameState.targetWolvesCount || aliveWolves === 0) {
+        if (aliveFoxes > 0) {
+          endGame('fox_win', '人狼は全滅しましたが、陰に潜んでいた【妖狐】が生き残り、単独勝利を収めました！村は妖狐に欺かれました…');
+        } else {
+          endGame(true, `見事に${gameState.targetWolvesCount}人の人狼を特定し全滅させました！村に平和が戻りました！`);
+        }
         return true;
-      } else if (gameState.mistakesLeft <= 0) {
-        endGame(false, '無実の人間を誤処刑しすぎてしまいました…（誤処刑限界到達）');
+      } 
+      else if (gameState.mistakesLeft <= 0) {
+        if (aliveFoxes > 0) {
+          endGame('fox_win', '誤処刑により村は混乱に陥り、生き残った【妖狐】が単独勝利を収めました！');
+        } else {
+          endGame(false, '無実の人間を誤処刑しすぎてしまいました…（誤処刑限界到達）');
+        }
         return true;
-      } else if (aliveWolves >= aliveNonWolves) {
-        endGame(false, '犠牲者が増え、生存者の半分以上が人狼となりました…村は滅びました。');
+      } 
+      else if (aliveWolves >= aliveNonWolves) {
+        if (aliveFoxes > 0) {
+          endGame('fox_win', '人狼と人間が同数となり村が崩壊する中、生き残った【妖狐】がすべての高みの見物で単独勝利を収めました！');
+        } else {
+          endGame(false, '犠牲者が増え、生存者の半分以上が人狼となりました…村は人狼に支配されました。');
+        }
         return true;
       }
       return false;
     }
 
     // End Game Modal Display
-    function endGame(isWin, message) {
+    function endGame(result, message) {
       gameState.gameOver = true;
       const modal = document.getElementById('modal-overlay');
       const title = document.getElementById('modal-title');
@@ -1484,9 +1790,13 @@
 
       modal.classList.remove('hidden');
 
-      if (isWin) {
+      if (result === true) {
         title.textContent = '🎉 審判成功！ - Victory -';
         title.className = 'modal-title win';
+      } else if (result === 'fox_win') {
+        title.textContent = '🦊 妖狐単独勝利！ - Fox Win -';
+        title.className = 'modal-title win';
+        title.style.color = 'var(--fox-color)';
       } else {
         title.textContent = '💀 村の滅亡… - Game Over -';
         title.className = 'modal-title lose';
@@ -1504,9 +1814,12 @@
         if (role === 'knight') tag = '🛡️ 騎士';
         if (role === 'madman') tag = '💗 狂人';
         if (role === 'baker') tag = '🍞 パン屋';
+        if (role === 'freemason') tag = '🤝 共有者';
+        if (role === 'fox') tag = '🦊 妖狐';
 
         let st = '生存';
         if (gameState.status[char] === 'attacked') st = '襲撃死';
+        if (gameState.status[char] === 'cursed') st = '呪殺死';
         if (gameState.status[char] === 'executed') st = '処刑済';
 
         revealHTML += `村人 ${char}: ${tag}（${st}）<br>`;
@@ -1516,6 +1829,7 @@
 
     // Initial setup
     window.onload = () => {
+      initVoice();
       showTitleScreen();
     };
   </script>
