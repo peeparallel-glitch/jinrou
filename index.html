@@ -1073,27 +1073,16 @@
       }
     }
 
+    // --- SE Audio File Management ---
+    const seHowling = new Audio('BGM/okamiToboe.mp3'); // 狼の遠吠え
+    const seRooster = new Audio('BGM/niwatori.mp3');   // 鶏の鳴き声
+    seHowling.volume = 0.6;
+    seRooster.volume = 0.5;
+
     function playWolfHowlSE() {
       try {
-        initAudio();
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(450, now + 0.8);
-        osc.frequency.exponentialRampToValueAtTime(220, now + 2.8);
-
-        gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.22, now + 0.5);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.9);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(now);
-        osc.stop(now + 2.9);
+        seHowling.currentTime = 0;
+        seHowling.play().catch(e => console.log('SE Howl Play Error:', e));
       } catch (e) {
         console.log('Audio Error:', e);
       }
@@ -1101,26 +1090,8 @@
 
     function playRoosterCrowSE() {
       try {
-        initAudio();
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(400, now);
-        osc.frequency.exponentialRampToValueAtTime(750, now + 0.2);
-        osc.frequency.setValueAtTime(700, now + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(900, now + 0.8);
-
-        gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.25, now + 0.2);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(now);
-        osc.stop(now + 1.2);
+        seRooster.currentTime = 0;
+        seRooster.play().catch(e => console.log('SE Rooster Play Error:', e));
       } catch (e) {
         console.log('Audio Error:', e);
       }
