@@ -2,7 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!-- Viewport制御（ピンチイン・アウトによるズームを防止しアプリ感を高める） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <!-- iOS Safari 用フルスクリーン・Web App設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="人狼審判">
+
+  <!-- Android / Chrome 用設定 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f141e">
+
+  <!-- Web App Manifest 連携 -->
+  <link rel="manifest" href="./manifest.json">
+
   <title>人狼審判 - Wolf Judge -</title>
   <style>
     :root {
@@ -40,6 +54,10 @@
       font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
     /* Screen Management & Game Screen Backgrounds */
@@ -1372,8 +1390,7 @@
     }
 
     function showTitleScreen() {
-      stopAllTimers();
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      resetGameState();
       document.getElementById('title-screen').classList.remove('hidden');
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('modal-overlay').classList.add('hidden');
@@ -1401,7 +1418,7 @@
       }, 1000);
     }
 
-    function startDecisionTimer() {
+    async function startDecisionTimer() {
       stopAllTimers();
       playBgm('syokei');
       setGamePhaseBg('execution');
@@ -1412,24 +1429,28 @@
       renderCharacters();
       selectCharacter(gameState.selectedChar);
 
-      addLogItem(
-        'ナレーション',
-        '',
-        '議論を終了し、処刑決断に入ります。15秒以内に処刑対象を選択するか、処刑を見送ってください。',
-        'narration',
-        null,
-        true
-      );
+      const dateText = `Day ${gameState.day} (${gameState.phase})`;
+      const decisionLogText = '議論を終了し、処刑決断に入ります。15秒以内に処刑対象を選択するか、処刑を見送ってください。';
+      const speechMsg = `${dateText}…… ${decisionLogText}`;
 
-      timerInterval = setInterval(() => {
-        if (gameState.timeLeftSeconds > 0) {
-          gameState.timeLeftSeconds--;
-          updateTimerDisplay();
-        } else {
-          stopAllTimers();
-          handleDecisionTimeUp();
-        }
-      }, 1000);
+      addLogItem('ナレーション', '', decisionLogText, 'narration', null, false);
+
+      // ナレーション読み上げ完了（onend）を待機
+      await playSpeechAsync(speechMsg);
+
+      // ナレーション読み上げ完了後に15秒カウントダウンを正式スタート
+      if (gameState.subPhase === 'decision' && !gameState.executedToday && !gameState.gameOver) {
+        stopAllTimers();
+        timerInterval = setInterval(() => {
+          if (gameState.timeLeftSeconds > 0) {
+            gameState.timeLeftSeconds--;
+            updateTimerDisplay();
+          } else {
+            stopAllTimers();
+            handleDecisionTimeUp();
+          }
+        }, 1000);
+      }
     }
 
     function stopAllTimers() {
@@ -1495,41 +1516,43 @@
       }
     }
 
-    // Start Game
-    function startGame() {
-      unlockAudioOnInteraction();
-      initAudio();
-      initVoice();
+    // Complete Game State & UI Reset Function
+    function resetGameState() {
+      stopAllTimers();
 
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
 
-      document.getElementById('title-screen').classList.add('hidden');
-      document.getElementById('game-screen').classList.remove('hidden');
-      document.getElementById('modal-overlay').classList.add('hidden');
-      document.getElementById('seamless-overlay').classList.remove('active');
+      // DOM Clear
+      const grid = document.getElementById('character-grid');
+      if (grid) grid.innerHTML = '';
 
-      const size = selectedVillageSize;
-      const chars = CHAR_NAMES_15.slice(0, size);
+      const timeline = document.getElementById('log-timeline');
+      if (timeline) timeline.innerHTML = '';
       
-      let maxMistakes = 2;
-      let targetWolves = 2;
-      if (size === 10) maxMistakes = 3;
-      if (size === 15) {
-        maxMistakes = 4;
-        targetWolves = 3;
-      }
+      const bulletin = document.getElementById('bulletin-list');
+      if (bulletin) bulletin.innerHTML = '';
+      
+      const morningComments = document.getElementById('morning-comments-list');
+      if (morningComments) morningComments.innerHTML = '';
 
+      const targetInfo = document.getElementById('target-info');
+      if (targetInfo) targetInfo.textContent = '尋問・処刑する人物を選択してください';
+
+      const warning = document.getElementById('action-warning');
+      if (warning) warning.style.display = 'none';
+
+      // Reset gameState object
       gameState = {
-        villageSize: size,
-        targetWolvesCount: targetWolves,
-        charList: chars,
+        villageSize: 6,
+        targetWolvesCount: 2,
+        charList: [],
         day: 1,
         phase: '朝',
         subPhase: 'discussion',
         timeLeftSeconds: MAX_DISCUSSION_TIME_SECONDS,
-        mistakesLeft: maxMistakes,
+        mistakesLeft: 2,
         wolvesExecuted: 0,
         selectedChar: null,
         executedToday: false,
@@ -1550,6 +1573,38 @@
         lastNightVictims: [],
         gameOver: false
       };
+    }
+
+    // Start Game
+    function startGame() {
+      requestFullScreen(); // ゲーム開始時にフルスクリーン化を試行
+      unlockAudioOnInteraction();
+      initAudio();
+      initVoice();
+
+      // 完全初期化（リセット）実行
+      resetGameState();
+
+      document.getElementById('title-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      document.getElementById('modal-overlay').classList.add('hidden');
+      document.getElementById('seamless-overlay').classList.remove('active');
+
+      const size = selectedVillageSize;
+      const chars = CHAR_NAMES_15.slice(0, size);
+      
+      let maxMistakes = 2;
+      let targetWolves = 2;
+      if (size === 10) maxMistakes = 3;
+      if (size === 15) {
+        maxMistakes = 4;
+        targetWolves = 3;
+      }
+
+      gameState.villageSize = size;
+      gameState.targetWolvesCount = targetWolves;
+      gameState.charList = chars;
+      gameState.mistakesLeft = maxMistakes;
 
       // Role Assignment
       const shuffled = [...chars].sort(() => 0.5 - Math.random());
@@ -1597,6 +1652,7 @@
       chars.forEach(c => {
         gameState.status[c] = 'alive';
         gameState.coRoles[c] = 'grey';
+        gameState.memoRoles[c] = 'none';
         gameState.claimedRoleTypes[c] = null;
         gameState.isStealthing[c] = false;
         gameState.seerHistory[c] = [];
@@ -2142,8 +2198,7 @@
       }
       return getCustomAnswer(char, '質問');
     }
-
-    // Dynamic Context-Aware AI Answer Generator
+    // Dynamic Multi-Angle & Multi-Tone AI Answer Generator
     function getCustomAnswer(char, questionText) {
       checkSelfPreservationCO(char);
 
@@ -2152,102 +2207,142 @@
       const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
       const q = questionText.toLowerCase();
 
-      // 質問意図の判定
-      const isWhy = q.includes('なぜ') || q.includes('理由') || q.includes('意図') || q.includes('根拠') || q.includes('どうして');
-      const isDoubt = q.includes('怪し') || q.includes('対抗') || q.includes('矛盾') || q.includes('嘘') || q.includes('信じ') || q.includes('本物') || q.includes('偽物') || q.includes('狼') || q.includes('処刑');
-      const isSeerQ = q.includes('占') || q.includes('鑑定') || q.includes('結果');
-      const isAlibiQ = q.includes('アリバイ') || q.includes('場所') || q.includes('行動') || q.includes('どこ') || q.includes('昨日');
+      // 1. 質問インテントの厳密解析
+      const isWhy = /なぜ|理由|どうして|選んだ|意図|根拠|きっかけ/.test(q);
+      const isTiming = /いつ|タイミング|遅い|初日|今|昨日|段階|遅れ/.test(q);
+      const isDoubt = /対抗|怪し|矛盾|本物|偽物|嘘|信じ|吊|処刑|疑/.test(q);
+      const isLine = /一緒|協力|かば|繋がり|ライン|仲間|結託/.test(q);
+      const isAlibi = /アリバイ|場所|行動|どこ/.test(q);
+      const isSeerQ = /占|鑑定|結果/.test(q);
 
-      // 1. 占い・鑑定に関する質問（「なぜ占ったのか」「結果の理由」など）
-      if (isSeerQ || (coRole === 'seer' && (isWhy || isDoubt))) {
+      // 対抗者とターゲット
+      const rivalCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === coRole && coRole !== 'grey' && gameState.status[c] === 'alive');
+      const rivalName = rivalCOs.length > 0 ? rivalCOs[0] : (aliveOthers[0] || '対抗者');
+      const report = gameState.dailySeerReports[char];
+      const seerTarget = report ? report.target : (aliveOthers[0] || 'A');
+      const seerResult = report ? report.result : '人間';
+      const morningComment = gameState.morningComments[char] || '';
+
+      // 2. 6つの思考アングルと4つのトーンのダイナミック組み合わせ
+      const angle = pickRandom(['log_analysis', 'board_elimination', 'emotion_intuition', 'meta_bluff', 'counter_question', 'line_structure']);
+      const tone = pickRandom(['calm_logical', 'emotional_anxious', 'bold_provocative', 'cautious_humble']);
+
+      // 感情トーン別の「プレフィックス（思考の間・トーン）」
+      let prefix = '';
+      if (tone === 'calm_logical') {
+        prefix = pickRandom(['「……順を追って論理的に説明しよう。', '「……客観的な事実からお答えしますよ。', '「冷静に分析した背景を語るとね、']);
+      } else if (tone === 'emotional_anxious') {
+        prefix = pickRandom(['「……っ！ 感情的になって申し訳ないが、聞いてくれ！', '「正直焦っているが、疑われて黙っていられない！', '「……頼むから私の真意を分かってほしい！']);
+      } else if (tone === 'bold_provocative') {
+        prefix = pickRandom(['「ふふ、面白い着眼点だね。だが狙いはもっと深い所にある。', '「ははっ！ そう突いてくるとは予想通りだよ！', '「ふん……面白い疑い方をするじゃないか。']);
+      } else {
+        prefix = pickRandom(['「間違っていたら大変恐縮なのですが…', '「自信満々と言えば嘘になりますが、慎重に考えると…', '「……下手なことを言うと誤解されそうですが、']);
+      }
+
+      // --- 【A: 占い・鑑定に関する質問（アングル分岐）】 ---
+      if (isSeerQ || (coRole === 'seer' && (isWhy || isTiming || isDoubt))) {
         if (coRole === 'seer') {
-          const report = gameState.dailySeerReports[char];
-          const target = report ? report.target : (aliveOthers[0] || 'A');
-          const result = report ? report.result : '人間';
-
-          if (realRole === 'seer') { // 【本物の占い師（真）】
+          if (realRole === 'seer') { // 【真占い師】
             if (isWhy) {
-              const reasonPattern = [
-                `「初日の段階で村人 ${target} さんの発言が少なく、静観して潜伏しているように見えたからです。直感を信じて占いました。」`,
-                `「対抗位置の発言者と村人 ${target} さんの距離感が近く、ライン（繋がり）を感じたので白黒を明確にしたかったのです。」`,
-                `「村人 ${target} さんの発言にどこか引っかかる不自然さがあったからです。村を安心させるためにも確認が必要でした。」`
-              ];
-              const reason = pickRandom(reasonPattern);
-              return `${reason} 鑑定結果は【${result}】でした。`;
+              if (angle === 'log_analysis') return `${prefix} 朝コメントで 村人 ${seerTarget} さんのログの提出タイミングと語尾の防衛的ニュアンスに不自然さを感じたからだよ。鑑定結果は【${seerResult}】だった。`;
+              if (angle === 'board_elimination') return `${prefix} 他の生き残りが村目（白）に見えていたため、消去法で一番視界が狭かった 村人 ${seerTarget} さんを占ったんだ。結果は【${seerResult}】だ。`;
+              if (angle === 'counter_question') return `${prefix} 逆に聞くが、初日のあのログから 村人 ${seerTarget} さん以外に占うべき優先候補がいたと思うかい？ 結果は【${seerResult}】だよ。`;
+              if (angle === 'line_structure') return `${prefix} 対抗の ${rivalName} さんと 村人 ${seerTarget} さんの間のライン（繋がり）を精査したかったんだ。結果【${seerResult}】と確定したよ。`;
+              return `${prefix} 直感と言えばそれまでだが、村人 ${seerTarget} さんから嫌な気配を感じ取ったんだ。結果【${seerResult}】だと分かった。`;
+            } else if (isTiming) {
+              return `${prefix} 初日に安易にCOすると人狼からの最優先襲撃標的になる。村の視点が定まる最善のタイミングを狙って開示したんだよ。」`;
+            } else if (isDoubt) {
+              return `${prefix} 私を疑う前に、対抗でCOしている ${rivalName} さんの矛盾に満ちた破綻ログを分析してほしい。私こそが真の占い師であり、結果【${seerResult}】は真実だ！」`;
             } else {
-              return `「私こそが真の占い師です。村人 ${target} を占った結果は【${result}】でした。私のアナウンスを信じて村を導いてください。」`;
+              return `${prefix} 結論から直球で言うが、私が本物の占い師だよ。村人 ${seerTarget} を占った結果は【${seerResult}】だった。私を信じてくれ。」`;
             }
-          } 
-          else if (realRole === 'wolf') { // 【人狼（騙り占い師）】
+          } else if (realRole === 'wolf') { // 【人狼：巧妙なブラフ・話題のすり替え】
             if (isWhy) {
-              const reasonPattern = [
-                `「……村人 ${target} さんの朝のコメントに妙な違和感があったからですよ。後付けに見えるかもしれませんが、村のために判断しました。」`,
-                `「村人 ${target} さんがグレーのまま議論を混乱させていたので、早めに白黒を確定させて議論を整理したかったのです。」`
-              ];
-              const reason = pickRandom(reasonPattern);
-              return `${reason} 結果的に【${result}】と判明しました。`;
+              if (angle === 'meta_bluff') return `${prefix} あえて議論の中心から外れた位置を占うことで、真占い師としての公平な視点を示したかったのさ。結果【${seerResult}】と判明したよ。」`;
+              if (angle === 'counter_question') return `${prefix} 逆に聞くけど、初日の段階で人狼を見抜くためにこれ以上のベストなアプローチがあったかい？ 村人 ${seerTarget} への結果は【${seerResult}】だ。」`;
+              if (angle === 'log_analysis') return `${prefix} 村人 ${seerTarget} さんの朝の発言に後付けのような違和感があったからだよ。結果として【${seerResult}】と判明したのさ。」`;
+              return `${prefix} グレー枠を狭めて村の考察を整理したかったのが最大の動機だ。結果【${seerResult}】を得られた視点を活かしてくれ。」`;
+            } else if (isTiming) {
+              return `${prefix} 盤面の乱れを防ぐため、対抗の出方と周囲のログをじっくり観察してから出たんだ。後付けに見えるかもしれないが、計算したタイミングだよ。」`;
+            } else if (isDoubt) {
+              return `${prefix} 私を偽物扱いする前に、対抗の ${rivalName} さんの怪しい立ち振る舞いを見てくれ！ 私は村のために結果【${seerResult}】を提示しているんだ！」`;
             } else {
-              return `「私を疑うのですか？真実を告げている私を処刑すれば村は滅びますよ。村人 ${target} は【${result}】です。」`;
+              return `${prefix} 私は本気で村の勝利のために名乗り出ている。村人 ${seerTarget} の鑑定結果【${seerResult}】を元に議論を進めてほしい。」`;
             }
-          } 
-          else if (realRole === 'madman') { // 【狂人（騙り占い師）】
+          } else if (realRole === 'madman') { // 【狂人：強気・カオス誘導】
             if (isWhy) {
-              const reasonPattern = [
-                `「直感ですね！村の議論を大きく動かすために一番目立っていた 村人 ${target} さんを占いました！」`,
-                `「なんとなく 村人 ${target} さんの目つきが怪しかったからですよ！野生の勘というやつです！」`
-              ];
-              const reason = pickRandom(reasonPattern);
-              return `${reason} 占った結果は【${result}】でした！`;
+              if (angle === 'meta_bluff') return `${prefix} 停滞していた村の議論を揺さぶり、狂気と混乱の中から狼を炙り出すために 村人 ${seerTarget} を突いたんだ！ 結果【${seerResult}】さ！」`;
+              return `${prefix} 直感とインスピレーションさ！ 村人 ${seerTarget} を占うことで盤面が大きく動いた。結果【${seerResult}】を信じて突っ走ろう！」`;
+            } else if (isTiming) {
+              return `${prefix} 一番場が沸き立つこのタイミングを狙っていたのさ！ 早く出すぎても人狼の罠にハマるだけだからね！」`;
+            } else if (isDoubt) {
+              return `${prefix} 私が偽物だって？ 命がけで結果【${seerResult}】を持ってきたんだから、私こそが真目だと信じて投票してくれ！」`;
             } else {
-              return `「私が本物の占い師に決まっています！村人 ${target} への鑑定結果【${result}】を元に議論を進めてください！」`;
+              return `${prefix} 私こそが真の占い師さ！ 村人 ${seerTarget} 【${seerResult}】の結果を元に一気に人狼を追い詰めよう！」`;
             }
           }
-        } 
-        else if (coRole === 'medium') {
-          return `「私は霊媒師であり占い師ではありません。しかし、処刑された人物の真実を見抜くことで占い結果の真偽を暴きます。」`;
-        } 
-        else {
-          return `「私は占い能力を持ちませんが、占いCOを行っている者たちの発言の不自然さには常に注意を払っています。」`;
+        } else if (coRole === 'medium') {
+          return `${prefix} 直球で答えるが、私は霊媒師であり占い師ではない。だが処刑者の真偽を見抜くことで占い師たちの真真偽を証明してみせるよ。」`;
+        } else {
+          return `${prefix} 私は占い能力は持たないが、占いCO者たちのログの矛盾や開示タイミングには厳しく目を光らせているよ。」`;
         }
       }
 
-      // 2. アリバイ・行動理由に関する質問
-      if (isAlibiQ) {
+      // --- 【B: タイミング・時期に関する質問】 ---
+      if (isTiming) {
+        if (coRole !== 'grey') {
+          return `${prefix} 初日に名乗り出ると襲撃リスクが跳ね上がる。盤面を見極め、確定情報が一番響くタイミングで出るのがプロの動きだよ。」`;
+        } else {
+          return `${prefix} 潜伏していたわけではなく、安易なCOで人狼に有利な状況を作らせないための戦略的観察期間だったんだ。」`;
+        }
+      }
+
+      // --- 【C: ライン・繋がりに関する質問】 ---
+      if (isLine) {
+        if (aliveOthers.length >= 2) {
+          const t1 = aliveOthers[0];
+          const t2 = aliveOthers[1];
+          return `${prefix} 村人 ${t1} さんと 村人 ${t2} さんの間でお互いを庇い合う不自然なラインを感じている。片方が黒ならもう片方も黒と見て間違いない。」`;
+        } else {
+          return `${prefix} 他のプレイヤーと結託するラインなど存在しない。私は常に単独でログの矛盾を洗っているよ。」`;
+        }
+      }
+
+      // --- 【D: アリバイ・移動場所に関する質問】 ---
+      if (isAlibi) {
         const place = gameState.alibis[char] || '村の広場';
         if (isWhy) {
-          return `「静かに状況を整理したかったため、昨夜は『${place}』にいました。変な疑いをかけられるのは心外ですね。」`;
+          return `${prefix} 昨夜『${place}』にいたのは、喧騒を離れて一人で静かにログの矛盾と対抗の主張を整理したかったからだよ。」`;
         } else {
-          return `「昨夜は間違いなく『${place}』に滞在していました。身の潔白はいつでも証明できます。」`;
+          return `${prefix} 昨夜は間違いなく『${place}』に滞在していた。身の潔白は証明できるし、怪しい行動は一切していない。」`;
         }
       }
 
-      // 3. 理由・動機全般に関する質問（「なぜCOしたのか」「なぜ疑うのか」）
+      // --- 【E: 理由・動機（WHY）に関する全般質問】 ---
       if (isWhy) {
-        if (coRole !== 'grey') {
-          return `「COした理由は、人狼の騙りに乗っ取られる前に確実な確定情報を村全体へ迅速に共有したかったからです。」`;
+        if (morningComment) {
+          return `${prefix} 行動の背景には今朝話した『${morningComment}』という認識がある。村を誤処刑に巻き込まないための論理的選択だよ。」`;
         } else {
-          return `「初日に安易にCOしなかったのは、人狼からの早期襲撃を避けつつ村の動向を見極めるためです。潜伏ではなく戦略的判断です。」`;
+          return `${prefix} 私の全行動の根拠は『村人陣営の誤処刑を防ぐこと』に尽きる。安易な感情論ではなくログの客観的データで動いているんだ。」`;
         }
       }
 
-      // 4. 信頼性・対抗・処刑についての追及質問
+      // --- 【F: 信頼性・対抗・処刑追及（DOUBT）に関する質問】 ---
       if (isDoubt) {
-        const rivalCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === coRole && coRole !== 'grey' && gameState.status[c] === 'alive');
         if (rivalCOs.length > 0) {
-          return `「私を疑う前に、対抗でCOしている ${rivalCOs.join(' さんや ')} さんの矛盾に満ちた発言を見てください！彼らこそが人狼の騙りです！」`;
+          return `${prefix} 私を疑う前に、対抗の ${rivalName} さんの支離滅裂な発言と不自然な手先を見てほしい！ 彼こそが人狼の騙りだ！」`;
         }
         if (aliveOthers.length > 0) {
           const target = pickRandom(aliveOthers);
-          return `「私は間違いなく村人陣営です！むしろ発言がコロコロ変わる 村人 ${target} さんの動向こそ処刑対象として警戒すべきです。」`;
+          return `${prefix} 私は絶対に村人陣営だ。むしろ発言がコロコロ変わる 村人 ${target} さんの動向こそ警戒すべき処刑候補だよ。」`;
         }
       }
 
-      // 5. その他の自由質問（汎用2段構成）
-      const morningComment = gameState.morningComments[char];
+      // --- 【G: 汎用2段構成フレーズ】 ---
       if (morningComment) {
-        return `「『${questionText}』についての質問ですね。朝にも主張した通り『${morningComment}』という認識で行動しています。村の勝利のために私を信じてください。」`;
+        return `${prefix} 『${questionText}』についてのお尋ねですね。今朝話した『${morningComment}』の通り、私は一貫して村の勝利のために動いています。後ろ暗い点は一切ありません。」`;
       }
-      return `「『${questionText}』というお尋ねですが、私は常に村人陣営の勝利を第一に考えて発言しています。私に後ろ暗いところは一切ありません。」`;
+      return `${prefix} 『${questionText}』という質問ですが、私は常に村人陣営の勝利を最優先にして判断しています。私のアクションに嘘はありませんよ。」`;
     }
 
     // Ask Custom Question Handler
@@ -2588,10 +2683,37 @@
       speakText(speechModalText, null, true, null);
     }
 
+    // =====================================================
+    // Fullscreen API: 全画面化リクエスト共通関数
+    // =====================================================
+    function requestFullScreen() {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(err => console.log('Fullscreen request failed:', err));
+      } else if (docEl.mozRequestFullScreen) { /* Firefox */
+        docEl.mozRequestFullScreen().catch(err => console.log('Fullscreen request failed:', err));
+      } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari, Opera */
+        docEl.webkitRequestFullscreen().catch(err => console.log('Fullscreen request failed:', err));
+      } else if (docEl.msRequestFullscreen) { /* IE/Edge */
+        docEl.msRequestFullscreen().catch(err => console.log('Fullscreen request failed:', err));
+      }
+    }
+
     // Initial setup
     window.onload = () => {
       initVoice();
       showTitleScreen();
+
+      // ユーザーの最初の操作（タップまたはクリック）で全画面化を実行（1回のみ）
+      document.addEventListener('touchstart', function initFullScreen() {
+        requestFullScreen();
+        document.removeEventListener('touchstart', initFullScreen);
+      }, { once: true });
+
+      document.addEventListener('click', function initFullScreenClick() {
+        requestFullScreen();
+        document.removeEventListener('click', initFullScreenClick);
+      }, { once: true });
     };
   </script>
 </body>

@@ -1,0 +1,9 @@
+{
+  "name": "人狼審判 - Wolf Judge -",
+  "short_name": "人狼審判",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0f141e",
+  "theme_color": "#0f141e"
+}
