@@ -61,19 +61,33 @@
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
-      background: radial-gradient(circle at center, #1c182c 0%, #0c0e17 100%);
+      background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url('./IMG/jinnrouyoko.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       text-align: center;
       overflow-y: auto;
+      transition: background-image 0.3s ease-in-out;
+    }
+
+    /* スマホ・縦画面（portrait）用のメディアクエリ */
+    @media (orientation: portrait) {
+      #title-screen {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url('./IMG/jinnroutate.jpg');
+        background-position: center top;
+      }
     }
 
     .title-box {
       max-width: 460px;
       width: 100%;
-      background: var(--card-bg);
+      background: rgba(22, 25, 39, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border: 2px solid var(--card-border);
       border-radius: 16px;
       padding: 2rem 1.5rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
 
     .title-box h1 {
