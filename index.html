@@ -986,7 +986,7 @@
     <!-- Status Bar with Countdown Timer -->
     <div class="status-bar">
       <div class="status-item">規模: <span id="village-size-display">6人村</span></div>
-      <div class="status-item">日数: <span id="day-display">Day 1</span></div>
+      <div class="status-item">日数: <span id="day-display">1日目</span></div>
       <div class="status-item"><span id="timer-label">⏱️ 議論時間:</span> <span id="timer-display" class="timer-display normal">03:00</span></div>
       <div class="status-item">誤処刑限界: <span id="life-display">残り2回</span></div>
     </div>
@@ -1156,6 +1156,24 @@
         currentBgm.loop = true;
         currentBgm.volume = 0.35; // 音声読み上げを邪魔しない適切な音量調整 (35%)
         currentBgm.play().catch(e => console.log('BGM Play Error (Waiting for User Interaction):', e));
+      }
+    }
+
+    function pauseAllAudio() {
+      if (currentBgm && !currentBgm.paused) {
+        currentBgm.pause();
+      }
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+      }
+    }
+
+    function resumeAllAudio() {
+      if (currentBgm && currentBgmKey && currentBgm.paused) {
+        currentBgm.play().catch(e => console.log('BGM Resume Error:', e));
+      }
+      if (window.speechSynthesis && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
       }
     }
 
@@ -1336,6 +1354,28 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
+    // 経過日数の画面UI表示用フォーマット関数 ("1日目", "2日目" etc.)
+    function formatDay(dayNumber) {
+      return `${dayNumber}日目`;
+    }
+
+    // 音声読み上げ（SpeechSynthesis）用かな最適化フォーマット関数 ("いちにちめ", "ふつかめ" etc.)
+    function getDaySpeechText(dayNumber) {
+      const dayNames = {
+        1: "いちにちめ",
+        2: "ふつかめ",
+        3: "みっかめ",
+        4: "よっかめ",
+        5: "いつかめ",
+        6: "むいかめ",
+        7: "なのかめ",
+        8: "ようかめ",
+        9: "ここのかめ",
+        10: "とおかめ"
+      };
+      return dayNames[dayNumber] || `${dayNumber}にちめ`;
+    }
+
     // Strict 2-View Carousel Switching
     function switchView(index) {
       if (index < 0) index = 0;
@@ -1429,9 +1469,9 @@
       renderCharacters();
       selectCharacter(gameState.selectedChar);
 
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
       const decisionLogText = '議論を終了し、処刑決断に入ります。15秒以内に処刑対象を選択するか、処刑を見送ってください。';
-      const speechMsg = `${dateText}…… ${decisionLogText}`;
+      const speechMsg = `${getDaySpeechText(gameState.day)}…… ${decisionLogText}`;
 
       addLogItem('ナレーション', '', decisionLogText, 'narration', null, false);
 
@@ -1453,12 +1493,81 @@
       }
     }
 
+    // バックグラウンド・タイマーポーズ管理
+    let isGamePaused = false;
+    let lastPauseTimestamp = null;
+
     function stopAllTimers() {
       if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
       }
+      lastPauseTimestamp = null;
     }
+
+    function pauseActiveTimers() {
+      if (timerInterval) {
+        lastPauseTimestamp = Date.now();
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resumeActiveTimers() {
+      if (lastPauseTimestamp && !gameState.gameOver && !gameState.executedToday) {
+        const elapsedSeconds = Math.floor((Date.now() - lastPauseTimestamp) / 1000);
+        gameState.timeLeftSeconds = Math.max(0, gameState.timeLeftSeconds - elapsedSeconds);
+        lastPauseTimestamp = null;
+        updateTimerDisplay();
+
+        if (gameState.timeLeftSeconds <= 0) {
+          if (gameState.subPhase === 'discussion') {
+            startDecisionTimer();
+          } else if (gameState.subPhase === 'decision') {
+            handleDecisionTimeUp();
+          }
+          return;
+        }
+
+        if (gameState.subPhase === 'discussion') {
+          timerInterval = setInterval(() => {
+            if (gameState.timeLeftSeconds > 0) {
+              gameState.timeLeftSeconds--;
+              updateTimerDisplay();
+            } else {
+              stopAllTimers();
+              startDecisionTimer();
+            }
+          }, 1000);
+        } else if (gameState.subPhase === 'decision') {
+          timerInterval = setInterval(() => {
+            if (gameState.timeLeftSeconds > 0) {
+              gameState.timeLeftSeconds--;
+              updateTimerDisplay();
+            } else {
+              stopAllTimers();
+              handleDecisionTimeUp();
+            }
+          }, 1000);
+        }
+      }
+    }
+
+    // VisibilityChange イベント監視（タブ切り替え・バックグラウンド移行時のポーズ/再開）
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        isGamePaused = true;
+        pauseActiveTimers();
+        pauseAllAudio();
+        console.log('Game paused: entered background');
+      } else {
+        isGamePaused = false;
+        resumeAllAudio();
+        resumeActiveTimers();
+        console.log('Game resumed: returned to foreground');
+      }
+    });
+
 
     function updateTimerDisplay() {
       const labelEl = document.getElementById('timer-label');
@@ -1492,8 +1601,8 @@
       gameState.phase = '夕方';
 
       const logText = '制限時間内に処刑対象が選択されませんでした。本日の処刑は見送られます。';
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
-      const speakMsg = `${dateText}、 ${logText}`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
+      const speakMsg = `${getDaySpeechText(gameState.day)}、 ${logText}`;
 
       addLogItem(
         'ナレーション',
@@ -1719,17 +1828,17 @@
       gameState.dailyMediumReports = {};
       gameState.morningComments = {};
 
-      const dateText = `Day 1 (${gameState.phase})`;
-      const morningNewsText = `初日の朝、昨夜の犠牲者は居ませんでした。全員無事です。これより第 1 日の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
+      const dateText = `${formatDay(1)} (${gameState.phase})`;
+      const morningNewsText = `初日の朝、昨夜の犠牲者は居ませんでした。全員無事です。これより1日目の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
       addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
-      await playSpeechAsync(`${dateText}…… ${morningNewsText}`);
+      await playSpeechAsync(`${getDaySpeechText(1)}…… ${morningNewsText}`);
 
       // Baker Report
       const bakerChar = gameState.charList.find(c => gameState.roles[c] === 'baker');
       if (bakerChar && gameState.status[bakerChar] === 'alive') {
         const bakerText = '「今朝もおいしい焼きたてパンが焼き上がりました！」';
         addLogItem('🍞 パン屋より', '', bakerText, 'baker', null, false);
-        await playSpeechAsync(`${dateText}…… ${bakerText}`);
+        await playSpeechAsync(`${getDaySpeechText(1)}…… ${bakerText}`);
       }
 
       performNightAbilities();
@@ -1761,25 +1870,25 @@
       const victims = gameState.lastNightVictims || [];
       let victimText = '';
       if (victims.length === 0) {
-        victimText = `Day ${gameState.day} の朝…… 昨夜の犠牲者は居ませんでした。全員無事です。`;
+        victimText = `${formatDay(gameState.day)}の朝…… 昨夜の犠牲者は居ませんでした。全員無事です。`;
       } else if (victims.length === 1) {
-        victimText = `Day ${gameState.day} の朝…… 昨夜、村人 ${victims[0]} が冷たい遺体となって発見されました。`;
+        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、村人 ${victims[0]} が冷たい遺体となって発見されました。`;
       } else if (victims.length >= 2) {
-        victimText = `Day ${gameState.day} の朝…… 昨夜、村人 ${victims.join(' と 村人 ')} が冷たい遺体となって発見されました。`;
+        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、村人 ${victims.join(' と 村人 ')} が冷たい遺体となって発見されました。`;
       }
 
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
-      const morningNewsText = `${victimText} これより第 ${gameState.day} 日の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
+      const morningNewsText = `${victimText} これより${formatDay(gameState.day)}の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
 
       addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
-      await playSpeechAsync(`${dateText}…… ${morningNewsText}`);
+      await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${morningNewsText}`);
 
       // Baker Report
       const bakerChar = gameState.charList.find(c => gameState.roles[c] === 'baker');
       if (bakerChar && gameState.status[bakerChar] === 'alive') {
         const bakerText = '「今朝もおいしい焼きたてパンが焼き上がりました！」';
         addLogItem('🍞 パン屋より', '', bakerText, 'baker', null, false);
-        await playSpeechAsync(`${dateText}…… ${bakerText}`);
+        await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${bakerText}`);
       }
 
       performNightAbilities();
@@ -1884,11 +1993,11 @@
       let coText = '';
       if (roleType === 'seer') {
         const history = gameState.seerHistory[char] || [];
-        const historyStr = history.map(h => `Day ${h.day}: 村人 ${h.target}【${h.result}】`).join('、 ');
+        const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
         coText = `「私は潜伏していた本物の占い師です！過去の全鑑定結果を報告します。 ${historyStr}」`;
       } else if (roleType === 'medium') {
         const history = gameState.mediumHistory[char] || [];
-        const historyStr = history.map(h => `Day ${h.day}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
+        const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
         coText = `「私は潜伏していた霊媒師です！過去の霊媒結果を一括開示します。 ${historyStr}」`;
       }
 
@@ -1918,7 +2027,7 @@
         if (coRole === 'seer') {
           const history = gameState.seerHistory[char] || [];
           if (history.length > 1) {
-            const historyStr = history.map(h => `Day ${h.day}: ${h.target}【${h.result}】`).join('、 ');
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${h.target}【${h.result}】`).join('、 ');
             gameState.morningComments[char] = `「占い師CO。全結果を報告します。 ${historyStr}」`;
           } else {
             const rep = gameState.dailySeerReports[char];
@@ -1931,7 +2040,7 @@
         } else if (coRole === 'medium') {
           const history = gameState.mediumHistory[char] || [];
           if (history.length > 1) {
-            const historyStr = history.map(h => `Day ${h.day}: ${h.target}【${h.result}】`).join('、 ');
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${h.target}【${h.result}】`).join('、 ');
             gameState.morningComments[char] = `「霊媒師CO。これまでの霊媒結果一括です。 ${historyStr}」`;
           } else {
             const rep = gameState.dailyMediumReports[char];
@@ -1970,11 +2079,11 @@
           hasReport = true;
           const history = gameState.seerHistory[char] || [];
           history.forEach(h => {
-            const text = `村人 ${char} 占いCO。Day ${h.day} 占い: 村人 ${h.target} は ${h.result}。`;
+            const text = `村人 ${char} 占いCO。${formatDay(h.day)} 占い: 村人 ${h.target} は ${h.result}。`;
             const item = document.createElement('div');
             item.className = 'bulletin-item';
             item.innerHTML = `
-              <div>🔮 <strong>村人 ${char} (占いCO)</strong> ➡️ [Day ${h.day}] 村人 <strong>${h.target}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
+              <div>🔮 <strong>村人 ${char} (占いCO)</strong> ➡️ [${formatDay(h.day)}] 村人 <strong>${h.target}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
               <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
             `;
             list.appendChild(item);
@@ -1983,11 +2092,11 @@
           hasReport = true;
           const history = gameState.mediumHistory[char] || [];
           history.forEach(h => {
-            const text = `村人 ${char} 霊媒CO。Day ${h.day} 霊媒: 処刑者 ${h.target} は ${h.result}。`;
+            const text = `村人 ${char} 霊媒CO。${formatDay(h.day)} 霊媒: 処刑者 ${h.target} は ${h.result}。`;
             const item = document.createElement('div');
             item.className = 'bulletin-item';
             item.innerHTML = `
-              <div>👻 <strong>村人 ${char} (霊媒CO)</strong> ➡️ [Day ${h.day}] 処刑者 <strong>${h.target}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
+              <div>👻 <strong>村人 ${char} (霊媒CO)</strong> ➡️ [${formatDay(h.day)}] 処刑者 <strong>${h.target}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
               <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
             `;
             list.appendChild(item);
@@ -2026,7 +2135,7 @@
 
     // Render Status Bar
     function renderStatus() {
-      document.getElementById('day-display').textContent = `Day ${gameState.day}`;
+      document.getElementById('day-display').textContent = formatDay(gameState.day);
       document.getElementById('life-display').textContent = `残り${gameState.mistakesLeft}回`;
       updateTimerDisplay();
 
@@ -2385,11 +2494,11 @@
       const item = document.createElement('div');
       item.className = `log-item ${typeClass}`;
       
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
 
       let speechTitle = (title === 'ナレーション') ? '' : title;
       
-      const speakMsg = `${dateText}…… ${question ? question + '。' : ''} ${answer}`;
+      const speakMsg = `${getDaySpeechText(gameState.day)}の${gameState.phase}…… ${question ? question + '。' : ''} ${answer}`;
 
       item.innerHTML = `
         <div class="log-header">
@@ -2432,8 +2541,8 @@
       }
 
       const logText = `【判決：処刑実行】村人 ${char} の処刑を執り行いました。正体は明かされません。（翌朝の霊媒結果をお待ちください）`;
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
-      const speakMsg = `${dateText}、 ${logText}`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
+      const speakMsg = `${getDaySpeechText(gameState.day)}、 ${logText}`;
 
       addLogItem(
         'ナレーション', 
@@ -2467,8 +2576,8 @@
       gameState.phase = '夕方';
 
       const skipMsg = '【判決：処刑見送り】本日の処刑を見送ります。誰も処刑されません。そのまま夜を迎えてください。';
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
-      const speakMsg = `${dateText}、 ${skipMsg}`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
+      const speakMsg = `${getDaySpeechText(gameState.day)}、 ${skipMsg}`;
 
       addLogItem(
         'ナレーション',
@@ -2511,8 +2620,8 @@
 
       // Step 1: Night Log & Speech
       const nightLogText = '街に静けさが戻り、夜が訪れました。人狼たちが闇の中で密かに動き出します……';
-      const dateText = `Day ${gameState.day} (${gameState.phase})`;
-      const nightSpeakMsg = `${dateText}、 ${nightLogText}`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
+      const nightSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${nightLogText}`;
 
       addLogItem('ナレーション', '', nightLogText, 'narration', null, false);
 
@@ -2565,11 +2674,11 @@
       gameState.day++;
       wolfEyes.classList.remove('visible');
       titleEl.textContent = '☀️ 黎明の訪れ ☀️';
-      descEl.innerHTML = `― 夜が明け、第 ${gameState.day} 日の朝が来ました ―<br>朝の光が村を包み込みます…`;
+      descEl.innerHTML = `― 夜が明け、${formatDay(gameState.day)}の朝が来ました ―<br>朝の光が村を包み込みます…`;
 
       const dawnLogText = '夜が明け、朝がやってきました。';
-      const dawnDateText = `Day ${gameState.day} (朝)`;
-      const dawnSpeakMsg = `${dawnDateText}、 ${dawnLogText}`;
+      const dawnDateText = `${formatDay(gameState.day)} (朝)`;
+      const dawnSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${dawnLogText}`;
 
       addLogItem('ナレーション', '', dawnLogText, 'narration', null, false);
 
