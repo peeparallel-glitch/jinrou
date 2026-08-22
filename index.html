@@ -1579,7 +1579,7 @@
     }
 
     // Direct Initial Morning Setup for Day 1
-    function setupDayOneDirectly() {
+    async function setupDayOneDirectly() {
       playBgm('asa');
       gameState.phase = '朝';
       gameState.subPhase = 'discussion';
@@ -1588,13 +1588,17 @@
       gameState.dailyMediumReports = {};
       gameState.morningComments = {};
 
+      const dateText = `Day 1 (${gameState.phase})`;
       const morningNewsText = `初日の朝、昨夜の犠牲者は居ませんでした。全員無事です。これより第 1 日の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
-      addLogItem('ナレーション', '', morningNewsText, 'narration', null, true);
+      addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
+      await playSpeechAsync(`${dateText}…… ${morningNewsText}`);
 
       // Baker Report
       const bakerChar = gameState.charList.find(c => gameState.roles[c] === 'baker');
       if (bakerChar && gameState.status[bakerChar] === 'alive') {
-        addLogItem('🍞 パン屋より', '', '「今朝もおいしい焼きたてパンが焼き上がりました！」', 'baker', null, false);
+        const bakerText = '「今朝もおいしい焼きたてパンが焼き上がりました！」';
+        addLogItem('🍞 パン屋より', '', bakerText, 'baker', null, false);
+        await playSpeechAsync(`${dateText}…… ${bakerText}`);
       }
 
       performNightAbilities();
@@ -1613,7 +1617,7 @@
     }
 
     // Step 2: Post-Unblind Morning Phase Process
-    function startMorningPostUnblind() {
+    async function startMorningPostUnblind() {
       playBgm('asa');
       gameState.phase = '朝';
       gameState.subPhase = 'discussion';
@@ -1632,14 +1636,18 @@
         victimText = `Day ${gameState.day} の朝…… 昨夜、村人 ${victims.join(' と 村人 ')} が冷たい遺体となって発見されました。`;
       }
 
+      const dateText = `Day ${gameState.day} (${gameState.phase})`;
       const morningNewsText = `${victimText} これより第 ${gameState.day} 日の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
 
-      addLogItem('ナレーション', '', morningNewsText, 'narration', null, true);
+      addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
+      await playSpeechAsync(`${dateText}…… ${morningNewsText}`);
 
       // Baker Report
       const bakerChar = gameState.charList.find(c => gameState.roles[c] === 'baker');
       if (bakerChar && gameState.status[bakerChar] === 'alive') {
-        addLogItem('🍞 パン屋より', '', '「今朝もおいしい焼きたてパンが焼き上がりました！」', 'baker', null, false);
+        const bakerText = '「今朝もおいしい焼きたてパンが焼き上がりました！」';
+        addLogItem('🍞 パン屋より', '', bakerText, 'baker', null, false);
+        await playSpeechAsync(`${dateText}…… ${bakerText}`);
       }
 
       performNightAbilities();
@@ -2190,12 +2198,7 @@
 
       let speechTitle = (title === 'ナレーション') ? '' : title;
       
-      let speakMsg = '';
-      if (speechTitle) {
-        speakMsg = `${speechTitle}。${dateText}。${question ? question + '。' : ''} ${answer}`;
-      } else {
-        speakMsg = `${dateText}、${question ? question + '。' : ''} ${answer}`;
-      }
+      const speakMsg = `${dateText}…… ${question ? question + '。' : ''} ${answer}`;
 
       item.innerHTML = `
         <div class="log-header">
