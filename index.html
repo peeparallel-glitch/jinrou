@@ -1051,12 +1051,12 @@
         font-size: 0.78rem !important;
       }
 
-      /* ③ 最下部：「処刑決断へ進む」ボタン（スクロール領域の外、最下部に常時固定） */
+      /* ③ 自由質問フォームのすぐ直下に配置される処刑決断移行ボタンコンテナ */
       .execution-transition-container {
         flex: 0 0 auto;
-        margin-top: 0.25rem;
-        padding-top: 0.25rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        margin-top: 0.35rem;
+        padding-top: 0.35rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
       }
 
       .btn-goto-decision {
@@ -1184,20 +1184,21 @@
                 <input type="text" id="custom-question-input" class="custom-question-input" placeholder="自由質問（例: 昨日〇〇さんを占った理由は？）" disabled onkeydown="if(event.key==='Enter') askCustomQuestion()">
                 <button class="btn btn-custom-question" id="btn-custom-q" onclick="askCustomQuestion()" disabled>質問する</button>
               </div>
-            </div>
 
-            <div class="execution-transition-container">
-              <button class="btn btn-goto-decision" id="btn-goto-decision" onclick="startDecisionTimer()" disabled>
-                ⚖ 処刑決断へ進む（議論終了）
-              </button>
+              <!-- 質問入力欄のすぐ直下に配置 -->
+              <div class="execution-transition-container">
+                <button class="btn btn-goto-decision" id="btn-goto-decision" onclick="startDecisionTimer()" disabled>
+                  ⚖ 処刑決断へ進む（議論終了）
+                </button>
 
-              <div class="execute-action-row" id="execute-action-row" style="display: none;">
-                <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
-                  選択者を処刑
-                </button>
-                <button class="btn btn-skip-execute" id="btn-skip-execute" onclick="skipExecution()" disabled>
-                  誰も処刑しない
-                </button>
+                <div class="execute-action-row" id="execute-action-row" style="display: none;">
+                  <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
+                    選択者を処刑
+                  </button>
+                  <button class="btn btn-skip-execute" id="btn-skip-execute" onclick="skipExecution()" disabled>
+                    誰も処刑しない
+                  </button>
+                </div>
               </div>
             </div>
             
