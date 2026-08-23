@@ -1108,9 +1108,10 @@
       .log-timeline {
         flex: 1 1 auto;
         min-height: 0;
-        overflow-y: auto;
+        overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 2.5rem)) !important;
+        padding-bottom: 120px !important;
+        box-sizing: border-box;
       }
     }
   </style>
