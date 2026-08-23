@@ -84,6 +84,17 @@
       background-color: var(--bg-color);
     }
 
+    /* フルスクリーンAPI発動時の高度固定・溢れ防止 */
+    :fullscreen #game-screen,
+    :-webkit-full-screen #game-screen,
+    :-ms-fullscreen #game-screen {
+      height: 100vh !important;
+      height: 100dvh !important;
+      max-height: 100vh !important;
+      max-height: 100dvh !important;
+      overflow: hidden !important;
+    }
+
     /* --- 朝フェーズ --- */
     #game-screen[data-phase="morning"] {
       background-image: linear-gradient(rgba(10, 12, 20, 0.5), rgba(10, 12, 20, 0.6)), url('./IMG/asa.jpg');
@@ -1099,7 +1110,7 @@
         min-height: 0;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: env(safe-area-inset-bottom, 8px);
+        padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 2.5rem)) !important;
       }
     }
   </style>
