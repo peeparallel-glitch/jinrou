@@ -931,17 +931,34 @@
        スマホ縦画面（orientation: portrait）レイアウト最適化
        「処刑決断へ進む」ボタン常時固定＆視認性確保
        ===================================================== */
+    /* =====================================================
+       スマホ縦画面（orientation: portrait）レイアウト最適化
+       上下2段分離・独立スクロール＆「処刑決断へ進む」ボタン最下部常時固定
+       ===================================================== */
     @media (orientation: portrait) {
+      .viewport-area {
+        height: calc(100dvh - 100px);
+        overflow: hidden;
+      }
+
+      /* 画面全体（ビューページ）の二重スクロールを防止 */
       .view-page {
         padding: 0.4rem 0.5rem;
         gap: 0.4rem;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
 
-      /* ① 村人カードエリア（上部）の縦幅コンパクト化 */
+      /* ① 上部：村人カードエリア（必要に応じて内部独立スクロール） */
       .character-grid {
-        max-height: 220px;
+        flex: 0 0 auto;
+        max-height: 38vh;
+        overflow-y: auto;
         gap: 0.35rem;
         grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+        padding-right: 0.15rem;
       }
 
       .char-card {
@@ -971,15 +988,35 @@
         font-size: 0.62rem;
       }
 
-      /* ② 質問・尋問エリア（中央部）のコンパクト化 */
+      /* ② 下部：質問＆処刑パネル（独立スクロール＋最下部固定ボタン構造） */
       .interrogation-panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
         padding: 0.5rem;
-        gap: 0.35rem;
-        margin-top: auto;
+        gap: 0.3rem;
+        margin-top: 0;
+        overflow: hidden;
+        background: rgba(15, 20, 30, 0.88);
+        border-radius: 10px;
       }
 
       .target-info {
         font-size: 0.82rem;
+        flex-shrink: 0;
+      }
+
+      /* 質問項目リストを縦スクロール可能にするコンテナ */
+      .question-scroll-container {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding-right: 0.15rem;
       }
 
       .question-buttons {
@@ -989,12 +1026,11 @@
       .btn-question {
         padding: 0.45rem 0.6rem !important;
         font-size: 0.78rem !important;
-        line-height: 1.2 !important;
+        line-height: 1.25 !important;
       }
 
-      /* ③ 自由質問＆処刑ボタンエリア（下部）の固定・視認性確保 */
       .custom-question-box {
-        margin-top: 0.15rem !important;
+        margin-top: 0.1rem !important;
         gap: 0.3rem;
       }
 
@@ -1008,18 +1044,25 @@
         font-size: 0.78rem !important;
       }
 
-      /* 「⚖ 処刑決断へ進む」ボタンを最下部に常時固定＆潰れないように保護 */
+      /* ③ 最下部：「処刑決断へ進む」ボタン（スクロール領域の外、最下部に常時固定） */
+      .execution-transition-container {
+        flex: 0 0 auto;
+        margin-top: 0.25rem;
+        padding-top: 0.25rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
       .btn-goto-decision {
-        margin-top: 0.25rem !important;
+        margin-top: 0 !important;
         padding: 0.65rem 0.8rem !important;
-        font-size: 0.88rem !important;
+        font-size: 0.9rem !important;
         width: 100%;
         flex-shrink: 0;
         box-shadow: 0 3px 10px rgba(225, 29, 72, 0.4);
       }
 
       .execute-action-row {
-        margin-top: 0.25rem !important;
+        margin-top: 0.2rem !important;
         flex-shrink: 0;
       }
 
@@ -1117,34 +1160,38 @@
           <div class="interrogation-panel">
             <div id="target-info" class="target-info">尋問・処刑する人物を選択してください</div>
             
-            <div class="question-buttons">
-              <button class="btn btn-question" id="btn-q1" onclick="askQuestion(1)" disabled>
-                1. 「朝の発言について詳しく教えて」
-              </button>
-              <button class="btn btn-question" id="btn-q2" onclick="askQuestion(2)" disabled>
-                2. 「昨夜のアリバイや行動は？」
-              </button>
-              <button class="btn btn-question" id="btn-q3" onclick="askQuestion(3)" disabled>
-                3. 「今日誰を処刑すべきだと思う？」
-              </button>
+            <div class="question-scroll-container">
+              <div class="question-buttons">
+                <button class="btn btn-question" id="btn-q1" onclick="askQuestion(1)" disabled>
+                  1. 「朝の発言について詳しく教えて」
+                </button>
+                <button class="btn btn-question" id="btn-q2" onclick="askQuestion(2)" disabled>
+                  2. 「昨夜のアリバイや行動は？」
+                </button>
+                <button class="btn btn-question" id="btn-q3" onclick="askQuestion(3)" disabled>
+                  3. 「今日誰を処刑すべきだと思う？」
+                </button>
+              </div>
+
+              <div class="custom-question-box">
+                <input type="text" id="custom-question-input" class="custom-question-input" placeholder="自由質問（例: 昨日〇〇さんを占った理由は？）" disabled onkeydown="if(event.key==='Enter') askCustomQuestion()">
+                <button class="btn btn-custom-question" id="btn-custom-q" onclick="askCustomQuestion()" disabled>質問する</button>
+              </div>
             </div>
 
-            <div class="custom-question-box">
-              <input type="text" id="custom-question-input" class="custom-question-input" placeholder="自由質問（例: 昨日〇〇さんを占った理由は？）" disabled onkeydown="if(event.key==='Enter') askCustomQuestion()">
-              <button class="btn btn-custom-question" id="btn-custom-q" onclick="askCustomQuestion()" disabled>質問する</button>
-            </div>
-
-            <button class="btn btn-goto-decision" id="btn-goto-decision" onclick="startDecisionTimer()" disabled>
-              ⚖ 処刑決断へ進む（議論終了）
-            </button>
-
-            <div class="execute-action-row" id="execute-action-row" style="display: none;">
-              <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
-                選択者を処刑
+            <div class="execution-transition-container">
+              <button class="btn btn-goto-decision" id="btn-goto-decision" onclick="startDecisionTimer()" disabled>
+                ⚖ 処刑決断へ進む（議論終了）
               </button>
-              <button class="btn btn-skip-execute" id="btn-skip-execute" onclick="skipExecution()" disabled>
-                誰も処刑しない
-              </button>
+
+              <div class="execute-action-row" id="execute-action-row" style="display: none;">
+                <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
+                  選択者を処刑
+                </button>
+                <button class="btn btn-skip-execute" id="btn-skip-execute" onclick="skipExecution()" disabled>
+                  誰も処刑しない
+                </button>
+              </div>
             </div>
             
             <div id="action-warning" class="warning-box" style="display: none;">
