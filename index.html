@@ -71,6 +71,12 @@
     }
 
     #game-screen {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -940,15 +946,18 @@
        ===================================================== */
     @media (orientation: portrait) {
       .viewport-area {
-        height: calc(100dvh - 100px);
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100%;
         overflow: hidden;
       }
 
-      /* 画面全体（ビューページ）の二重スクロールを防止 */
+      /* 画面全体（ビューページ）の二重スクロールを防止＆最下部セーフエリア考慮 */
       .view-page {
-        padding: 0.4rem 0.5rem;
+        padding: 0.4rem 0.5rem max(0.5rem, env(safe-area-inset-bottom, 0.5rem)) 0.5rem;
         gap: 0.4rem;
         height: 100%;
+        box-sizing: border-box;
         overflow: hidden;
         display: flex;
         flex-direction: column;
