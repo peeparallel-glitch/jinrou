@@ -401,6 +401,34 @@
       background-color: rgba(16, 18, 28, 0.85);
     }
 
+    /* 脱落・死亡した村人カードのトーンダウン＆赤い❌マークオーバレイ表示 */
+    .char-card.is-dead {
+      opacity: 0.62;
+      filter: grayscale(40%);
+      background-color: rgba(35, 12, 18, 0.92) !important;
+      border-color: rgba(225, 29, 72, 0.5) !important;
+      position: relative;
+    }
+
+    .char-card.is-dead::after {
+      content: "❌";
+      position: absolute;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.2rem;
+      color: #ef4444;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(239, 68, 68, 0.7);
+      pointer-events: none;
+      z-index: 10;
+      animation: popCross 0.3s ease-out;
+    }
+
+    @keyframes popCross {
+      0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
     .char-avatar {
       width: 32px;
       height: 32px;
@@ -2372,6 +2400,7 @@
         const isAlive = gameState.status[char] === 'alive';
         if (!isAlive) {
           card.classList.add('disabled');
+          card.classList.add('is-dead');
         }
 
         const coRole = gameState.coRoles[char];
