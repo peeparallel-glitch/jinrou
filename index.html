@@ -936,31 +936,28 @@
 
     /* =====================================================
        スマホ縦画面（orientation: portrait）レイアウト最適化
-       画面下部余白完全削除＆「処刑決断ボタン」底面吸着固定
+       「処刑決断へ進む」ボタン常時固定＆視認性確保
        ===================================================== */
     @media (orientation: portrait) {
-      /* 1. ビューポート高さ（100dvh）に厳密固定し下部余白を排除 */
       .viewport-area {
-        height: calc(100dvh - 90px);
-        max-height: calc(100dvh - 90px);
+        height: calc(100dvh - 100px);
         overflow: hidden;
       }
 
+      /* 画面全体（ビューページ）の二重スクロールを防止 */
       .view-page {
-        padding: 6px 6px env(safe-area-inset-bottom, 6px) 6px;
-        gap: 6px;
+        padding: 0.4rem 0.5rem;
+        gap: 0.4rem;
         height: 100%;
-        max-height: 100%;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        box-sizing: border-box;
       }
 
-      /* 2. 上部：村人一覧エリア（余剰スペースに応じて伸縮・大人数時は縦スクロール） */
+      /* ① 上部：村人カードエリア（必要に応じて内部独立スクロール） */
       .character-grid {
-        flex: 1 1 auto;
-        min-height: 0;
+        flex: 0 0 auto;
+        max-height: 38vh;
         overflow-y: auto;
         gap: 0.35rem;
         grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
@@ -994,18 +991,18 @@
         font-size: 0.62rem;
       }
 
-      /* 3. 下部：質問・処刑エリア（自身の高さにぴったり合わせ底面に吸着） */
+      /* ② 下部：質問＆処刑パネル（独立スクロール＋最下部固定ボタン構造） */
       .interrogation-panel {
-        flex: 0 0 auto;
+        flex: 1 1 auto;
+        min-height: 0;
         display: flex;
         flex-direction: column;
-        background: rgba(15, 20, 30, 0.95);
-        border-radius: 10px;
-        padding: 8px;
-        box-sizing: border-box;
-        margin-top: auto; /* 余剰スペースを上側に追いやり画面底面に吸着 */
-        gap: 4px;
+        padding: 0.5rem;
+        gap: 0.3rem;
+        margin-top: 0;
         overflow: hidden;
+        background: rgba(15, 20, 30, 0.88);
+        border-radius: 10px;
       }
 
       .target-info {
@@ -1013,66 +1010,68 @@
         flex-shrink: 0;
       }
 
+      /* 質問項目リストを縦スクロール可能にするコンテナ */
       .question-scroll-container {
-        flex: 0 0 auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 0.3rem;
+        padding-right: 0.15rem;
       }
 
       .question-buttons {
-        gap: 4px;
+        gap: 0.25rem;
       }
 
       .btn-question {
-        padding: 6px 10px !important;
-        font-size: 0.85rem !important;
+        padding: 0.45rem 0.6rem !important;
+        font-size: 0.78rem !important;
         line-height: 1.25 !important;
       }
 
       .custom-question-box {
-        margin-top: 2px !important;
-        gap: 6px;
+        margin-top: 0.1rem !important;
+        gap: 0.3rem;
       }
 
       .custom-question-input {
-        padding: 6px 8px !important;
-        font-size: 0.85rem !important;
+        padding: 0.45rem 0.5rem !important;
+        font-size: 0.78rem !important;
       }
 
       .btn-custom-question {
-        padding: 6px 12px !important;
-        font-size: 0.85rem !important;
+        padding: 0.45rem 0.7rem !important;
+        font-size: 0.78rem !important;
       }
 
-      /* 4. 最下部：処刑決断ボタン（自由質問のすぐ直下に隙間なく密着） */
+      /* ③ 自由質問フォームのすぐ直下に配置される処刑決断移行ボタンコンテナ */
       .execution-transition-container {
         flex: 0 0 auto;
-        margin-top: 4px !important;
-        padding-top: 0 !important;
-        border-top: none;
+        margin-top: 0.35rem;
+        padding-top: 0.35rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
       }
 
       .btn-goto-decision {
-        width: 100%;
-        padding: 10px !important;
+        margin-top: 0 !important;
+        padding: 0.65rem 0.8rem !important;
         font-size: 0.9rem !important;
-        font-weight: bold;
-        background: linear-gradient(135deg, #dc2626, #991b1b);
-        color: #ffffff;
-        border: none;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(225, 29, 72, 0.4);
       }
 
       .execute-action-row {
-        margin-top: 4px !important;
+        margin-top: 0.2rem !important;
         flex-shrink: 0;
       }
 
       .btn-execute, .btn-skip-execute {
-        padding: 8px 10px !important;
-        font-size: 0.85rem !important;
+        padding: 0.65rem 0.6rem !important;
+        font-size: 0.82rem !important;
       }
     }
   </style>
