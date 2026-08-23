@@ -1073,6 +1073,25 @@
         padding: 0.65rem 0.6rem !important;
         font-size: 0.82rem !important;
       }
+
+      /* ④ Page 2: 「発言ログ・確定情報」タブの高さ・スクロール領域最適化（最下部枠外はみ出し防止） */
+      .log-header-sections {
+        flex: 0 1 auto;
+        max-height: 42vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        flex-shrink: 0;
+      }
+
+      .log-timeline {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: env(safe-area-inset-bottom, 8px);
+      }
     }
   </style>
 </head>
@@ -1206,33 +1225,35 @@
 
         <!-- PAGE 1: Bulletin & Comments & Log Timeline -->
         <div class="view-page">
-          <!-- Bulletin Board (Collapsible) -->
-          <div class="bulletin-board">
-            <div class="card-header" onclick="toggleCard(this)">
-              <span class="bulletin-title">📜 本日の確定情報（能力報告）</span>
-              <span class="toggle-icon">▼</span>
+          <div class="log-header-sections">
+            <!-- Bulletin Board (Collapsible) -->
+            <div class="bulletin-board">
+              <div class="card-header" onclick="toggleCard(this)">
+                <span class="bulletin-title">📜 本日の確定情報（能力報告）</span>
+                <span class="toggle-icon">▼</span>
+              </div>
+              <div class="card-body collapsed">
+                <div class="bulletin-list" id="bulletin-list">
+                  <!-- Ability Reports dynamically added -->
+                </div>
+              </div>
             </div>
-            <div class="card-body collapsed">
-              <div class="bulletin-list" id="bulletin-list">
-                <!-- Ability Reports dynamically added -->
+
+            <!-- Morning Comments (Collapsible) -->
+            <div class="morning-comments-box">
+              <div class="card-header" onclick="toggleCard(this)">
+                <span class="morning-title">💬 生存者全員の朝コメント一覧</span>
+                <span class="toggle-icon">▼</span>
+              </div>
+              <div class="card-body collapsed">
+                <div class="morning-comments-list" id="morning-comments-list">
+                  <!-- Morning comments dynamically added -->
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Morning Comments (Collapsible) -->
-          <div class="morning-comments-box">
-            <div class="card-header" onclick="toggleCard(this)">
-              <span class="morning-title">💬 生存者全員の朝コメント一覧</span>
-              <span class="toggle-icon">▼</span>
-            </div>
-            <div class="card-body collapsed">
-              <div class="morning-comments-list" id="morning-comments-list">
-                <!-- Morning comments dynamically added -->
-              </div>
-            </div>
-          </div>
-
-          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">タイムライン・尋問ログ</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:bold; flex-shrink:0;">タイムライン・尋問ログ</div>
           <div class="log-timeline" id="log-timeline">
             <!-- Logs dynamically added -->
           </div>
