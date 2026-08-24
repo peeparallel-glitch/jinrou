@@ -159,12 +159,75 @@
       transition: background-image 0.3s ease-in-out;
     }
 
-    /* スマホ・縦画面（portrait）用のメディアクエリ */
-    @media (orientation: portrait) {
-      #title-screen {
-        background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url('./IMG/jinnroutate.jpg');
+    /* --- Splash Screen (Attract Screen) --- */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 10vh;
+      background-image: url('./IMG/o-puningu1.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #splash-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* スマホ・縦長画面用背景設定 */
+    @media (max-aspect-ratio: 1/1), (orientation: portrait) {
+      #splash-screen {
+        background-image: url('./IMG/o-puningu2tate.jpg');
         background-position: center top;
       }
+    }
+
+    /* PC・横長画面用背景設定 */
+    @media (min-aspect-ratio: 1/1) {
+      #splash-screen {
+        background-image: url('./IMG/o-puningu1.jpg');
+        background-position: center;
+      }
+    }
+
+    /* スタート画面のタイトルテキストは非表示（画像内にデザイン済み） */
+    #splash-screen .splash-title-box,
+    #splash-screen .title-text {
+      display: none !important;
+    }
+
+    .splash-start-text {
+      font-family: "Cinzel", "Times New Roman", serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      background: linear-gradient(180deg, #ffffff 0%, #fde68a 50%, #d97706 80%, #78350f 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 15px rgba(217, 119, 6, 0.7));
+      animation: splashBlink 2s infinite ease-in-out;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+
+    @keyframes splashBlink {
+      0%   { opacity: 0.2; transform: scale(0.98); }
+      50%  { opacity: 1.0; transform: scale(1.03); }
+      100% { opacity: 0.2; transform: scale(0.98); }
     }
 
     .title-box {
@@ -1478,6 +1541,13 @@
 </head>
 <body>
 
+  <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
+  <div id="splash-screen" onclick="handleSplashTap(event)" ontouchstart="handleSplashTap(event)">
+    <div class="splash-start-text">
+      TAP TO START
+    </div>
+  </div>
+
   <!-- TITLE SCREEN -->
   <div id="title-screen" class="screen">
     <div class="title-box">
@@ -1975,6 +2045,17 @@
       }
     }
 
+    function stopAllBgm() {
+      Object.keys(bgmTracks).forEach(key => {
+        if (bgmTracks[key]) {
+          bgmTracks[key].pause();
+          bgmTracks[key].currentTime = 0;
+        }
+      });
+      currentBgmKey = null;
+      currentBgm = null;
+    }
+
     // Global Speech Interruption & Cancel Function (AndroidHost + Web Speech API)
     function cancelSpeech() {
       if (window.AndroidHost && typeof window.AndroidHost.stop === 'function') {
@@ -2334,6 +2415,40 @@
       setTimeout(() => updateBackgroundImage(), 100);
     });
 
+    // Attract Splash Screen Tap Handler
+    let isSplashHandled = false;
+
+    function handleSplashTap(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (isSplashHandled) return;
+      isSplashHandled = true;
+
+      // Audio Context・SE初期化
+      initAudio();
+      initVoice();
+
+      // 決定音・スタートSE再生
+      try {
+        const audio = new Audio('BGM/okamiToboe.mp3');
+        audio.volume = 0.4 * (seVolume / 100);
+        audio.play().catch(err => console.log('Splash SE play error:', err));
+      } catch (err) {
+        console.log('Splash audio error:', err);
+      }
+
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.classList.add('fade-out');
+        setTimeout(() => {
+          splash.style.display = 'none';
+          playBgm('title');
+        }, 500);
+      }
+    }
+
     // Mode Selection & Title Screen
     function selectVillageMode(size) {
       selectedVillageSize = size;
@@ -2344,10 +2459,29 @@
     function showTitleScreen() {
       resetGameState();
       renderVillageStats();
-      document.getElementById('title-screen').classList.remove('hidden');
+      stopAllTimers();
+      cancelSpeech();
+
+      // ★ 再生中のすべてのゲーム内BGM (昼の議論BGM等) を完全停止・巻き戻し
+      stopAllBgm();
+
+      // 各画面・モーダル・暗転オーバーレイの非表示
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('seamless-overlay').classList.remove('active');
+
+      // 最初のアトラクト・スタート待機画面 (#splash-screen) を復元表示
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.display = 'flex';
+        splash.classList.remove('fade-out');
+      }
+      isSplashHandled = false;
+
+      // 村選択画面 (#title-screen) も背景に控えておく
+      document.getElementById('title-screen').classList.remove('hidden');
+
+      // ★ タイトル専用BGM (Cathedral BlackoutTITLE.mp3) を頭からループ再生
       playBgm('title');
     }
 
@@ -4048,7 +4182,9 @@
     // Initial setup
     window.onload = () => {
       initVoice();
-      showTitleScreen();
+      resetGameState();
+      renderVillageStats();
+      playBgm('title');
 
       // ユーザーの最初の操作（タップまたはクリック）で全画面化を実行（1回のみ）
       document.addEventListener('touchstart', function initFullScreen() {
