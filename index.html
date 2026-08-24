@@ -669,6 +669,17 @@
       color: var(--text-main);
       border: 1px solid var(--card-border);
       text-align: left;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .btn-question.is-active,
+    .btn-custom-question.is-active {
+      background-color: #d97706 !important;
+      color: #ffffff !important;
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.6) !important;
+      transform: scale(0.97);
+      opacity: 1 !important;
     }
 
     .custom-question-box {
@@ -969,19 +980,33 @@
       overflow: hidden;
     }
 
-    /* フェーズ切り替え用暗転オーバーレイの完全透明化・無効化 */
-    .phase-transition-overlay,
-    .blackout-overlay,
-    .fade-out-screen {
-      display: none !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
+    /* フェーズ切り替え用暗転オーバーレイ */
+    .phase-fade-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background-color: #000000;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .phase-fade-overlay.is-fading {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .seamless-overlay.active {
       opacity: 1;
       pointer-events: auto;
     }
+
+
+
+
 
     .moon-graphic {
       width: 80px;
@@ -1038,6 +1063,7 @@
       color: #f1f5f9;
       max-width: 340px;
       min-height: 5.5rem;
+      white-space: pre-line;
       transition: opacity 0.6s ease;
     }
 
@@ -1629,6 +1655,9 @@
     </div>
   </div>
 
+  <!-- PHASE FADE OVERLAY -->
+  <div id="phase-fade-overlay" class="phase-fade-overlay"></div>
+
   <!-- ENHANCED SEAMLESS NIGHT OVERLAY -->
   <div id="seamless-overlay" class="seamless-overlay">
     <div class="moon-graphic" id="moon-graphic"></div>
@@ -1738,6 +1767,8 @@
       </div>
     </div>
   </div>
+
+
 
   <script>
     // --- BGM Manager & Audio Tracks ---
@@ -1933,9 +1964,25 @@
       }
     }
 
+    // Global Speech Interruption & Cancel Function (AndroidHost + Web Speech API)
+    function cancelSpeech() {
+      if (window.AndroidHost && typeof window.AndroidHost.stop === 'function') {
+        try { window.AndroidHost.stop(); } catch(e) { console.log('AndroidHost.stop error:', e); }
+      }
+      if (window.AndroidHost && typeof window.AndroidHost.cancel === 'function') {
+        try { window.AndroidHost.cancel(); } catch(e) { console.log('AndroidHost.cancel error:', e); }
+      }
+      if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch(e) {}
+      }
+    }
+
     function pauseAllAudio() {
       if (currentBgm && !currentBgm.paused) {
         currentBgm.pause();
+      }
+      if (window.AndroidHost && typeof window.AndroidHost.pause === 'function') {
+        try { window.AndroidHost.pause(); } catch(e) {}
       }
       if (window.speechSynthesis && window.speechSynthesis.speaking) {
         window.speechSynthesis.pause();
@@ -1945,6 +1992,9 @@
     function resumeAllAudio() {
       if (currentBgm && currentBgmKey && currentBgm.paused) {
         currentBgm.play().catch(e => console.log('BGM Resume Error:', e));
+      }
+      if (window.AndroidHost && typeof window.AndroidHost.resume === 'function') {
+        try { window.AndroidHost.resume(); } catch(e) {}
       }
       if (window.speechSynthesis && window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
@@ -2040,17 +2090,49 @@
         .trim();
     }
 
-    // Synchronous Speech Promise Function: Resolves strictly on onend or onerror
+    // Synchronous Speech Promise Function: Supports AndroidHost.speak + Web Speech API Fallback
     function playSpeechAsync(text) {
       return new Promise((resolve) => {
+        cancelSpeech();
+
+        const processedText = formatTextForSpeech(text);
+        if (!processedText) {
+          resolve();
+          return;
+        }
+
+        // --- 1. Android WebView Native Host Support ---
+        if (window.AndroidHost && typeof window.AndroidHost.speak === 'function') {
+          try {
+            console.log('Using AndroidHost.speak for TTS:', processedText);
+            window.AndroidHost.speak(processedText);
+
+            let resolved = false;
+            const done = () => {
+              if (!resolved) {
+                resolved = true;
+                delete window.__androidSpeechDoneCallback;
+                resolve();
+              }
+            };
+
+            window.__androidSpeechDoneCallback = done;
+
+            // Safe duration estimate timer for Android TTS (minimum 1.8s, 200ms per character)
+            const waitMs = Math.max(1800, processedText.length * 200);
+            setTimeout(done, waitMs);
+            return;
+          } catch (e) {
+            console.log('AndroidHost.speak failed, falling back to Web Speech API:', e);
+          }
+        }
+
+        // --- 2. Standard Web Speech API (Fallback) ---
         if (!('speechSynthesis' in window)) {
           resolve();
           return;
         }
 
-        window.speechSynthesis.cancel();
-
-        const processedText = formatTextForSpeech(text);
         const utterance = new SpeechSynthesisUtterance(processedText);
         utterance.lang = 'ja-JP';
 
@@ -2080,6 +2162,13 @@
         window.speechSynthesis.speak(utterance);
       });
     }
+
+    // Android Native Java Callback Interface (Triggered when Android TTS finishes)
+    window.onAndroidSpeechEnd = function() {
+      if (typeof window.__androidSpeechDoneCallback === 'function') {
+        window.__androidSpeechDoneCallback();
+      }
+    };
 
     // Standard Non-Blocking Speech Function for UI & Manual Speaker Buttons
     function speakText(text, onEndCallback = null, isNarration = false, charSeed = null) {
@@ -2441,10 +2530,7 @@
     // Complete Game State & UI Reset Function
     function resetGameState() {
       stopAllTimers();
-
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      cancelSpeech();
 
       // DOM Clear
       const grid = document.getElementById('character-grid');
@@ -2582,40 +2668,54 @@
       });
 
       // Setup Role Intentions & Stealth Choices
+      // 1. 占い師（真占い）: 1日目議論中に原則即時CO
       const seerChar = chars.find(c => gameState.roles[c] === 'seer');
-      const mediumChar = chars.find(c => gameState.roles[c] === 'medium');
-      
       if (seerChar) {
         gameState.claimedRoleTypes[seerChar] = 'seer';
-        // 40% Chance for True Seer to Stealth on Day 1
-        if (Math.random() < 0.40) gameState.isStealthing[seerChar] = true;
-        else gameState.coRoles[seerChar] = 'seer';
+        gameState.isStealthing[seerChar] = false;
+        gameState.coRoles[seerChar] = 'seer';
       }
 
+      // 2. 霊媒師（真霊媒）: 1日目は必ず潜伏し、2日目の朝に昨夜の処刑結果とともにCO
+      const mediumChar = chars.find(c => gameState.roles[c] === 'medium');
       if (mediumChar) {
         gameState.claimedRoleTypes[mediumChar] = 'medium';
-        // 50% Chance for True Medium to Stealth on Day 1
-        if (Math.random() < 0.50) gameState.isStealthing[mediumChar] = true;
-        else gameState.coRoles[mediumChar] = 'medium';
+        gameState.isStealthing[mediumChar] = true; // 初日潜伏セオリー徹底
+        gameState.coRoles[mediumChar] = 'grey';
       }
 
+      // 3. 騎士 (真騎士): 終盤まで絶対潜伏
+      const knightChar = chars.find(c => gameState.roles[c] === 'knight');
+      if (knightChar) {
+        gameState.claimedRoleTypes[knightChar] = 'knight';
+        gameState.isStealthing[knightChar] = true; // 終盤まで絶対潜伏セオリー徹底
+        gameState.coRoles[knightChar] = 'grey';
+      }
+
+      // 4. 共有者: 1日目議論中に即時CO（村の確定白枠作成）
       const masons = chars.filter(c => gameState.roles[c] === 'freemason');
       if (masons.length === 2) {
-        masons.forEach(m => gameState.coRoles[m] = 'freemason');
+        masons.forEach(m => {
+          gameState.coRoles[m] = 'freemason';
+          gameState.isStealthing[m] = false;
+        });
       }
 
-      // Fake CO Candidate (Wolf or Madman)
+      // 5. 騙り役職（人狼・狂人）の騙り役職設定
       const fakeCandidates = chars.filter(c => gameState.roles[c] === 'wolf' || gameState.roles[c] === 'madman');
       if (fakeCandidates.length > 0 && Math.random() < 0.85) {
         const fake1 = pickRandom(fakeCandidates);
         const fakeType = pickRandom(['seer', 'medium']);
         gameState.claimedRoleTypes[fake1] = fakeType;
 
-        // 35% Chance for Fake Role to Stealth on Day 1
-        if (Math.random() < 0.35) {
+        if (fakeType === 'seer') {
+          // 騙り占い師は1日目即時CO
+          gameState.isStealthing[fake1] = false;
+          gameState.coRoles[fake1] = 'seer';
+        } else if (fakeType === 'medium') {
+          // 騙り霊媒師は1日目潜伏し2日目朝に結果発表CO
           gameState.isStealthing[fake1] = true;
-        } else {
-          gameState.coRoles[fake1] = fakeType;
+          gameState.coRoles[fake1] = 'grey';
         }
       }
 
@@ -2708,6 +2808,7 @@
       evaluateStealthCOTriggers();
       generateMorningComments();
 
+      // ★ 朝の報告から昼の議論への遷移（フェードなしで即座にUIを更新）
       renderBulletinBoard();
       renderMorningCommentsBox();
 
@@ -2726,34 +2827,63 @@
       seerClaimants.forEach(char => {
         const realRole = gameState.roles[char];
         const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
-        if (aliveOthers.length === 0) return;
+        if (aliveOthers.length > 0) {
+          const history = gameState.seerHistory[char] || [];
+          const alreadyInspected = history.map(h => h.target);
+          const freshCandidates = aliveOthers.filter(c => !alreadyInspected.includes(c));
+          const candidates = freshCandidates.length > 0 ? freshCandidates : aliveOthers;
 
-        // 連続同一人物の占い回避ロジック（直前の占い先を除外、選択肢枯渇時のみ例外許可）
-        const history = gameState.seerHistory[char] || [];
-        const lastTarget = history.length > 0 ? history[history.length - 1].target : null;
-        const freshCandidates = aliveOthers.filter(c => c !== lastTarget);
-        
-        let target = (freshCandidates.length > 0) ? pickRandom(freshCandidates) : pickRandom(aliveOthers);
-        let result = '人間';
+          let target = candidates[0];
+          let result = '人間';
 
-        if (realRole === 'seer') {
-          result = gameState.roles[target] === 'wolf' ? '人狼' : '人間';
-        } else if (realRole === 'wolf') {
-          const nonWolves = (freshCandidates.length > 0 ? freshCandidates : aliveOthers).filter(c => gameState.roles[c] !== 'wolf');
-          if (nonWolves.length > 0 && Math.random() < 0.6) {
-            target = pickRandom(nonWolves);
-            result = '人狼';
-          } else {
-            result = '人間';
+          if (realRole === 'seer') {
+            // 真占い師: 初日はグレー、2日目以降は議論誘導者・怪しい灰（グレー）優先
+            let bestTarget = candidates[0];
+            let maxScore = -999;
+            candidates.forEach(c => {
+              let score = Math.random() * 10;
+              const coRole = gameState.coRoles[c];
+              if (!coRole || coRole === 'villager') score += 50; // グレー優先
+              if (gameState.roles[c] === 'fox') score += 40;     // 呪殺狙い
+              if (score > maxScore) {
+                maxScore = score;
+                bestTarget = c;
+              }
+            });
+            target = bestTarget;
+            result = gameState.roles[target] === 'wolf' ? '人狼' : '人間';
+
+          } else if (realRole === 'wolf') {
+            // 偽占い師(人狼): 「囲い(仲間に白)」または「対立村人に黒打ち」戦術
+            const fellowWolves = candidates.filter(c => gameState.roles[c] === 'wolf');
+            const nonWolves = candidates.filter(c => gameState.roles[c] !== 'wolf');
+
+            // 40%で仲間を白で囲う、60%で村人に白/黒を打つ
+            if (fellowWolves.length > 0 && Math.random() < 0.4) {
+              target = pickRandom(fellowWolves);
+              result = '人間'; // 囲い白
+            } else if (nonWolves.length > 0) {
+              target = pickRandom(nonWolves);
+              // 30%で黒打ちブラフ、70%で白出し信用稼ぎ
+              result = Math.random() < 0.3 ? '人狼' : '人間';
+            } else {
+              target = candidates[0];
+              result = '人間';
+            }
+
+          } else if (realRole === 'madman') {
+            // 偽占い師(狂人): グレー中心に占う（人狼誤黒出しを避けるため慎重）
+            const greys = candidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager');
+            target = greys.length > 0 ? pickRandom(greys) : pickRandom(candidates);
+            // 70%で白出し（狼囲いを狙う）、30%で村人黒打ち乱立
+            result = Math.random() < 0.3 ? '人狼' : '人間';
           }
-        } else if (realRole === 'madman') {
-          result = pickRandom(['人狼', '人間']);
-        }
 
-        const report = { day: gameState.day, target, result };
-        gameState.dailySeerReports[char] = report;
-        if (!gameState.seerHistory[char]) gameState.seerHistory[char] = [];
-        gameState.seerHistory[char].push(report);
+          const report = { day: gameState.day, target, result };
+          gameState.dailySeerReports[char] = report;
+          if (!gameState.seerHistory[char]) gameState.seerHistory[char] = [];
+          gameState.seerHistory[char].push(report);
+        }
       });
 
       const mediumClaimants = gameState.charList.filter(c => gameState.claimedRoleTypes[c] === 'medium' && gameState.status[c] === 'alive');
@@ -2778,7 +2908,7 @@
       });
     }
 
-    // Stealth CO Decision Logic (Triggers: 1. Black/Wolf Found, 2. Day 2/3 Turn Elapse)
+    // Stealth CO Decision Logic (Enforcing strict role CO theories)
     function evaluateStealthCOTriggers() {
       gameState.charList.forEach(char => {
         if (!gameState.isStealthing[char] || gameState.status[char] !== 'alive') return;
@@ -2786,17 +2916,33 @@
         const roleType = gameState.claimedRoleTypes[char];
         let shouldCO = false;
 
-        // Trigger 1: Seer found a Wolf!
+        // 1. 霊媒師（真霊媒・偽霊媒）: 2日目の朝、昨夜の処刑結果が存在する場合に一斉潜伏解除CO！
+        if (roleType === 'medium' && gameState.day >= 2 && gameState.lastExecutedChar) {
+          shouldCO = true;
+        }
+
+        // 2. 例外（初日対抗霊媒COトリガー）: 1日目に他のNPC/プレイヤーが霊媒COした場合、乗っ取り防止のため対抗初日CO
+        if (roleType === 'medium' && gameState.day === 1) {
+          const activeMediumCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === 'medium' && gameState.status[c] === 'alive');
+          if (activeMediumCOs.length > 0) {
+            shouldCO = true; // 乗っ取り防止対抗初日CO
+          }
+        }
+
+        // 3. 占い師（潜伏中の場合）: 人狼判定を発見したか、2日目以降に一斉CO
         if (roleType === 'seer') {
           const lastRep = gameState.dailySeerReports[char];
-          if (lastRep && lastRep.result === '人狼') {
+          if ((lastRep && lastRep.result === '人狼') || gameState.day >= 2) {
             shouldCO = true;
           }
         }
 
-        // Trigger 2: Turn elapsed (Day 2 or Day 3)
-        if (gameState.day >= 3 || (gameState.day >= 2 && Math.random() < 0.65)) {
-          shouldCO = true;
+        // 4. 騎士 (真騎士): 終盤（生存人数3人以下）に到達した場合のみCO
+        if (roleType === 'knight') {
+          const aliveTotal = gameState.charList.filter(c => gameState.status[c] === 'alive').length;
+          if (aliveTotal <= 3) {
+            shouldCO = true;
+          }
         }
 
         if (shouldCO) {
@@ -2817,14 +2963,21 @@
       if (roleType === 'seer') {
         const history = gameState.seerHistory[char] || [];
         const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
-        coText = `「私は潜伏していた本物の占い師です！過去の全鑑定結果を報告します。 ${historyStr}」`;
+        coText = `「私は占い師です！これまでの全鑑定結果を開示します。 ${historyStr}」`;
       } else if (roleType === 'medium') {
-        const history = gameState.mediumHistory[char] || [];
-        const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
-        coText = `「私は潜伏していた霊媒師です！過去の霊媒結果を一括開示します。 ${historyStr}」`;
+        const rep = gameState.dailyMediumReports[char];
+        if (rep && rep.target) {
+          coText = `「【霊媒師CO】昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした！」`;
+        } else {
+          const history = gameState.mediumHistory[char] || [];
+          const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
+          coText = `「私は霊媒師です！過去の全霊媒結果を一括報告します。 ${historyStr}」`;
+        }
+      } else if (roleType === 'knight') {
+        coText = `「【騎士CO】私は本物の【騎士】です！人狼の襲撃から村人を防衛していました。私を処刑しないでください！」`;
       }
 
-      addLogItem(`📢 潜伏CO: 村人 ${char}`, '', coText, 'narration', char, false);
+      addLogItem(`📢 役職CO: 村人 ${char}`, '', coText, 'narration', char, false);
     }
 
     // Self-Preservation CO Trigger (When Interrogated / Under Suspicion)
@@ -2837,7 +2990,7 @@
       }
     }
 
-    // Generate Morning Comments
+    // Generate Morning Comments (Highly Dynamic & Context-Aware)
     function generateMorningComments() {
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
 
@@ -2845,19 +2998,19 @@
         const coRole = gameState.coRoles[char];
         const realRole = gameState.roles[char];
         const aliveOthers = aliveChars.filter(c => c !== char);
-        const target = pickRandom(aliveOthers);
+        const target = pickRandom(aliveOthers) || 'A';
 
         if (coRole === 'seer') {
           const history = gameState.seerHistory[char] || [];
           if (history.length > 1) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: ${h.target}【${h.result}】`).join('、 ');
-            gameState.morningComments[char] = `「占い師CO。全結果を報告します。 ${historyStr}」`;
+            const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
+            gameState.morningComments[char] = `「占い師CO。これまでの全鑑定結果です。【 ${historyStr} 】」`;
           } else {
             const rep = gameState.dailySeerReports[char];
             if (rep) {
-              gameState.morningComments[char] = `「私は本物の占い師です。昨夜 ${rep.target} さんを占い【${rep.result}】と判明しました。」`;
+              gameState.morningComments[char] = `「真占い師として報告します。昨夜は 村人 ${rep.target} さんを占い、結果は【${rep.result}】でした。」`;
             } else {
-              gameState.morningComments[char] = `「真占い師として村を正解に導きます。皆さんの発言を観察しています。」`;
+              gameState.morningComments[char] = `「私は本物の占い師です。村を誤処刑から守るため、全力を尽くして鑑定します。」`;
             }
           }
         } else if (coRole === 'medium') {
@@ -2865,31 +3018,50 @@
           const rep = gameState.dailyMediumReports[char];
           
           if (rep && rep.target) {
-            // 前夜に処刑者が存在する場合は必ず翌朝の第一声で霊媒結果を発表（真・偽問わず強制）
             if (history.length > 1) {
-              const historyStr = history.map(h => `${formatDay(h.day)}: ${h.target}【${h.result}】`).join('、 ');
-              gameState.morningComments[char] = `「霊媒結果を報告します！昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした。（全過去霊媒歴: ${historyStr}）」`;
+              const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
+              gameState.morningComments[char] = `「霊媒結果の報告です！昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした。（全霊媒履歴: ${historyStr}）」`;
             } else {
               gameState.morningComments[char] = `「霊媒結果を報告します！昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした。」`;
             }
           } else if (history.length > 0) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: ${h.target}【${h.result}】`).join('、 ');
-            gameState.morningComments[char] = `「霊媒師CO。これまでの全霊媒結果の一括報告です。 ${historyStr}」`;
+            const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
+            gameState.morningComments[char] = `「霊媒師CO。これまでの霊媒鑑定結果一覧です。【 ${historyStr} 】」`;
           } else {
-            gameState.morningComments[char] = `「私は霊媒師です。処刑された人物の正体を毎朝明らかにしていきます。」`;
+            gameState.morningComments[char] = `「私は霊媒師です。処刑された人物の真の姿を明らかにしていきます。」`;
           }
         } else if (coRole === 'freemason') {
           const partnerMason = gameState.charList.find(c => c !== char && gameState.roles[c] === 'freemason');
-          gameState.morningComments[char] = `「私たちは【共有者】です（相方: 村人 ${partnerMason}）。二人とも潔白な人間です。」`;
+          gameState.morningComments[char] = `「私たちは【共有者】です（パートナー: 村人 ${partnerMason}）。二人とも絶対に人間であることを保証します。」`;
         } else {
           if (realRole === 'wolf') {
-            gameState.morningComments[char] = `「昨夜は無事でしたね。村人 ${target} さんの発言に少し不自然さを感じます。」`;
+            const commentPattern = pickRandom([
+              `「昨夜も犠牲者が出てしまいましたね……。村人 ${target} さんの発言にどこか防衛的な違和感を感じています。」`,
+              `「夜が無事に明けて安堵しています。ですが、村人 ${target} さんの視点の狭さがどうしても引っかかります。」`,
+              `「人狼の潜伏が巧妙になっていますね。村人 ${target} さんの過去のログと矛盾がないか注視すべきです。」`
+            ]);
+            gameState.morningComments[char] = commentPattern;
           } else if (realRole === 'madman') {
-            gameState.morningComments[char] = `「村人 ${target} さんが怪しい動きをしている気がします。注意すべきです。」`;
+            const commentPattern = pickRandom([
+              `「真実を隠している者がこの中にいます！ 村人 ${target} さんの言動、極めて怪しいですよ！」`,
+              `「占い師や霊媒師の結果だけでなく、発言の不自然さにも目を向けるべきです。村人 ${target} さん、何か隠していませんか？」`,
+              `「村が混乱に陥る前に、発言の二転三転している人物を炙り出しましょう！」`
+            ]);
+            gameState.morningComments[char] = commentPattern;
           } else if (realRole === 'fox') {
-            gameState.morningComments[char] = `「人狼の偽りの証言に騙されないよう、発言の整合性をしっかり見分けましょう。」`;
+            const commentPattern = pickRandom([
+              `「安易な感情論や誘導に乗らないことが肝要です。村人 ${target} さんの意見の整合性をじっくり検証しましょう。」`,
+              `「人狼の甘言に騙されないよう、冷静に盤面を整理して議論を進めたいですね。」`,
+              `「静観しているだけでは見えてこない真実があります。皆様の考察をしっかり聞かせていただきます。」`
+            ]);
+            gameState.morningComments[char] = commentPattern;
           } else {
-            gameState.morningComments[char] = `「無事に朝を迎えられて良かったです。${target} さんの意見に矛盾がないか注目しています。」`;
+            const commentPattern = pickRandom([
+              `「無事に朝を迎えられて良かったです。村人 ${target} さんの発言や視点に矛盾がないか、しっかり観察していきます。」`,
+              `「夜の恐怖に負けず、全員で手掛かりを繋ぎ合わせましょう。村人 ${target} さんの意見に注目しています。」`,
+              `「誤処刑だけは絶対に避けなければなりません。気になる点があればどんなことでも議論に出してください。」`
+            ]);
+            gameState.morningComments[char] = commentPattern;
           }
         }
       });
@@ -3140,57 +3312,117 @@
       }
       return getCustomAnswer(char, '質問');
     }
-    // Dynamic Multi-Angle & Multi-Tone AI Answer Generator
+    // Dynamic Multi-Angle & Context-Aware Human-like AI Answer Generator
     function getCustomAnswer(char, questionText) {
-      checkSelfPreservationCO(char);
+      // ※ 尋問（個別質問）の場での勝手な自己防衛CO暴発を禁止するため、checkSelfPreservationCO は呼び出さない
 
       const coRole = gameState.coRoles[char];
       const realRole = gameState.roles[char];
       const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
-      const q = questionText.toLowerCase();
+      const aliveTotal = aliveOthers.length + 1;
+      const q = (questionText || '').toLowerCase();
 
-      // 1. 質問インテントの厳密解析
-      const isWhy = /なぜ|理由|どうして|選んだ|意図|根拠|きっかけ/.test(q);
+      // 1. 質問インテントの高度・多角的解析
+      const isRoleInquiry = /役職|CO|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職/.test(q);
+      const isWhy = /なぜ|理由|どうして|選んだ|意図|根拠|きっかけ|なんで/.test(q);
       const isTiming = /いつ|タイミング|遅い|初日|今|昨日|段階|遅れ/.test(q);
-      const isDoubt = /対抗|怪し|矛盾|本物|偽物|嘘|信じ|吊|処刑|疑/.test(q);
+      const isDoubt = /対抗|怪し|矛盾|本物|偽物|嘘|信じ|吊|処刑|疑|怪しい/.test(q);
       const isLine = /一緒|協力|かば|繋がり|ライン|仲間|結託/.test(q);
-      const isAlibi = /アリバイ|場所|行動|どこ/.test(q);
-      const isSeerQ = /占|鑑定|結果/.test(q);
+      const isAlibi = /アリバイ|場所|行動|どこ|昨夜|夜|何してた|居場所/.test(q);
+      const isSeerQ = /占|鑑定|結果|白|黒/.test(q);
+      const isTargetQ = /誰|ターゲット|目標|狙い|処刑候補|おすすめ|おすすめは|怪しい人/.test(q);
+      const isWhyMe = /なぜ私|なんで私|私を|自分を|僕を|俺を|私の|質問|お前/.test(q);
 
-      // 対抗者とターゲット
+      // 対抗者・ターゲット・文脈の取得
       const rivalCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === coRole && coRole !== 'grey' && gameState.status[c] === 'alive');
       const rivalName = rivalCOs.length > 0 ? rivalCOs[0] : (aliveOthers[0] || '対抗者');
+      const suspicionTarget = aliveOthers.length > 0 ? pickRandom(aliveOthers) : 'A';
       const report = gameState.dailySeerReports[char];
       const seerTarget = report ? report.target : (aliveOthers[0] || 'A');
       const seerResult = report ? report.result : '人間';
       const morningComment = gameState.morningComments[char] || '';
+      const place = gameState.alibis[char] || '村の広場';
 
-      // 2. 6つの思考アングルと4つのトーンのダイナミック組み合わせ
-      const angle = pickRandom(['log_analysis', 'board_elimination', 'emotion_intuition', 'meta_bluff', 'counter_question', 'line_structure']);
+      // 思考アングルと感情トーンのダイナミック組み合わせ
       const tone = pickRandom(['calm_logical', 'emotional_anxious', 'bold_provocative', 'cautious_humble']);
 
-      // 感情トーン別の「プレフィックス（思考の間・トーン）」
       let prefix = '';
       if (tone === 'calm_logical') {
-        prefix = pickRandom(['「……順を追って論理的に説明しよう。', '「……客観的な事実からお答えしますよ。', '「冷静に分析した背景を語るとね、']);
+        prefix = pickRandom(['「……順を追って論理的に説明しよう。', '「……客観的なログ事実から答えるよ。', '「冷静に盤面を整理した上で言うと、']);
       } else if (tone === 'emotional_anxious') {
-        prefix = pickRandom(['「……っ！ 感情的になって申し訳ないが、聞いてくれ！', '「正直焦っているが、疑われて黙っていられない！', '「……頼むから私の真意を分かってほしい！']);
+        prefix = pickRandom(['「……っ！ 疑われて焦る気持ちもあるが、聞いてほしい！', '「冤罪で誤処刑されるわけにはいかないから真実を語るよ！', '「……頼むから私を真剣に観察してくれ！']);
       } else if (tone === 'bold_provocative') {
-        prefix = pickRandom(['「ふふ、面白い着眼点だね。だが狙いはもっと深い所にある。', '「ははっ！ そう突いてくるとは予想通りだよ！', '「ふん……面白い疑い方をするじゃないか。']);
+        prefix = pickRandom(['「ふふ、鋭い質問だね。だが私の真意はそこじゃない。', '「ははっ！ そう切り込んでくるとは面白い！', '「なるほど、私を揺さぶるつもりかい？']);
       } else {
-        prefix = pickRandom(['「間違っていたら大変恐縮なのですが…', '「自信満々と言えば嘘になりますが、慎重に考えると…', '「……下手なことを言うと誤解されそうですが、']);
+        prefix = pickRandom(['「慎重にお答えさせていただきますが…', '「自信過剰にはなりたくありませんが、分析すると…', '「……私なりの視点をお伝えしますね。']);
       }
 
-      // --- 【A: 占い・鑑定に関する質問（アングル分岐）】 ---
+      // --- 【0. 役職質問・直接CO強制質問 (isRoleInquiry)】 ---
+      if (isRoleInquiry) {
+        if (coRole !== 'grey') {
+          // すでに朝の全体発表等で公式CO済みのキャラの場合
+          let roleName = '能力者';
+          if (coRole === 'seer') roleName = '占い師';
+          if (coRole === 'medium') roleName = '霊媒師';
+          if (coRole === 'freemason') roleName = '共有者';
+          return `${prefix} 私は朝の全体発言の通り【${roleName}】としてCOし、村のために真実を報告しているよ。追加で個別に明かす隠し役職などない。`;
+        } else {
+          // 未CO（潜伏中 / グレー）の場合：尋問の場では絶対に役職を明かさない（CO禁止）！
+          return pickRandom([
+            `${prefix} 個別の尋問の場で軽々に役職を明かすつもりはないよ。人狼に有利な情報を与えるだけだからね。私は一人の人間として盤面を観察している。`,
+            `${prefix} 役職の有無をここで口にするのは村にとって不利益だ。私の発言ログと行動の整合性から、身の潔白を判断してほしい。`,
+            `${prefix} ここで口頭で役職を言ったところで言った者勝ちになるだけさ。私は一村人として客観的な議論の整理に集中しているよ。`
+          ]);
+        }
+      }
+
+      // --- 【1. 誰が怪しいか・処刑ターゲット質問 (isTargetQ)】 ---
+      if (isTargetQ) {
+        if (realRole === 'wolf') { // 【人狼：巧みな印象操作・ターゲット擦り付け】
+          return pickRandom([
+            `${prefix} 現状の生存${aliveTotal}人の発言を精査すると、発言が防衛的で周囲に同調している 村人 ${suspicionTarget} さんの立ち回りが一番危険だ。村を救うため彼を第一処刑候補に推す。`,
+            `${prefix} 私は 村人 ${suspicionTarget} さんの視点の狭さに強い不自然さを感じる。自身が人狼であるからこそ周囲の不整合から目を逸らそうとしているんじゃないかい？`,
+            `${prefix} 議論の開示タイミングを計りすぎている 村人 ${suspicionTarget} さんが最も怪しい。彼に処刑投票を集中させるべきだ。`
+          ]);
+        } else if (realRole === 'madman') { // 【狂人：カオス誘導・人狼アシスト】
+          return `${prefix} 村人 ${suspicionTarget} だよ！ 彼のログには村を破滅に導く狂気が滲み出ている！ 今すぐ彼を処刑して白黒をはっきりさせるべきだ！」`;
+        } else if (realRole === 'fox') { // 【妖狐：静かな観察・俯瞰】
+          return `${prefix} 生存${aliveTotal}人のこの状況で、安易な決め打ちは誤処刑の引き金になる。だが強いて挙げるなら 村人 ${suspicionTarget} の言葉の二転三転が気になるね。」`;
+        } else { // 【村人・真役職：論理的考察】
+          return `${prefix} 過去のログと朝のコメントを照らし合わせた結果、発言の整合性が取れていない 村人 ${suspicionTarget} さんを検証すべき処刑対象と見ている。」`;
+        }
+      }
+
+      // --- 【2. なぜ私を疑うのか質問 (isWhyMe)】 ---
+      if (isWhyMe) {
+        if (realRole === 'wolf') { // 【人狼：被害者ぶる・逆質問・すり替え】
+          return pickRandom([
+            `${prefix} 疑っているのではなく、あなたに『村目（人間）』の証明をしてほしいだけだよ。私を追及して注意を逸らすのではなく、他のグレーの検証に協力してくれないか？`,
+            `${prefix} 私があなたを咎めているように見えるかい？ むしろあなたの発言に村を導く真摯さを感じたいからこそ、疑問を投げかけているんだ！`,
+            `${prefix} あなたの攻撃的な反論の仕方自体が、人狼が追いつめられた時の防衛反応に見えてしまうんだ。本当に村人なら冷静にログを語ってほしい。`
+          ]);
+        } else { // 【村人・真役職】
+          return `${prefix} あなたを闇雲に疑っているわけではない。ただあなたの発言のニュアンスに防衛的な緊張感を感じたから、真意を確認したかっただけだよ。」`;
+        }
+      }
+
+      // --- 【3. アリバイ・昨夜の行動質問 (isAlibi)】 ---
+      if (isAlibi) {
+        if (realRole === 'wolf') { // 【人狼：完璧なアリバイ工作と白々しい嘆き】
+          return `${prefix} 昨夜は『${place}』で静かに過ごしていたよ。人狼の襲撃に怯えながら村の平和を祈っていたが……犠牲者が出てしまい悔しい。私にやましい行動は一切ない。」`;
+        } else if (realRole === 'fox') {
+          return `${prefix} 昨夜は『${place}』にいたね。誰にも邪魔されず一人で盤面の真偽と考察を整理していたのさ。」`;
+        } else {
+          return `${prefix} 昨夜は『${place}』にいたよ。身の潔白は天に誓って保証できるし、怪しい動きなどしていない。」`;
+        }
+      }
+
+      // --- 【4. 占い・鑑定に関する質問 (isSeerQ)】 ---
       if (isSeerQ || (coRole === 'seer' && (isWhy || isTiming || isDoubt))) {
         if (coRole === 'seer') {
           if (realRole === 'seer') { // 【真占い師】
             if (isWhy) {
-              if (angle === 'log_analysis') return `${prefix} 朝コメントで 村人 ${seerTarget} さんのログの提出タイミングと語尾の防衛的ニュアンスに不自然さを感じたからだよ。鑑定結果は【${seerResult}】だった。`;
-              if (angle === 'board_elimination') return `${prefix} 他の生き残りが村目（白）に見えていたため、消去法で一番視界が狭かった 村人 ${seerTarget} さんを占ったんだ。結果は【${seerResult}】だ。`;
-              if (angle === 'counter_question') return `${prefix} 逆に聞くが、初日のあのログから 村人 ${seerTarget} さん以外に占うべき優先候補がいたと思うかい？ 結果は【${seerResult}】だよ。`;
-              if (angle === 'line_structure') return `${prefix} 対抗の ${rivalName} さんと 村人 ${seerTarget} さんの間のライン（繋がり）を精査したかったんだ。結果【${seerResult}】と確定したよ。`;
-              return `${prefix} 直感と言えばそれまでだが、村人 ${seerTarget} さんから嫌な気配を感じ取ったんだ。結果【${seerResult}】だと分かった。`;
+              return `${prefix} 朝コメントで 村人 ${seerTarget} さんのログの提出タイミングに不自然さを感じて占った。鑑定結果は【${seerResult}】だったよ。`;
             } else if (isTiming) {
               return `${prefix} 初日に安易にCOすると人狼からの最優先襲撃標的になる。村の視点が定まる最善のタイミングを狙って開示したんだよ。」`;
             } else if (isDoubt) {
@@ -3200,37 +3432,28 @@
             }
           } else if (realRole === 'wolf') { // 【人狼：巧妙なブラフ・話題のすり替え】
             if (isWhy) {
-              if (angle === 'meta_bluff') return `${prefix} あえて議論の中心から外れた位置を占うことで、真占い師としての公平な視点を示したかったのさ。結果【${seerResult}】と判明したよ。」`;
-              if (angle === 'counter_question') return `${prefix} 逆に聞くけど、初日の段階で人狼を見抜くためにこれ以上のベストなアプローチがあったかい？ 村人 ${seerTarget} への結果は【${seerResult}】だ。」`;
-              if (angle === 'log_analysis') return `${prefix} 村人 ${seerTarget} さんの朝の発言に後付けのような違和感があったからだよ。結果として【${seerResult}】と判明したのさ。」`;
-              return `${prefix} グレー枠を狭めて村の考察を整理したかったのが最大の動機だ。結果【${seerResult}】を得られた視点を活かしてくれ。」`;
+              return pickRandom([
+                `${prefix} あえて議論の中心から外れた位置を占うことで、真占い師としての公平な視点を示したかったのさ。結果【${seerResult}】と判明したよ。`,
+                `${prefix} 村人 ${seerTarget} さんの朝の発言に後付けのような違和感があったからだよ。結果として【${seerResult}】と判明したのさ。`,
+                `${prefix} 逆に聞くけど、初日の段階で人狼を見抜くためにこれ以上のベストなアプローチがあったかい？ 村人 ${seerTarget} への結果は【${seerResult}】だ。`
+              ]);
             } else if (isTiming) {
-              return `${prefix} 盤面の乱れを防ぐため、対抗の出方と周囲のログをじっくり観察してから出たんだ。後付けに見えるかもしれないが、計算したタイミングだよ。」`;
+              return `${prefix} 盤面の乱れを防ぐため、対抗の出方と周囲のログをじっくり観察してから出たんだ。計算したタイミングだよ。」`;
             } else if (isDoubt) {
               return `${prefix} 私を偽物扱いする前に、対抗の ${rivalName} さんの怪しい立ち振る舞いを見てくれ！ 私は村のために結果【${seerResult}】を提示しているんだ！」`;
             } else {
               return `${prefix} 私は本気で村の勝利のために名乗り出ている。村人 ${seerTarget} の鑑定結果【${seerResult}】を元に議論を進めてほしい。」`;
             }
           } else if (realRole === 'madman') { // 【狂人：強気・カオス誘導】
-            if (isWhy) {
-              if (angle === 'meta_bluff') return `${prefix} 停滞していた村の議論を揺さぶり、狂気と混乱の中から狼を炙り出すために 村人 ${seerTarget} を突いたんだ！ 結果【${seerResult}】さ！」`;
-              return `${prefix} 直感とインスピレーションさ！ 村人 ${seerTarget} を占うことで盤面が大きく動いた。結果【${seerResult}】を信じて突っ走ろう！」`;
-            } else if (isTiming) {
-              return `${prefix} 一番場が沸き立つこのタイミングを狙っていたのさ！ 早く出すぎても人狼の罠にハマるだけだからね！」`;
-            } else if (isDoubt) {
-              return `${prefix} 私が偽物だって？ 命がけで結果【${seerResult}】を持ってきたんだから、私こそが真目だと信じて投票してくれ！」`;
-            } else {
-              return `${prefix} 私こそが真の占い師さ！ 村人 ${seerTarget} 【${seerResult}】の結果を元に一気に人狼を追い詰めよう！」`;
-            }
+            return `${prefix} 私こそが真の占い師さ！ 村人 ${seerTarget} 【${seerResult}】の結果を元に一気に人狼を追い詰めよう！」`;
           }
-        } else if (coRole === 'medium') {
-          return `${prefix} 直球で答えるが、私は霊媒師であり占い師ではない。だが処刑者の真偽を見抜くことで占い師たちの真真偽を証明してみせるよ。」`;
         } else {
-          return `${prefix} 私は占い能力は持たないが、占いCO者たちのログの矛盾や開示タイミングには厳しく目を光らせているよ。」`;
+          // 未CO（グレー等）の場合：占い結果は持っていないため役職暴露せず普通に回答
+          return `${prefix} 私は占い師ではないので鑑定結果など持っていないよ。全体ログの整合性と発言の矛盾から人狼を探しているんだ。」`;
         }
       }
 
-      // --- 【B: タイミング・時期に関する質問】 ---
+      // --- 【5. タイミング・時期に関する質問 (isTiming)】 ---
       if (isTiming) {
         if (coRole !== 'grey') {
           return `${prefix} 初日に名乗り出ると襲撃リスクが跳ね上がる。盤面を見極め、確定情報が一番響くタイミングで出るのがプロの動きだよ。」`;
@@ -3239,7 +3462,7 @@
         }
       }
 
-      // --- 【C: ライン・繋がりに関する質問】 ---
+      // --- 【6. ライン・繋がりに関する質問 (isLine)】 ---
       if (isLine) {
         if (aliveOthers.length >= 2) {
           const t1 = aliveOthers[0];
@@ -3250,17 +3473,7 @@
         }
       }
 
-      // --- 【D: アリバイ・移動場所に関する質問】 ---
-      if (isAlibi) {
-        const place = gameState.alibis[char] || '村の広場';
-        if (isWhy) {
-          return `${prefix} 昨夜『${place}』にいたのは、喧騒を離れて一人で静かにログの矛盾と対抗の主張を整理したかったからだよ。」`;
-        } else {
-          return `${prefix} 昨夜は間違いなく『${place}』に滞在していた。身の潔白は証明できるし、怪しい行動は一切していない。」`;
-        }
-      }
-
-      // --- 【E: 理由・動機（WHY）に関する全般質問】 ---
+      // --- 【7. 理由・動機（WHY）に関する全般質問 (isWhy)】 ---
       if (isWhy) {
         if (morningComment) {
           return `${prefix} 行動の背景には今朝話した『${morningComment}』という認識がある。村を誤処刑に巻き込まないための論理的選択だよ。」`;
@@ -3269,7 +3482,7 @@
         }
       }
 
-      // --- 【F: 信頼性・対抗・処刑追及（DOUBT）に関する質問】 ---
+      // --- 【8. 信頼性・対抗・処刑追及（DOUBT）に関する質問 (isDoubt)】 ---
       if (isDoubt) {
         if (rivalCOs.length > 0) {
           return `${prefix} 私を疑う前に、対抗の ${rivalName} さんの支離滅裂な発言と不自然な手先を見てほしい！ 彼こそが人狼の騙りだ！」`;
@@ -3280,45 +3493,88 @@
         }
       }
 
-      // --- 【G: 汎用2段構成フレーズ】 ---
+      // --- 【9. 汎用・自由質問への自然な応答フォールバック】 ---
       if (morningComment) {
         return `${prefix} 『${questionText}』についてのお尋ねですね。今朝話した『${morningComment}』の通り、私は一貫して村の勝利のために動いています。後ろ暗い点は一切ありません。」`;
       }
       return `${prefix} 『${questionText}』という質問ですが、私は常に村人陣営の勝利を最優先にして判断しています。私のアクションに嘘はありませんよ。」`;
     }
 
-    // Ask Custom Question Handler
-    function askCustomQuestion() {
+    // Ask Custom Question Handler with Visual Active Highlight & Auto Reset
+    async function askCustomQuestion() {
       if (!gameState.selectedChar || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
 
       const inputEl = document.getElementById('custom-question-input');
+      const btnCustom = document.getElementById('btn-custom-q');
+      const q1Btn = document.getElementById('btn-q1');
+      const q2Btn = document.getElementById('btn-q2');
+      const q3Btn = document.getElementById('btn-q3');
+
       if (!inputEl) return;
       const questionText = inputEl.value.trim();
-
       if (!questionText) return; // Prevent empty submission
 
-      const char = gameState.selectedChar;
-      const answerText = getCustomAnswer(char, questionText);
+      // 1. 全質問ボタンを一時無効化 & 実行中ボタンをハイライト
+      const allBtns = [q1Btn, q2Btn, q3Btn, btnCustom, inputEl].filter(Boolean);
+      allBtns.forEach(b => b.disabled = true);
+      if (btnCustom) btnCustom.classList.add('is-active');
 
-      addLogItem(`審判員 ➡️ 村人 ${char}`, `「${questionText}」`, answerText, '', char, true);
+      try {
+        const char = gameState.selectedChar;
+        const answerText = getCustomAnswer(char, questionText);
 
-      inputEl.value = ''; // Clear input
-      renderStatus();
-      selectCharacter(gameState.selectedChar);
+        addLogItem(`審判員 ➡️ 村人 ${char}`, `「${questionText}」`, answerText, '', char, true);
+
+        inputEl.value = ''; // Clear input
+        renderStatus();
+
+        // 応答完了フィードバック待機（1.2秒）
+        await new Promise(r => setTimeout(r, 1200));
+
+      } catch (err) {
+        console.error('自由質問処理エラー:', err);
+      } finally {
+        // 2. 回答完了後にハイライト解除 & 操作可能状態に復帰
+        if (btnCustom) btnCustom.classList.remove('is-active');
+        selectCharacter(gameState.selectedChar);
+      }
     }
 
-    // Ask Question Handler
-    function askQuestion(questionId) {
+    // Ask Question Handler with Visual Active Highlight & Auto Reset
+    async function askQuestion(questionId) {
       if (!gameState.selectedChar || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
 
-      const char = gameState.selectedChar;
-      const questionText = document.getElementById(`btn-q${questionId}`).textContent.trim();
-      const answerText = getAnswer(char, questionId);
+      const selectedBtn = document.getElementById(`btn-q${questionId}`);
+      const q1Btn = document.getElementById('btn-q1');
+      const q2Btn = document.getElementById('btn-q2');
+      const q3Btn = document.getElementById('btn-q3');
+      const btnCustom = document.getElementById('btn-custom-q');
+      const inputEl = document.getElementById('custom-question-input');
 
-      addLogItem(`審判員 ➡️ 村人 ${char}`, questionText, answerText, '', char, true);
+      // 1. 全質問ボタンを一時無効化 & 選択された定型ボタンをハイライト
+      const allBtns = [q1Btn, q2Btn, q3Btn, btnCustom, inputEl].filter(Boolean);
+      allBtns.forEach(b => b.disabled = true);
+      if (selectedBtn) selectedBtn.classList.add('is-active');
 
-      renderStatus();
-      selectCharacter(gameState.selectedChar);
+      try {
+        const char = gameState.selectedChar;
+        const questionText = selectedBtn ? selectedBtn.textContent.trim() : '';
+        const answerText = getAnswer(char, questionId);
+
+        addLogItem(`審判員 ➡️ 村人 ${char}`, questionText, answerText, '', char, true);
+
+        renderStatus();
+
+        // 応答完了フィードバック待機（1.2秒）
+        await new Promise(r => setTimeout(r, 1200));
+
+      } catch (err) {
+        console.error('定型質問処理エラー:', err);
+      } finally {
+        // 2. 回答完了後にハイライト解除 & 操作可能状態に復帰
+        if (selectedBtn) selectedBtn.classList.remove('is-active');
+        selectCharacter(gameState.selectedChar);
+      }
     }
 
     // Add Log Entry
@@ -3433,7 +3689,45 @@
       }
     }
 
-    // Enhanced 2-Step Night to Morning Transition Sequence
+    // Enhanced 2-Step Night to Morning Transition Sequence (Guaranteed Non-Blocking try...finally)
+    // フェード暗転 ＋ UI/背景先行ロード ＋ フェードイン同期SE ＋ 一呼吸おく共通関数
+    async function transitionWithFade(updateScreenCallback, delayAfter = 1200, onFadeInStartCallback = null) {
+      const overlay = document.getElementById('phase-fade-overlay');
+      if (!overlay) {
+        if (typeof updateScreenCallback === 'function') updateScreenCallback();
+        if (typeof onFadeInStartCallback === 'function') onFadeInStartCallback();
+        if (delayAfter > 0) await new Promise(r => setTimeout(r, delayAfter));
+        return;
+      }
+
+      // 1. フェードアウト（画面が完全に真っ黒になる）
+      overlay.classList.add('is-fading');
+      await new Promise(r => setTimeout(r, 500));
+
+      // 2. 【暗転中で見えない間に】背景やUIの切り替え処理を完了させる
+      if (typeof updateScreenCallback === 'function') {
+        updateScreenCallback();
+      }
+
+      // 画像の描画・ロード遅延によるチラつきを防ぐための短時間ウェイト
+      await new Promise(r => setTimeout(r, 100));
+
+      // 3. 一呼吸おいてからフェードイン（新しい背景がセットされた状態で現れる）
+      await new Promise(r => setTimeout(r, 400));
+
+      // フェードイン開始と同時にSE再生などのコールバックを実行
+      if (typeof onFadeInStartCallback === 'function') {
+        onFadeInStartCallback();
+      }
+
+      overlay.classList.remove('is-fading');
+
+      // 4. 表示後にさらに一呼吸おく
+      if (delayAfter > 0) {
+        await new Promise(r => setTimeout(r, delayAfter));
+      }
+    }
+
     async function runEnhancedSeamlessSequence() {
       playBgm('uruf');
       gameState.phase = '夜';
@@ -3445,89 +3739,181 @@
       const descEl = document.getElementById('seamless-desc');
       const wolfEyes = document.getElementById('wolf-eyes');
 
-      titleEl.textContent = '🌕 夜の暗躍 🌕';
-      descEl.innerHTML = '― 夜が訪れました ―<br>街に静けさが戻り、人狼たちが闇の中で密かに動き出します…';
-      wolfEyes.classList.add('visible');
-      overlay.classList.add('active');
+      if (titleEl) titleEl.textContent = '🌕 夜の暗躍 🌕';
+      if (descEl) descEl.innerHTML = '― 夜が訪れました ―<br>街に静けさが戻り、人狼たちが闇の中で密かに動き出します…';
+      if (wolfEyes) wolfEyes.classList.add('visible');
+      if (overlay) {
+        overlay.classList.add('active');
+      }
 
       playWolfHowlSE();
 
-      // Step 1: Night Log & Speech
-      const nightLogText = '街に静けさが戻り、夜が訪れました。人狼たちが闇の中で密かに動き出します……';
-      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const nightSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${nightLogText}`;
+      try {
+        // Step 1: Night Log & Speech
+        const nightLogText = '街に静けさが戻り、夜が訪れました。人狼たちが闇の中で密かに動き出します……';
+        const nightSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${nightLogText}`;
+        addLogItem('ナレーション', '', nightLogText, 'narration', null, false);
 
-      addLogItem('ナレーション', '', nightLogText, 'narration', null, false);
+        // ★ ナレーション読み上げ完了を待機
+        await playSpeechAsync(nightSpeakMsg);
 
-      // Night Actions Calculation
-      const nightVictims = [];
+        // ★ 読み上げ完了後、一呼吸おいて画面をフェードアウト（暗転）
+        await new Promise(r => setTimeout(r, 1000));
 
-      const knightChar = gameState.charList.find(c => gameState.roles[c] === 'knight' && gameState.status[c] === 'alive');
-      let guardedChar = null;
-      if (knightChar) {
-        const guardables = gameState.charList.filter(c => c !== knightChar && gameState.status[c] === 'alive');
-        if (guardables.length > 0) guardedChar = pickRandom(guardables);
-      }
+        // --- Night Actions Calculation (Strategic Seory-Based Logic) ---
+        const nightVictims = [];
 
-      const aliveWolves = gameState.charList.filter(c => gameState.roles[c] === 'wolf' && gameState.status[c] === 'alive');
-      const aliveNonWolves = gameState.charList.filter(c => gameState.roles[c] !== 'wolf' && gameState.status[c] === 'alive');
+        // 1. 騎士 / 狩人 (護衛ターゲット選定)
+        const knightChar = gameState.charList.find(c => gameState.roles[c] === 'knight' && gameState.status[c] === 'alive');
+        let guardedChar = null;
+        if (knightChar) {
+          const guardables = gameState.charList.filter(c => c !== knightChar && gameState.status[c] === 'alive');
+          if (guardables.length > 0) {
+            // 過去に連続護衛禁止ルールの場合の除外処理
+            const lastGuard = gameState.lastKnightGuardTarget || null;
+            const validCandidates = guardables.length > 1 ? guardables.filter(c => c !== lastGuard) : guardables;
 
-      if (aliveWolves.length > 0 && aliveNonWolves.length > 0) {
-        const attackTarget = pickRandom(aliveNonWolves);
+            // スコアリング: CO済み真占い・確定役職を最優先(+100)、次点でCO済み霊媒(+60)、確定白村人(+40)
+            let bestTarget = validCandidates[0];
+            let maxScore = -999;
 
-        if (guardedChar && attackTarget === guardedChar) {
-          // Guarded!
-        } else if (gameState.roles[attackTarget] === 'fox') {
-          // Immune!
-        } else {
-          gameState.status[attackTarget] = 'attacked';
-          nightVictims.push(attackTarget);
+            validCandidates.forEach(c => {
+              let score = Math.random() * 5; // 揺らぎ
+              const coRole = gameState.coRoles[c];
+              if (coRole === 'seer') score += 100;
+              else if (coRole === 'medium') score += 60;
+              else if (coRole === 'freemason') score += 50;
+
+              // 占い師等から「白（人間）」判定されている人物
+              const isConfirmedWhite = Object.values(gameState.dailySeerReports || {}).some(r => r.target === c && r.result === '人間');
+              if (isConfirmedWhite) score += 30;
+
+              if (score > maxScore) {
+                maxScore = score;
+                bestTarget = c;
+              }
+            });
+
+            guardedChar = bestTarget;
+            gameState.lastKnightGuardTarget = guardedChar;
+          }
         }
-      }
 
-      const trueSeerChar = gameState.charList.find(c => gameState.roles[c] === 'seer' && gameState.status[c] === 'alive');
-      if (trueSeerChar) {
-        const aliveOthers = gameState.charList.filter(c => c !== trueSeerChar && gameState.status[c] === 'alive');
-        if (aliveOthers.length > 0) {
-          const seerTarget = pickRandom(aliveOthers);
-          if (gameState.roles[seerTarget] === 'fox') {
-            gameState.status[seerTarget] = 'cursed';
-            if (!nightVictims.includes(seerTarget)) {
-              nightVictims.push(seerTarget);
+        // 2. 人狼 (襲撃ターゲット選定)
+        const aliveWolves = gameState.charList.filter(c => gameState.roles[c] === 'wolf' && gameState.status[c] === 'alive');
+        const aliveNonWolves = gameState.charList.filter(c => gameState.roles[c] !== 'wolf' && gameState.status[c] === 'alive');
+
+        if (aliveWolves.length > 0 && aliveNonWolves.length > 0) {
+          // スコアリング: CO済み確定役職（占い・霊媒等）を優先、脅威となる鋭い議論を展開する村人を優先
+          let attackTarget = aliveNonWolves[0];
+          let maxScore = -999;
+
+          aliveNonWolves.forEach(c => {
+            let score = Math.random() * 10;
+            const coRole = gameState.coRoles[c];
+            const realRole = gameState.roles[c];
+
+            // 確定真役職・CO役職の優先排除
+            if (coRole === 'seer') score += 80;
+            else if (coRole === 'medium') score += 60;
+            else if (coRole === 'freemason') score += 40;
+
+            // 狂人・騙り仲間（自陣営）の誤噛み防止
+            if (realRole === 'madman') {
+              score -= 70; // 狂人はできる限り活かす
+            }
+
+            // グレーかつ発言・推論が鋭い発言者を脅威として噛む
+            if (coRole === 'villager') {
+              score += 25;
+            }
+
+            if (score > maxScore) {
+              maxScore = score;
+              attackTarget = c;
+            }
+          });
+
+          if (guardedChar && attackTarget === guardedChar) {
+            // 護衛成功！
+          } else if (gameState.roles[attackTarget] === 'fox') {
+            // 呪殺以外の狼噛み耐性（妖狐）
+          } else {
+            gameState.status[attackTarget] = 'attacked';
+            nightVictims.push(attackTarget);
+          }
+        }
+
+        // 3. 真占い師 (呪殺チェック用夜処理)
+        const trueSeerChar = gameState.charList.find(c => gameState.roles[c] === 'seer' && gameState.status[c] === 'alive');
+        if (trueSeerChar) {
+          // 真占い師の最新ターゲットを取得（performNightAbilitiesより先行判定または評価）
+          const aliveOthers = gameState.charList.filter(c => c !== trueSeerChar && gameState.status[c] === 'alive');
+          if (aliveOthers.length > 0) {
+            // グレーでかつ怪しい人物を優先占い
+            const seerTarget = aliveOthers.find(c => gameState.roles[c] === 'fox' && !gameState.coRoles[c]);
+            if (seerTarget && gameState.roles[seerTarget] === 'fox') {
+              gameState.status[seerTarget] = 'cursed';
+              if (!nightVictims.includes(seerTarget)) {
+                nightVictims.push(seerTarget);
+              }
             }
           }
         }
-      }
 
-      gameState.lastNightVictims = nightVictims;
+        gameState.lastNightVictims = nightVictims;
 
-      // Await Night Speech Completion
-      await playSpeechAsync(nightSpeakMsg);
+        // Step 2: 暗転（フェードアウト） ➔ 裏でUI準備 ➔ 【フェードイン開始 ＆ ナレーション再生開始】
+        const line1 = `夜が明け、${gameState.day}日目の朝が来ます。`;
+        const line2 = '朝の光が村を包み込みます。';
+        const dawnDisplay = `${line1}\n${line2}`;
+        const dawnLog = `${line1} ${line2}`;
+        const dawnSpeechMsg = `${getDaySpeechText(gameState.day)}…… ${dawnLog}`;
 
-      // --- STEP 1: Dawn Announcement while STILL in Dark Overlay ---
-      gameState.day++;
-      wolfEyes.classList.remove('visible');
-      titleEl.textContent = '☀️ 朝の訪れ ☀️';
-      descEl.innerHTML = `― 夜が明け、${formatDay(gameState.day)}の朝が来ます ―<br>朝の光が村を包み込みます…`;
+        const phaseOverlay = document.getElementById('phase-fade-overlay');
+        if (phaseOverlay) {
+          phaseOverlay.classList.add('is-fading');
+          await new Promise(r => setTimeout(r, 500)); // 暗転待ち (0.5s)
+        }
 
-      const dawnLogText = `夜が明け、${formatDay(gameState.day)}の朝が来ます。`;
-      const dawnDateText = `${formatDay(gameState.day)} (朝)`;
-      const dawnSpeakMsg = `${getDaySpeechText(gameState.day)}…… 夜が明け、${formatDay(gameState.day)}の朝が来ます。`;
+        // 暗転中で見えない間に朝の訪れ画面のテキスト等を準備
+        gameState.day++;
+        if (wolfEyes) wolfEyes.classList.remove('visible');
+        if (titleEl) titleEl.textContent = '☀️ 朝の訪れ ☀️';
+        if (descEl) descEl.textContent = dawnDisplay;
+        addLogItem('ナレーション', '', dawnLog, 'narration', null, false);
 
-      addLogItem('ナレーション', '', dawnLogText, 'narration', null, false);
+        // 短時間ウェイトで描画安定
+        await new Promise(r => setTimeout(r, 100));
 
-      // Await Dawn Speech Completion IN DARK
-      await playSpeechAsync(dawnSpeakMsg);
+        // ★ フェードイン開始と「全く同じタイミング」でナレーション読み上げを開始（待機なし）
+        if (phaseOverlay) phaseOverlay.classList.remove('is-fading');
 
-      // --- STEP 2: Unblind to Normal Screen & Announce Victim News ---
-      playRoosterCrowSE();
-      overlay.classList.remove('active');
+        // ナレーション再生（読み上げ完了を待機）
+        await playSpeechAsync(dawnSpeechMsg);
 
-      setTimeout(() => {
-        switchView(1);
-        startMorningPostUnblind();
+        // ナレーションが最後まで読み終わり次第、一呼吸おいて朝の報告へ移行
+        await new Promise(r => setTimeout(r, 1000));
+
+        // ★ フェードアウト（完全暗転中）に背景画像とUIを先行切り替え ➔ フェードインと同時に鶏の鳴き声SEを再生
+        await transitionWithFade(() => {
+          if (overlay) overlay.classList.remove('active');
+          setGamePhaseBg('morning');
+          switchView(1);
+        }, 1200, () => {
+          playRoosterCrowSE();
+        });
+
+        await startMorningPostUnblind();
         checkGameEnd();
-      }, 500);
+
+      } catch (err) {
+        console.error('朝フェーズ切り替え処理でエラーが発生しました:', err);
+      } finally {
+        if (overlay) {
+          overlay.classList.remove('active');
+        }
+      }
     }
 
     // Check Win/Lose/Fox Conditions
