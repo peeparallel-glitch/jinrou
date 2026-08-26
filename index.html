@@ -2765,7 +2765,7 @@
     // Text Preprocessing Function for Speech
     function formatTextForSpeech(rawText) {
       if (!rawText) return '';
-      return rawText
+      let processed = rawText
         .replace(/<[^>]*>?/gm, '')
         .replace(/[\u1F60-\u1F64]|[\u2702-\u27B0]|[\u1F68-\u1F6C]|[\u1F30-\u1F5F]/g, '')
         .replace(/---/g, '…… ')
@@ -2773,8 +2773,36 @@
         .replace(/:/g, '、 ')
         .replace(/\n/g, '。 ')
         .replace(/([。！？])/g, '$1 ')
-        .replace(/、/g, '、 ')
-        .trim();
+        .replace(/、/g, '、 ');
+
+      // 全角アルファベットを半角に正規化
+      processed = processed.replace(/[Ａ-Ｚａ-ｚ]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+
+      // ★ 「村人I」「村人 I」「Iさん」「I氏」および独立した「I」の誤読（「いち」）を「アイ」へ完全変換
+      // 最優先で 「I」および「村人I」を処理
+      processed = processed
+        .replace(/村人\s*I/g, '村人アイ')
+        .replace(/むらびと\s*I/g, 'むらびとアイ')
+        .replace(/I(さん|氏|様|殿|くん|ちゃん|の|が|を|に|と|は|へ|より|から|で|も|しか|だけ)/g, 'アイ$1')
+        .replace(/(^|[^A-Za-z0-9])I([^A-Za-z0-9]|$)/g, '$1アイ$2');
+
+      // 他のアルファベット表記の村人名・キャラ名の読み上げ変換
+      const alphaMap = {
+        'A': 'エー', 'B': 'ビー', 'C': 'シー', 'D': 'ディー', 'E': 'イー',
+        'F': 'エフ', 'G': 'ジー', 'H': 'エイチ', 'I': 'アイ', 'J': 'ジェイ',
+        'K': 'ケー', 'L': 'エル', 'M': 'エム', 'N': 'エヌ', 'O': 'オー',
+        'P': 'ピー', 'Q': 'キュー', 'R': 'アール', 'S': 'エス', 'T': 'ティー'
+      };
+
+      for (let letter in alphaMap) {
+        const kana = alphaMap[letter];
+        const reg1 = new RegExp(`村人\\s*${letter}`, 'g');
+        const reg2 = new RegExp(`むらびと\\s*${letter}`, 'g');
+        const reg3 = new RegExp(`${letter}(さん|氏|様|殿|くん|ちゃん|の|が|を|に|と|は|へ|より|から|で|も)`, 'g');
+        processed = processed.replace(reg1, `村人${kana}`).replace(reg2, `むらびと${kana}`).replace(reg3, `${kana}$1`);
+      }
+
+      return processed.trim();
     }
 
     // ★ Speech Skip System: Tap anywhere to skip current speech
