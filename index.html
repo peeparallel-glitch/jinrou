@@ -519,10 +519,115 @@
 
     .carousel-container {
       display: flex;
-      width: 200vw;
+      width: 300vw;
       height: 100%;
       transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       transform: translateX(0%);
+    }
+
+    /* 仮想投票・疑い度履歴スタイル */
+    .vote-history-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      overflow-y: auto;
+      padding-bottom: 2rem;
+    }
+
+    .vote-card {
+      background: rgba(22, 25, 39, 0.88);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .vote-card-header {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--accent-amber);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.4rem;
+    }
+
+    .vote-tally-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .vote-tally-badge {
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid var(--accent-amber);
+      color: #fef08a;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    .vote-tally-badge.top-target {
+      background: rgba(225, 29, 72, 0.25);
+      border-color: var(--accent-red);
+      color: #fca5a5;
+      box-shadow: 0 0 8px rgba(225, 29, 72, 0.4);
+    }
+
+    .vote-item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .vote-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 20, 32, 0.6);
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .vote-item-row.is-dead-voter {
+      opacity: 0.5;
+    }
+
+    .voter-name {
+      font-weight: bold;
+      color: #e2e8f0;
+    }
+
+    .vote-target-info {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .vote-arrow {
+      color: var(--accent-red);
+      font-weight: bold;
+    }
+
+    .vote-target-name {
+      color: #fca5a5;
+      font-weight: bold;
+    }
+
+    .suspicion-pct {
+      font-size: 0.76rem;
+      color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.15);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
     }
 
     .view-page {
@@ -1537,9 +1642,286 @@
         box-sizing: border-box;
       }
     }
+
+    /* Speech Skip Indicator */
+    #speech-skip-overlay {
+      display: none;
+      position: fixed;
+      bottom: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      pointer-events: none;
+    }
+    #speech-skip-overlay.visible {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      animation: speechSkipPulse 1.2s ease-in-out infinite;
+    }
+    #speech-skip-overlay .skip-badge {
+      background: rgba(59, 130, 246, 0.85);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: bold;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      box-shadow: 0 2px 12px rgba(59, 130, 246, 0.5);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+    @keyframes speechSkipPulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+    /* Mode Category Switcher Tabs */
+    .mode-category-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    .category-tab {
+      flex: 1;
+      padding: 0.6rem 0.4rem;
+      font-size: 0.88rem;
+      font-weight: bold;
+      color: var(--text-muted);
+      background: rgba(22, 25, 39, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .category-tab:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: var(--accent-blue);
+    }
+    .category-tab.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.9));
+      border-color: var(--accent-blue);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Daily Village Card */
+    .daily-village-card {
+      background: rgba(22, 25, 39, 0.9);
+      border: 2px solid var(--accent-amber);
+      border-radius: 12px;
+      padding: 1rem;
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto 1rem auto;
+      text-align: left;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+    }
+    .daily-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1rem;
+      color: var(--accent-amber);
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+      padding-bottom: 0.4rem;
+    }
+    .daily-card-rule {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .daily-card-stats {
+      display: flex;
+      gap: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(10, 12, 20, 0.5);
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+    }
+    .daily-cleared-badge {
+      display: inline-block;
+      background: var(--accent-green);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+    }
+
+    /* Custom Village Modal / Form */
+    .custom-setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.88rem;
+    }
+    .custom-counter {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .counter-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: rgba(59, 130, 246, 0.2);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .counter-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .counter-val {
+      min-width: 24px;
+      text-align: center;
+      font-weight: bold;
+      color: #fff;
+    }
+    .custom-total-box {
+      margin-top: 1rem;
+      padding: 0.6rem;
+      border-radius: 8px;
+      background: rgba(10, 12, 20, 0.6);
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .custom-total-box.valid { color: var(--accent-green); }
+    .custom-total-box.invalid { color: var(--accent-red); }
+
+    /* Role Shop & Points UI */
+    .points-display-badge {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
+      border: 1px solid var(--accent-amber);
+      color: #fbbf24;
+      font-weight: bold;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .unlock-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      border: none;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 0.35rem 0.75rem;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+      transition: all 0.2s ease;
+    }
+    .unlock-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+    }
+    .unlock-btn:disabled {
+      background: #475569;
+      color: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .locked-role-row {
+      opacity: 0.75;
+    }
+    .category-tab.locked {
+      opacity: 0.6;
+      background: rgba(15, 20, 30, 0.7);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    /* Game Custom Alert Modal */
+    .custom-alert-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      backdrop-filter: blur(4px);
+    }
+    .custom-alert-content {
+      background: #1e2230;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 24px;
+      width: 88%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+      text-align: center;
+      color: #ffffff;
+      animation: customModalPop 0.2s ease-out;
+    }
+    .custom-alert-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      text-align: left;
+      white-space: pre-wrap;
+      color: var(--text-main);
+    }
+    .custom-alert-btn {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      transition: all 0.2s ease;
+    }
+    .custom-alert-btn:hover {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    }
+    @keyframes customModalPop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Game Custom Alert Modal Overlay -->
+  <div id="custom-alert-overlay" class="custom-alert-overlay" style="display: none;" onclick="if(event.target===this) closeCustomAlertModal()">
+    <div class="custom-alert-content">
+      <div id="custom-alert-text" class="custom-alert-text"></div>
+      <button class="custom-alert-btn" onclick="closeCustomAlertModal()">OK</button>
+    </div>
+  </div>
+
+  <!-- Speech Skip Indicator (tap anywhere to skip) -->
+  <div id="speech-skip-overlay">
+    <div class="skip-badge">⏭ タップで読み上げスキップ</div>
+  </div>
 
   <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
   <div id="splash-screen" onclick="handleSplashTap(event)" ontouchstart="handleSplashTap(event)">
@@ -1554,51 +1936,92 @@
       <h1>ひとり人狼 <span>-人狼推理-</span></h1>
       <div class="title-subtitle">1人用 推理裁判パズル（対人セオリー＆心理戦AI搭載版）</div>
 
-      <div class="mode-select-title">村の規模を選択してください</div>
-      <div class="mode-buttons">
-        <div class="mode-btn selected" id="mode-6" onclick="selectVillageMode(6)">
-          <div class="mode-header">
-            <span>【6人村】 Beginner</span>
+      <!-- Mode Category Selection Tabs -->
+      <div class="mode-category-tabs">
+        <button class="category-tab active" id="tab-cat-normal" onclick="selectGameCategory('normal')">通常モード</button>
+        <button class="category-tab" id="tab-cat-daily" onclick="selectGameCategory('daily')">📅 デイリー村</button>
+        <button class="category-tab" id="tab-cat-custom" onclick="selectGameCategory('custom')">🛠️ カスタマイズ村</button>
+      </div>
+
+      <!-- NORMAL MODE CONTAINER -->
+      <div id="category-container-normal">
+        <div class="mode-select-title">村の規模を選択してください</div>
+        <div class="mode-buttons">
+          <div class="mode-btn selected" id="mode-6" onclick="selectVillageMode(6)">
+            <div class="mode-header">
+              <span>【6人村】 Beginner</span>
+            </div>
+            <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 市民2</div>
+            <div class="village-stats-container">
+              <span class="stat-badge villager-win">👨 村人: <strong id="stats-6-villager">0</strong>勝</span>
+              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-6-wolf">0</strong>勝</span>
+            </div>
           </div>
-          <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 市民2</div>
-          <div class="village-stats-container">
-            <span class="stat-badge villager-win">👨 村人: <strong id="stats-6-villager">0</strong>勝</span>
-            <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-6-wolf">0</strong>勝</span>
+
+          <div class="mode-btn" id="mode-8" onclick="selectVillageMode(8)">
+            <div class="mode-header">
+              <span>【8人村】 Standard</span>
+            </div>
+            <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / 市民2</div>
+            <div class="village-stats-container">
+              <span class="stat-badge villager-win">👨 村人: <strong id="stats-8-villager">0</strong>勝</span>
+              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-8-wolf">0</strong>勝</span>
+            </div>
+          </div>
+
+          <div class="mode-btn" id="mode-10" onclick="selectVillageMode(10)">
+            <div class="mode-header">
+              <span>【10人村】 Expert</span>
+            </div>
+            <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 市民3</div>
+            <div class="village-stats-container">
+              <span class="stat-badge villager-win">👨 村人: <strong id="stats-10-villager">0</strong>勝</span>
+              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-10-wolf">0</strong>勝</span>
+            </div>
+          </div>
+
+          <div class="mode-btn" id="mode-15" onclick="selectVillageMode(15)">
+            <div class="mode-header">
+              <span>【15人村】 Ultimate (超上級)</span>
+            </div>
+            <div class="mode-desc">配役: 人狼3 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 共有2 / 妖狐1 / 市民4</div>
+            <div class="village-stats-container">
+              <span class="stat-badge villager-win">👨 村人: <strong id="stats-15-villager">0</strong>勝</span>
+              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-15-wolf">0</strong>勝</span>
+              <span class="stat-badge fox-win">🦊 妖狐: <strong id="stats-15-fox">0</strong>勝</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="mode-btn" id="mode-8" onclick="selectVillageMode(8)">
-          <div class="mode-header">
-            <span>【8人村】 Standard</span>
+      <!-- DAILY MODE CONTAINER -->
+      <div id="category-container-daily" style="display: none;">
+        <div class="daily-village-card">
+          <div class="daily-card-header">
+            <span id="daily-date-title">📅 本日のデイリーお題村</span>
+            <span id="daily-clear-badge" style="display:none;" class="daily-cleared-badge">CLEAR!</span>
           </div>
-          <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / 市民2</div>
-          <div class="village-stats-container">
-            <span class="stat-badge villager-win">👨 村人: <strong id="stats-8-villager">0</strong>勝</span>
-            <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-8-wolf">0</strong>勝</span>
+          <div class="daily-card-rule" id="daily-rule-desc">
+            読み込み中...
+          </div>
+          <div class="daily-card-stats" id="daily-stats-info">
+            ハイスコア: <strong id="daily-highscore">-</strong> | クリア済: <strong id="daily-cleared-count">0</strong>回
           </div>
         </div>
+      </div>
 
-        <div class="mode-btn" id="mode-10" onclick="selectVillageMode(10)">
-          <div class="mode-header">
-            <span>【10人村】 Expert</span>
+      <!-- CUSTOM MODE CONTAINER -->
+      <div id="category-container-custom" style="display: none;">
+        <div class="daily-village-card" style="border-color: var(--accent-blue);">
+          <div class="daily-card-header" style="color: var(--accent-blue); border-bottom-color: rgba(59,130,246,0.3);">
+            <span>🛠️ カスタマイズ村の設定</span>
           </div>
-          <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 市民3</div>
-          <div class="village-stats-container">
-            <span class="stat-badge villager-win">👨 村人: <strong id="stats-10-villager">0</strong>勝</span>
-            <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-10-wolf">0</strong>勝</span>
+          <div class="daily-card-rule" id="custom-summary-desc">
+            参加人数・配役・議論時間を自由に変更できます。
           </div>
-        </div>
-
-        <div class="mode-btn" id="mode-15" onclick="selectVillageMode(15)">
-          <div class="mode-header">
-            <span>【15人村】 Ultimate (超上級)</span>
-          </div>
-          <div class="mode-desc">配役: 人狼3 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 共有2 / 妖狐1 / 市民4</div>
-          <div class="village-stats-container">
-            <span class="stat-badge villager-win">👨 村人: <strong id="stats-15-villager">0</strong>勝</span>
-            <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-15-wolf">0</strong>勝</span>
-            <span class="stat-badge fox-win">🦊 妖狐: <strong id="stats-15-fox">0</strong>勝</span>
-          </div>
+          <button class="btn btn-primary" onclick="openCustomModal()" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; font-weight: bold;">
+            ⚙ 配役とルールを設定する
+          </button>
         </div>
       </div>
 
@@ -1633,11 +2056,14 @@
 
     <!-- Navigation Bar / View Switcher -->
     <div class="nav-bar">
-      <button class="nav-btn active" id="nav-btn-0" onclick="switchView(0)">
-        <span>[ ◀ 1. 村人一覧・尋問 ]</span>
+      <button class="nav-btn" id="nav-btn-0" onclick="switchView(0)">
+        <span>[ 1. 仮想投票・疑い度履歴 ◀ ]</span>
       </button>
-      <button class="nav-btn" id="nav-btn-1" onclick="switchView(1)">
-        <span>[ 2. 発言ログ・確定情報 ▶ ]</span>
+      <button class="nav-btn active" id="nav-btn-1" onclick="switchView(1)">
+        <span>[ 2. 村人一覧・尋問 ]</span>
+      </button>
+      <button class="nav-btn" id="nav-btn-2" onclick="switchView(2)">
+        <span>[ 3. 発言ログ・確定情報 ► ]</span>
       </button>
     </div>
 
@@ -1645,7 +2071,18 @@
     <div class="viewport-area" id="viewport-area">
       <div class="carousel-container" id="carousel-container">
         
-        <!-- PAGE 0: Character List & Interrogation -->
+        <!-- PAGE 0: Virtual Vote & Suspicion History -->
+        <div class="view-page">
+          <div style="font-size:0.88rem; color:var(--accent-amber); font-weight:bold; flex-shrink:0;">
+            📊 仮想投票・疑い度履歴（リアルタイム精査）
+          </div>
+          
+          <div class="vote-history-container" id="vote-history-container">
+            <!-- Dynamic Virtual Vote & Line Analysis Content -->
+          </div>
+        </div>
+
+        <!-- PAGE 1: Character List & Interrogation -->
         <div class="view-page">
           <div style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">村人一覧 (尋問・処刑対象を選択)</div>
           <div class="character-grid" id="character-grid">
@@ -1696,7 +2133,7 @@
           </div>
         </div>
 
-        <!-- PAGE 1: Bulletin & Comments & Log Timeline -->
+        <!-- PAGE 2: Bulletin & Comments & Log Timeline -->
         <div class="view-page">
           <div class="log-header-sections">
             <!-- Bulletin Board (Collapsible) -->
@@ -1757,6 +2194,141 @@
       <div id="modal-body" class="modal-body"></div>
       <div class="reveal-list" id="modal-reveal"></div>
       <button class="btn btn-start-game" onclick="showTitleScreen()">タイトルに戻る</button>
+    </div>
+  </div>
+
+  <!-- Custom Village Settings Modal -->
+  <div id="custom-village-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('custom-village-modal')">
+    <div class="modal-content" style="max-width: 480px; width: 92%;">
+      <div class="modal-header">
+        <h2>🛠️ カスタマイズ村の設定</h2>
+        <button class="modal-close-btn" onclick="closeModal('custom-village-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="text-align: left; max-height: 70vh; overflow-y: auto;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; background: rgba(10,12,20,0.5); padding: 0.5rem 0.8rem; border-radius: 8px;">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">🏆 勝利ポイント:</span>
+          <span class="points-display-badge">💰 <span id="custom-points-val">0</span> P</span>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>👥 参加人数 (<span id="custom-player-max-label">5〜12人</span>):</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomPlayers(-1)">-</button>
+            <span class="counter-val" id="custom-player-val">8</span>
+            <button class="counter-btn" onclick="changeCustomPlayers(1)">+</button>
+          </div>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin: 0.8rem 0 0.2rem 0; font-weight: bold;">【基本配役】</div>
+
+        <div class="custom-setting-row">
+          <span>🐺 人狼:</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomRole('wolf', -1)">-</button>
+            <span class="counter-val" id="custom-role-wolf">2</span>
+            <button class="counter-btn" onclick="changeCustomRole('wolf', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>🔮 占い師:</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomRole('seer', -1)">-</button>
+            <span class="counter-val" id="custom-role-seer">1</span>
+            <button class="counter-btn" onclick="changeCustomRole('seer', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>👻 霊媒師:</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomRole('medium', -1)">-</button>
+            <span class="counter-val" id="custom-role-medium">1</span>
+            <button class="counter-btn" onclick="changeCustomRole('medium', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>🛡️ 騎士 (狩人):</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomRole('knight', -1)">-</button>
+            <span class="counter-val" id="custom-role-knight">1</span>
+            <button class="counter-btn" onclick="changeCustomRole('knight', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>🤪 狂人:</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomRole('madman', -1)">-</button>
+            <span class="counter-val" id="custom-role-madman">1</span>
+            <button class="counter-btn" onclick="changeCustomRole('madman', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>🍞 パン屋:</span>
+          <div class="custom-counter">
+            <button class="counter-btn" onclick="changeCustomRole('baker', -1)">-</button>
+            <span class="counter-val" id="custom-role-baker">0</span>
+            <button class="counter-btn" onclick="changeCustomRole('baker', 1)">+</button>
+          </div>
+        </div>
+
+        <div style="font-size: 0.8rem; color: var(--accent-amber); margin: 1rem 0 0.2rem 0; font-weight: bold;">【ショップアンロック役職】</div>
+
+        <!-- ケーキ屋 (6P) -->
+        <div class="custom-setting-row" id="custom-row-cakeShop">
+          <span>🍰 ケーキ屋 (6 P):</span>
+          <div id="custom-ctrl-cakeShop"></div>
+        </div>
+
+        <!-- 共有者 (10P) -->
+        <div class="custom-setting-row" id="custom-row-freemason">
+          <span>🤝 共有者ペア (10 P):</span>
+          <div id="custom-ctrl-freemason"></div>
+        </div>
+
+        <!-- 霊能者 (16P) -->
+        <div class="custom-setting-row" id="custom-row-psychic">
+          <span>🔮 霊能者 (16 P):</span>
+          <div id="custom-ctrl-psychic"></div>
+        </div>
+
+        <!-- 猫又 (20P) -->
+        <div class="custom-setting-row" id="custom-row-nekomata">
+          <span>🐾 猫又 (20 P):</span>
+          <div id="custom-ctrl-nekomata"></div>
+        </div>
+
+        <!-- 黒服 (24P) -->
+        <div class="custom-setting-row" id="custom-row-bodyguard">
+          <span>🕶️ 黒服/身代わり (24 P):</span>
+          <div id="custom-ctrl-bodyguard"></div>
+        </div>
+
+        <!-- 妖狐 (30P) -->
+        <div class="custom-setting-row" id="custom-row-fox">
+          <span>🦊 妖狐 (30 P):</span>
+          <div id="custom-ctrl-fox"></div>
+        </div>
+
+        <div class="custom-setting-row">
+          <span>👨‍🌾 市民 (自動調整):</span>
+          <span class="counter-val" id="custom-role-citizen" style="color: var(--accent-blue);">2</span>
+        </div>
+
+        <div class="custom-total-box valid" id="custom-valid-status">
+          合計人数: 8 / 8 人 (配役 OK)
+        </div>
+
+      </div>
+      <div class="modal-footer" style="margin-top: 1rem;">
+        <button class="btn btn-primary" id="btn-start-custom-game" onclick="confirmCustomSettings()" style="width: 100%; padding: 0.65rem; font-weight: bold;">
+          この設定でプレイ開始
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2008,6 +2580,25 @@
 
       if (winningFaction === 'villager') {
         stats[key].villagerWins = (stats[key].villagerWins || 0) + 1;
+
+        // ★ Award Victory Points & Unlock Max Players
+        if (gameState.gameCategory === 'normal') {
+          loadPlayerData();
+          let pt = 0;
+          if (villageSize === 6) pt = 1;
+          else if (villageSize === 8) pt = 2;
+          else if (villageSize === 10) pt = 3;
+          else if (villageSize === 15) {
+            pt = 6;
+            playerData.unlockedMaxPlayers = 20;
+            playerData.cleared15Village = true;
+          }
+          if (!playerData.clearedStages) playerData.clearedStages = {};
+          playerData.clearedStages[villageSize] = true;
+          playerData.victoryPoints = (playerData.victoryPoints || 0) + pt;
+          savePlayerData();
+          updateMainMenuUI();
+        }
       } else if (winningFaction === 'wolf') {
         stats[key].wolfWins = (stats[key].wolfWins || 0) + 1;
       } else if (winningFaction === 'fox') {
@@ -2066,6 +2657,10 @@
       }
       if ('speechSynthesis' in window) {
         try { window.speechSynthesis.cancel(); } catch(e) {}
+      }
+      // スキップインジケーターも確実に非表示にする
+      if (typeof hideSpeechSkipIndicator === 'function') {
+        hideSpeechSkipIndicator();
       }
     }
 
@@ -2182,6 +2777,34 @@
         .trim();
     }
 
+    // ★ Speech Skip System: Tap anywhere to skip current speech
+    let isSpeechPlaying = false;
+
+    function showSpeechSkipIndicator() {
+      const el = document.getElementById('speech-skip-overlay');
+      if (el) el.classList.add('visible');
+      isSpeechPlaying = true;
+    }
+
+    function hideSpeechSkipIndicator() {
+      const el = document.getElementById('speech-skip-overlay');
+      if (el) el.classList.remove('visible');
+      isSpeechPlaying = false;
+    }
+
+    // Global tap-to-skip listener
+    document.addEventListener('click', function(e) {
+      if (isSpeechPlaying) {
+        // Don't skip if user clicked on a button, input, or interactive element
+        const tag = e.target.tagName.toLowerCase();
+        const isInteractive = tag === 'button' || tag === 'input' || tag === 'select' || tag === 'textarea'
+          || e.target.closest('button') || e.target.closest('input') || e.target.closest('.mode-btn');
+        if (!isInteractive) {
+          cancelSpeech();
+        }
+      }
+    }, true);
+
     // Synchronous Speech Promise Function: Supports AndroidHost.speak + Web Speech API Fallback
     function playSpeechAsync(text) {
       return new Promise((resolve) => {
@@ -2192,6 +2815,8 @@
           resolve();
           return;
         }
+
+        showSpeechSkipIndicator();
 
         // --- 1. Android WebView Native Host Support ---
         if (window.AndroidHost && typeof window.AndroidHost.speak === 'function') {
@@ -2204,6 +2829,7 @@
               if (!resolved) {
                 resolved = true;
                 delete window.__androidSpeechDoneCallback;
+                hideSpeechSkipIndicator();
                 resolve();
               }
             };
@@ -2221,6 +2847,7 @@
 
         // --- 2. Standard Web Speech API (Fallback) ---
         if (!('speechSynthesis' in window)) {
+          hideSpeechSkipIndicator();
           resolve();
           return;
         }
@@ -2240,6 +2867,7 @@
         const done = () => {
           if (!resolved) {
             resolved = true;
+            hideSpeechSkipIndicator();
             resolve();
           }
         };
@@ -2270,13 +2898,14 @@
     }
 
     // Config Constants
-    const CHAR_NAMES_15 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
+    const CHAR_NAMES_20 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
+    const CHAR_NAMES_15 = CHAR_NAMES_20;
     const MAX_DISCUSSION_TIME_SECONDS = 180;
     const MAX_DECISION_TIME_SECONDS = 15;
     const PLACES = ['時計塔', '広場', '教会', '井戸端', '西の森', '見張り台', '裏路地', '風車小屋', '廃校校舎', '裏山小屋'];
 
     let selectedVillageSize = 6;
-    let currentViewIndex = 0;
+    let currentViewIndex = 1;
     let timerInterval = null;
 
     let gameState = {
@@ -2305,6 +2934,8 @@
       status: {},
       revealedRoles: {},
       lastNightVictims: [],
+      virtualVotes: {},         // char -> { target, suspicionScore, reason }
+      virtualVoteHistory: [],   // Array of { day, label, votes: { char: { target, suspicionScore } }, tally: [ { target, count } ] }
       gameOver: false
     };
 
@@ -2334,14 +2965,16 @@
       return dayNames[dayNumber] || `${dayNumber}にちめ`;
     }
 
-    // Strict 2-View Carousel Switching
+    // Strict 3-View Carousel Switching
     function switchView(index) {
-      if (index < 0) index = 0;
-      if (index > 1) index = 1;
+      if (index < 0) index = 2;
+      if (index > 2) index = 0;
 
       currentViewIndex = index;
       const carousel = document.getElementById('carousel-container');
-      carousel.style.transform = `translateX(-${index * 50}%)`;
+      if (carousel) {
+        carousel.style.transform = `translateX(-${(index * 100) / 3}%)`;
+      }
 
       document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
         if (idx === index) btn.classList.add('active');
@@ -2365,10 +2998,10 @@
 
     function handleSwipe() {
       const swipeDistance = touchEndX - touchStartX;
-      if (swipeDistance < -50 && currentViewIndex === 0) {
-        switchView(1);
-      } else if (swipeDistance > 50 && currentViewIndex === 1) {
-        switchView(0);
+      if (swipeDistance < -50) {
+        switchView(currentViewIndex + 1);
+      } else if (swipeDistance > 50) {
+        switchView(currentViewIndex - 1);
       }
     }
 
@@ -2449,6 +3082,381 @@
       }
     }
 
+    // --- Custom Game Alert Modal Manager ---
+    function showCustomAlertModal(messageText) {
+      const overlay = document.getElementById('custom-alert-overlay');
+      const textEl = document.getElementById('custom-alert-text');
+      if (textEl) textEl.textContent = messageText;
+      if (overlay) overlay.style.display = 'flex';
+    }
+
+    function closeCustomAlertModal() {
+      const overlay = document.getElementById('custom-alert-overlay');
+      if (overlay) overlay.style.display = 'none';
+    }
+
+    // Mode Category & Custom/Daily Settings Management
+    let selectedGameCategory = 'normal'; // 'normal' | 'daily' | 'custom'
+    let customSettings = {
+      players: 8,
+      roles: { wolf: 2, seer: 1, medium: 1, knight: 1, madman: 1, baker: 0 }
+    };
+    let currentDailyConfig = null;
+
+    function selectGameCategory(category) {
+      if (category === 'custom' && !isCustomModeUnlocked()) {
+        const c6 = playerData.clearedStages[6] ? '✅' : '❌';
+        const c8 = playerData.clearedStages[8] ? '✅' : '❌';
+        const c10 = playerData.clearedStages[10] ? '✅' : '❌';
+
+        const msg = `🔒【カスタマイズ村はロックされています】\n通常モードの「6人村・8人村・10人村」を全て一度クリアすると解放されます！\n\n【クリア状況】\n・6人村: ${c6}\n・8人村: ${c8}\n・10人村: ${c10}`;
+        showCustomAlertModal(msg);
+        return;
+      }
+
+      selectedGameCategory = category;
+      document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById(`tab-cat-${category}`);
+      if (activeTab) activeTab.classList.add('active');
+
+      document.getElementById('category-container-normal').style.display = category === 'normal' ? 'block' : 'none';
+      document.getElementById('category-container-daily').style.display = category === 'daily' ? 'block' : 'none';
+      document.getElementById('category-container-custom').style.display = category === 'custom' ? 'block' : 'none';
+
+      if (category === 'daily') {
+        initDailyVillageView();
+      } else if (category === 'custom') {
+        updateCustomSummaryUI();
+      }
+    }
+
+    // --- Mulberry32 Seeded PRNG for Daily Challenge ---
+    function mulberry32(a) {
+      return function() {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+    }
+
+    function getStringHash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function generateDailyVillage(dateStr) {
+      const hash = getStringHash(`jinnrou_daily_${dateStr}`);
+      const prng = mulberry32(hash);
+
+      const sizes = [6, 7, 8, 9, 10];
+      const sizeIndex = Math.floor(prng() * sizes.length);
+      const size = sizes[sizeIndex];
+
+      const wolfCount = size >= 9 ? 2 : (prng() > 0.4 ? 2 : 1);
+      const seerCount = 1;
+      const mediumCount = size >= 7 && prng() > 0.3 ? 1 : 0;
+      const knightCount = size >= 8 && prng() > 0.3 ? 1 : 0;
+      const madmanCount = size >= 7 && prng() > 0.4 ? 1 : 0;
+      const bakerCount = size >= 9 && prng() > 0.5 ? 1 : 0;
+
+      const specialRules = [
+        '標準ルールのデイリーパズル',
+        '【特殊】慎重な集落（初日は誰も犠牲が出ない）',
+        '【特殊】緊迫の集落（即断即決が求められる）'
+      ];
+      const ruleText = specialRules[Math.floor(prng() * specialRules.length)];
+
+      const specialRoleCount = wolfCount + seerCount + mediumCount + knightCount + madmanCount + bakerCount;
+      const citizenCount = Math.max(1, size - specialRoleCount);
+
+      return {
+        dateStr: dateStr,
+        size: size,
+        wolvesCount: wolfCount,
+        ruleText: ruleText,
+        roles: {
+          wolf: wolfCount,
+          seer: seerCount,
+          medium: mediumCount,
+          knight: knightCount,
+          madman: madmanCount,
+          baker: bakerCount,
+          citizen: citizenCount
+        }
+      };
+    }
+
+    function initDailyVillageView() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      currentDailyConfig = generateDailyVillage(todayStr);
+
+      const titleEl = document.getElementById('daily-date-title');
+      const ruleEl = document.getElementById('daily-rule-desc');
+      const badgeEl = document.getElementById('daily-clear-badge');
+      const hsEl = document.getElementById('daily-highscore');
+      const countEl = document.getElementById('daily-cleared-count');
+
+      if (titleEl) titleEl.textContent = `📅 本日のお題 (${todayStr}) 【${currentDailyConfig.size}人村】`;
+      
+      const rolesList = [];
+      if (currentDailyConfig.roles.wolf) rolesList.push(`人狼${currentDailyConfig.roles.wolf}`);
+      if (currentDailyConfig.roles.seer) rolesList.push(`占い${currentDailyConfig.roles.seer}`);
+      if (currentDailyConfig.roles.medium) rolesList.push(`霊媒${currentDailyConfig.roles.medium}`);
+      if (currentDailyConfig.roles.knight) rolesList.push(`騎士${currentDailyConfig.roles.knight}`);
+      if (currentDailyConfig.roles.madman) rolesList.push(`狂人${currentDailyConfig.roles.madman}`);
+      if (currentDailyConfig.roles.baker) rolesList.push(`パン${currentDailyConfig.roles.baker}`);
+      if (currentDailyConfig.roles.citizen) rolesList.push(`市民${currentDailyConfig.roles.citizen}`);
+
+      if (ruleEl) {
+        ruleEl.innerHTML = `<strong>【配役】</strong> ${rolesList.join(' / ')}<br><strong>【ルール】</strong> ${currentDailyConfig.ruleText}`;
+      }
+
+      // Read Daily Stats from localStorage
+      let dailyStats = {};
+      try {
+        dailyStats = JSON.parse(localStorage.getItem('jinnrou_daily_stats') || '{}');
+      } catch (e) {}
+
+      const isClearedToday = dailyStats.lastClearedDate === todayStr;
+      if (badgeEl) badgeEl.style.display = isClearedToday ? 'inline-block' : 'none';
+      if (hsEl) hsEl.textContent = dailyStats.highScore ? `${dailyStats.highScore}pt` : '-';
+      if (countEl) countEl.textContent = dailyStats.clearCount || 0;
+    }
+
+    // --- Player Progress & Shop Data Management ---
+    let playerData = {
+      victoryPoints: 0,
+      unlockedMaxPlayers: 12,
+      cleared15Village: false,
+      clearedStages: {
+        6: false,
+        8: false,
+        10: false,
+        15: false
+      },
+      unlockedRoles: {
+        wolf: true, seer: true, medium: true, knight: true, madman: true, baker: true, citizen: true,
+        cakeShop: false,   // 3P
+        freemason: false,  // 5P
+        psychic: false,    // 8P
+        nekomata: false,   // 10P
+        bodyguard: false,  // 12P
+        fox: false         // 15P
+      }
+    };
+
+    function loadPlayerData() {
+      try {
+        const dataStr = localStorage.getItem('jinnrou_player_data');
+        if (dataStr) {
+          const parsed = JSON.parse(dataStr);
+          playerData = Object.assign({}, playerData, parsed);
+          if (parsed.unlockedRoles) {
+            playerData.unlockedRoles = Object.assign({}, playerData.unlockedRoles, parsed.unlockedRoles);
+          }
+          if (parsed.clearedStages) {
+            playerData.clearedStages = Object.assign({}, playerData.clearedStages, parsed.clearedStages);
+          }
+        }
+      } catch (e) {
+        console.log('Load playerData error:', e);
+      }
+    }
+
+    function savePlayerData() {
+      try {
+        localStorage.setItem('jinnrou_player_data', JSON.stringify(playerData));
+      } catch (e) {
+        console.log('Save playerData error:', e);
+      }
+    }
+
+    function isCustomModeUnlocked() {
+      loadPlayerData();
+      return !!(playerData.clearedStages[6] && playerData.clearedStages[8] && playerData.clearedStages[10]);
+    }
+
+    function updateMainMenuUI() {
+      loadPlayerData();
+      const customTab = document.getElementById('tab-cat-custom');
+      if (!customTab) return;
+
+      const unlocked = isCustomModeUnlocked();
+      if (unlocked) {
+        customTab.classList.remove('locked');
+        customTab.innerHTML = '🛠️ カスタマイズ村';
+      } else {
+        customTab.classList.add('locked');
+        customTab.innerHTML = '🔒 カスタマイズ村';
+      }
+    }
+
+    function unlockShopRole(roleKey, cost) {
+      loadPlayerData();
+      if ((playerData.victoryPoints || 0) >= cost) {
+        playerData.victoryPoints -= cost;
+        playerData.unlockedRoles[roleKey] = true;
+        savePlayerData();
+        renderCustomModalUI();
+      } else {
+        showCustomAlertModal(`⚠️ 勝利ポイントが不足しています。\n必要ポイント: ${cost} P\n現在の所持ポイント: ${playerData.victoryPoints || 0} P\n\n通常モードをプレイして勝利ポイントを溜めてください！`);
+      }
+    }
+
+    // --- Custom Village Controls ---
+    function openCustomModal() {
+      loadPlayerData();
+      renderCustomModalUI();
+      openModal('custom-village-modal');
+    }
+
+    function changeCustomPlayers(delta) {
+      loadPlayerData();
+      const maxLimit = playerData.unlockedMaxPlayers || 12;
+      customSettings.players = Math.max(5, Math.min(maxLimit, customSettings.players + delta));
+      renderCustomModalUI();
+    }
+
+    function changeCustomRole(role, delta) {
+      if (customSettings.roles[role] === undefined) {
+        customSettings.roles[role] = 0;
+      }
+      customSettings.roles[role] = Math.max(0, customSettings.roles[role] + delta);
+      renderCustomModalUI();
+    }
+
+    const SHOP_ROLE_DEFS = [
+      { key: 'cakeShop', name: '🍰 ケーキ屋', cost: 6, isPair: false },
+      { key: 'freemason', name: '🤝 共有者ペア', cost: 10, isPair: true },
+      { key: 'psychic', name: '🔮 霊能者', cost: 16, isPair: false },
+      { key: 'nekomata', name: '🐾 猫又', cost: 20, isPair: false },
+      { key: 'bodyguard', name: '🕶️ 黒服/身代わり', cost: 24, isPair: false },
+      { key: 'fox', name: '🦊 妖狐', cost: 30, isPair: false }
+    ];
+
+    function renderCustomModalUI() {
+      loadPlayerData();
+      const ptsVal = document.getElementById('custom-points-val');
+      if (ptsVal) ptsVal.textContent = playerData.victoryPoints || 0;
+
+      const maxLimit = playerData.unlockedMaxPlayers || 12;
+      const maxLabel = document.getElementById('custom-player-max-label');
+      if (maxLabel) maxLabel.textContent = `5〜${maxLimit}人`;
+
+      const pVal = document.getElementById('custom-player-val');
+      if (pVal) pVal.textContent = customSettings.players;
+
+      ['wolf', 'seer', 'medium', 'knight', 'madman', 'baker'].forEach(r => {
+        const el = document.getElementById(`custom-role-${r}`);
+        if (el) el.textContent = customSettings.roles[r] || 0;
+      });
+
+      // Shop Roles UI Render
+      SHOP_ROLE_DEFS.forEach(def => {
+        const container = document.getElementById(`custom-ctrl-${def.key}`);
+        if (!container) return;
+
+        const isUnlocked = playerData.unlockedRoles && playerData.unlockedRoles[def.key];
+        const row = document.getElementById(`custom-row-${def.key}`);
+
+        if (isUnlocked) {
+          if (row) row.classList.remove('locked-role-row');
+          const val = customSettings.roles[def.key] || 0;
+          container.innerHTML = `
+            <div class="custom-counter">
+              <button class="counter-btn" onclick="changeCustomRole('${def.key}', -1)">-</button>
+              <span class="counter-val" id="custom-role-${def.key}">${val}</span>
+              <button class="counter-btn" onclick="changeCustomRole('${def.key}', 1)">+</button>
+            </div>
+          `;
+        } else {
+          if (row) row.classList.add('locked-role-row');
+          const canAfford = (playerData.victoryPoints || 0) >= def.cost;
+          container.innerHTML = `
+            <button class="unlock-btn" ${canAfford ? '' : 'disabled'} onclick="unlockShopRole('${def.key}', ${def.cost})">
+              🔒 解放する (${def.cost} P)
+            </button>
+          `;
+        }
+      });
+
+      let specialTotal = 0;
+      const allRoles = ['wolf', 'seer', 'medium', 'knight', 'madman', 'baker', 'cakeShop', 'freemason', 'psychic', 'nekomata', 'bodyguard', 'fox'];
+      allRoles.forEach(r => {
+        const count = customSettings.roles[r] || 0;
+        if (r === 'freemason') {
+          specialTotal += count * 2; // 共有者は1カウントで2人
+        } else {
+          specialTotal += count;
+        }
+      });
+
+      const citizenCount = customSettings.players - specialTotal;
+      const citEl = document.getElementById('custom-role-citizen');
+      if (citEl) {
+        citEl.textContent = citizenCount >= 0 ? citizenCount : `${citizenCount} (不足!)`;
+        citEl.style.color = citizenCount >= 0 ? 'var(--accent-blue)' : 'var(--accent-red)';
+      }
+
+      const statusEl = document.getElementById('custom-valid-status');
+      const startBtn = document.getElementById('btn-start-custom-game');
+
+      if ((customSettings.roles.wolf || 0) < 1) {
+        if (statusEl) {
+          statusEl.textContent = '❌ 人狼は最低1人必要です';
+          statusEl.className = 'custom-total-box invalid';
+        }
+        if (startBtn) startBtn.disabled = true;
+      } else if (citizenCount < 0) {
+        if (statusEl) {
+          statusEl.textContent = `❌ 役職合計が参加人数を超えています (${specialTotal} / ${customSettings.players})`;
+          statusEl.className = 'custom-total-box invalid';
+        }
+        if (startBtn) startBtn.disabled = true;
+      } else {
+        if (statusEl) {
+          statusEl.textContent = `合計人数: ${customSettings.players}人 (配役 OK)`;
+          statusEl.className = 'custom-total-box valid';
+        }
+        if (startBtn) startBtn.disabled = false;
+      }
+    }
+
+    function confirmCustomSettings() {
+      updateCustomSummaryUI();
+      closeModal('custom-village-modal');
+    }
+
+    function updateCustomSummaryUI() {
+      const summaryEl = document.getElementById('custom-summary-desc');
+      if (!summaryEl) return;
+
+      const rolesList = [];
+      if (customSettings.roles.wolf) rolesList.push(`人狼${customSettings.roles.wolf}`);
+      if (customSettings.roles.seer) rolesList.push(`占い${customSettings.roles.seer}`);
+      if (customSettings.roles.medium) rolesList.push(`霊媒${customSettings.roles.medium}`);
+      if (customSettings.roles.knight) rolesList.push(`騎士${customSettings.roles.knight}`);
+      if (customSettings.roles.madman) rolesList.push(`狂人${customSettings.roles.madman}`);
+      if (customSettings.roles.baker) rolesList.push(`パン${customSettings.roles.baker}`);
+
+      const specialTotal = (customSettings.roles.wolf || 0)
+        + (customSettings.roles.seer || 0)
+        + (customSettings.roles.medium || 0)
+        + (customSettings.roles.knight || 0)
+        + (customSettings.roles.madman || 0)
+        + (customSettings.roles.baker || 0);
+
+      const citizenCount = Math.max(0, customSettings.players - specialTotal);
+      if (citizenCount > 0) rolesList.push(`市民${citizenCount}`);
+
+      summaryEl.innerHTML = `<strong>【現在の設定 (${customSettings.players}人村)】</strong><br>配役: ${rolesList.join(' / ')}`;
+    }
+
     // Mode Selection & Title Screen
     function selectVillageMode(size) {
       selectedVillageSize = size;
@@ -2459,6 +3467,7 @@
     function showTitleScreen() {
       resetGameState();
       renderVillageStats();
+      updateMainMenuUI();
       stopAllTimers();
       cancelSpeech();
 
@@ -2724,8 +3733,13 @@
         status: {},
         revealedRoles: {},
         lastNightVictims: [],
+        virtualVotes: {},
+        virtualVoteHistory: [],
         gameOver: false
       };
+      // Set default info page to 村人一覧 (index 1)
+      currentViewIndex = 1;
+      switchView(1);
     }
 
     // Start Game
@@ -2743,64 +3757,79 @@
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('seamless-overlay').classList.remove('active');
 
-      const size = selectedVillageSize;
-      const chars = CHAR_NAMES_15.slice(0, size);
-      
-      let maxMistakes = 2;
+      let size = selectedVillageSize;
       let targetWolves = 2;
-      if (size === 10) maxMistakes = 3;
-      if (size === 15) {
-        maxMistakes = 4;
-        targetWolves = 3;
+      let maxMistakes = 2;
+      let roleDistribution = [];
+
+      if (selectedGameCategory === 'daily') {
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (!currentDailyConfig) currentDailyConfig = generateDailyVillage(todayStr);
+
+        size = currentDailyConfig.size;
+        targetWolves = currentDailyConfig.wolvesCount;
+        maxMistakes = size >= 10 ? 3 : 2;
+
+        // Build role list from daily config
+        const rolesObj = currentDailyConfig.roles;
+        for (let r in rolesObj) {
+          for (let i = 0; i < rolesObj[r]; i++) {
+            roleDistribution.push(r);
+          }
+        }
+      } else if (selectedGameCategory === 'custom') {
+        size = customSettings.players;
+        targetWolves = customSettings.roles.wolf || 1;
+        maxMistakes = size >= 10 ? 3 : 2;
+
+        const rolesObj = customSettings.roles;
+        let countSpecial = 0;
+        for (let r in rolesObj) {
+          for (let i = 0; i < rolesObj[r]; i++) {
+            roleDistribution.push(r);
+            countSpecial++;
+          }
+        }
+        const citizensNeeded = Math.max(0, size - countSpecial);
+        for (let i = 0; i < citizensNeeded; i++) {
+          roleDistribution.push('citizen');
+        }
+      } else {
+        // Normal Mode
+        size = selectedVillageSize;
+        if (size === 10) maxMistakes = 3;
+        if (size === 15) {
+          maxMistakes = 4;
+          targetWolves = 3;
+        } else {
+          targetWolves = 2;
+        }
+
+        if (size === 6) {
+          roleDistribution = ['wolf', 'wolf', 'seer', 'medium', 'citizen', 'citizen'];
+        } else if (size === 8) {
+          roleDistribution = ['wolf', 'wolf', 'seer', 'medium', 'knight', 'madman', 'citizen', 'citizen'];
+        } else if (size === 10) {
+          roleDistribution = ['wolf', 'wolf', 'seer', 'medium', 'knight', 'madman', 'baker', 'citizen', 'citizen', 'citizen'];
+        } else if (size === 15) {
+          roleDistribution = ['wolf', 'wolf', 'wolf', 'seer', 'medium', 'knight', 'madman', 'baker', 'freemason', 'freemason', 'fox', 'citizen', 'citizen', 'citizen', 'citizen'];
+        }
       }
 
+      const chars = CHAR_NAMES_15.slice(0, size);
       gameState.villageSize = size;
       gameState.targetWolvesCount = targetWolves;
       gameState.charList = chars;
       gameState.mistakesLeft = maxMistakes;
+      gameState.gameCategory = selectedGameCategory;
 
       // Role Assignment
-      const shuffled = [...chars].sort(() => 0.5 - Math.random());
-
-      if (size === 6) {
-        [shuffled[0], shuffled[1]].forEach(w => gameState.roles[w] = 'wolf');
-        gameState.roles[shuffled[2]] = 'seer';
-        gameState.roles[shuffled[3]] = 'medium';
-        gameState.roles[shuffled[4]] = 'citizen';
-        gameState.roles[shuffled[5]] = 'citizen';
-      } else if (size === 8) {
-        [shuffled[0], shuffled[1]].forEach(w => gameState.roles[w] = 'wolf');
-        gameState.roles[shuffled[2]] = 'seer';
-        gameState.roles[shuffled[3]] = 'medium';
-        gameState.roles[shuffled[4]] = 'knight';
-        gameState.roles[shuffled[5]] = 'madman';
-        gameState.roles[shuffled[6]] = 'citizen';
-        gameState.roles[shuffled[7]] = 'citizen';
-      } else if (size === 10) {
-        [shuffled[0], shuffled[1]].forEach(w => gameState.roles[w] = 'wolf');
-        gameState.roles[shuffled[2]] = 'seer';
-        gameState.roles[shuffled[3]] = 'medium';
-        gameState.roles[shuffled[4]] = 'knight';
-        gameState.roles[shuffled[5]] = 'madman';
-        gameState.roles[shuffled[6]] = 'baker';
-        gameState.roles[shuffled[7]] = 'citizen';
-        gameState.roles[shuffled[8]] = 'citizen';
-        gameState.roles[shuffled[9]] = 'citizen';
-      } else if (size === 15) {
-        [shuffled[0], shuffled[1], shuffled[2]].forEach(w => gameState.roles[w] = 'wolf');
-        gameState.roles[shuffled[3]] = 'seer';
-        gameState.roles[shuffled[4]] = 'medium';
-        gameState.roles[shuffled[5]] = 'knight';
-        gameState.roles[shuffled[6]] = 'madman';
-        gameState.roles[shuffled[7]] = 'baker';
-        gameState.roles[shuffled[8]] = 'freemason';
-        gameState.roles[shuffled[9]] = 'freemason';
-        gameState.roles[shuffled[10]] = 'fox';
-        gameState.roles[shuffled[11]] = 'citizen';
-        gameState.roles[shuffled[12]] = 'citizen';
-        gameState.roles[shuffled[13]] = 'citizen';
-        gameState.roles[shuffled[14]] = 'citizen';
-      }
+      const shuffledChars = [...chars].sort(() => 0.5 - Math.random());
+      roleDistribution.forEach((role, idx) => {
+        if (shuffledChars[idx]) {
+          gameState.roles[shuffledChars[idx]] = role;
+        }
+      });
 
       chars.forEach(c => {
         gameState.status[c] = 'alive';
@@ -2827,6 +3856,22 @@
         gameState.claimedRoleTypes[mediumChar] = 'medium';
         gameState.isStealthing[mediumChar] = true; // 初日潜伏セオリー徹底
         gameState.coRoles[mediumChar] = 'grey';
+      }
+
+      // 霊能者
+      const psychicChar = chars.find(c => gameState.roles[c] === 'psychic');
+      if (psychicChar) {
+        gameState.claimedRoleTypes[psychicChar] = 'psychic';
+        gameState.isStealthing[psychicChar] = true;
+        gameState.coRoles[psychicChar] = 'grey';
+      }
+
+      // 黒服（身代わり護衛）
+      const bgChar = chars.find(c => gameState.roles[c] === 'bodyguard');
+      if (bgChar) {
+        gameState.claimedRoleTypes[bgChar] = 'knight';
+        gameState.isStealthing[bgChar] = true;
+        gameState.coRoles[bgChar] = 'grey';
       }
 
       // 3. 騎士 (真騎士): 終盤まで絶対潜伏
@@ -2871,7 +3916,7 @@
       document.getElementById('log-timeline').innerHTML = '';
       document.getElementById('village-size-display').textContent = `${size}人村`;
 
-      switchView(0);
+      switchView(1);
       setupDayOneDirectly();
     }
 
@@ -2899,6 +3944,14 @@
         await playSpeechAsync(`${getDaySpeechText(1)}…… ${bakerText}`);
       }
 
+      // CakeShop Report
+      const cakeChar = gameState.charList.find(c => gameState.roles[c] === 'cakeShop');
+      if (cakeChar && gameState.status[cakeChar] === 'alive') {
+        const cakeText = '「今朝もおいしい焼きたてケーキが焼き上がりました！」';
+        addLogItem('🍰 ケーキ屋より', '', cakeText, 'baker', null, false);
+        await playSpeechAsync(`${getDaySpeechText(1)}…… ${cakeText}`);
+      }
+
       performNightAbilities();
       evaluateStealthCOTriggers();
       generateMorningComments();
@@ -2907,6 +3960,9 @@
       renderMorningCommentsBox();
 
       gameState.phase = '昼';
+      calculateVirtualVotes();
+      recordVirtualVoteHistory('1日目 朝');
+      renderVoteHistoryPage();
       renderStatus();
       renderCharacters();
       selectCharacter(null);
@@ -2949,6 +4005,14 @@
         await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${bakerText}`);
       }
 
+      // CakeShop Report
+      const cakeChar = gameState.charList.find(c => gameState.roles[c] === 'cakeShop');
+      if (cakeChar && gameState.status[cakeChar] === 'alive') {
+        const cakeText = '「今朝もおいしい焼きたてケーキが焼き上がりました！」';
+        addLogItem('🍰 ケーキ屋より', '', cakeText, 'baker', null, false);
+        await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${cakeText}`);
+      }
+
       performNightAbilities();
       evaluateStealthCOTriggers();
       generateMorningComments();
@@ -2958,6 +4022,9 @@
       renderMorningCommentsBox();
 
       gameState.phase = '昼';
+      calculateVirtualVotes();
+      recordVirtualVoteHistory(`${formatDay(gameState.day)} 朝`);
+      renderVoteHistoryPage();
       renderStatus();
       renderCharacters();
       selectCharacter(null);
@@ -3031,7 +4098,7 @@
         }
       });
 
-      const mediumClaimants = gameState.charList.filter(c => gameState.claimedRoleTypes[c] === 'medium' && gameState.status[c] === 'alive');
+      const mediumClaimants = gameState.charList.filter(c => (gameState.claimedRoleTypes[c] === 'medium' || gameState.claimedRoleTypes[c] === 'psychic') && gameState.status[c] === 'alive');
       const lastExec = gameState.lastExecutedChar;
 
       mediumClaimants.forEach(char => {
@@ -3039,8 +4106,11 @@
         if (!lastExec) return;
 
         let result = '人間';
-        if (realRole === 'medium') {
-          result = gameState.roles[lastExec] === 'wolf' ? '人狼' : '人間';
+        if (realRole === 'medium' || realRole === 'psychic') {
+          const execRole = gameState.roles[lastExec];
+          if (execRole === 'wolf') result = '人狼';
+          else if (execRole === 'fox') result = '妖狐';
+          else result = '人間';
         } else {
           // 偽霊媒師（人狼・狂人）の騙り霊媒結果生成
           result = pickRandom(['人狼', '人間']);
@@ -3252,6 +4322,228 @@
       if (!hasReport) {
         list.innerHTML = '<div style="color: var(--text-muted);">本日の新たな確定能力報告はありません。（役職潜伏中）</div>';
       }
+    }
+
+    // =====================================================
+    // 仮想投票・疑い度算出＆履歴アーカイブシステム
+    // =====================================================
+    function calculateVirtualVotes() {
+      const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      gameState.virtualVotes = {};
+
+      aliveChars.forEach(voter => {
+        const realRole = gameState.roles[voter];
+        const candidates = aliveChars.filter(c => c !== voter);
+        if (candidates.length === 0) return;
+
+        let bestTarget = candidates[0];
+        let maxSuspicion = -999;
+        let bestReason = 'ログ全体の違和感';
+
+        candidates.forEach(target => {
+          let score = 50; // ベース疑い度 (50%)
+          let reason = '不自然な発言ログ';
+
+          const targetRealRole = gameState.roles[target];
+          const targetCoRole = gameState.coRoles[target];
+          const voterCoRole = gameState.coRoles[voter];
+
+          if (realRole === 'wolf') {
+            // 【人狼陣営AI】
+            const fellowWolves = candidates.filter(c => gameState.roles[c] === 'wolf');
+            const targetIsWolf = targetRealRole === 'wolf';
+
+            if (targetIsWolf) {
+              // ライン切り（身内切り）: 仲間人狼がCO対抗で追い詰められているか、村から強い疑いを受けている場合に仮票を入れる
+              const targetIsExposed = (gameState.seerHistory[voter] || []).some(h => h.target === target && h.result === '人狼');
+              if (targetIsExposed || Math.random() < 0.3) {
+                score = 85 + Math.floor(Math.random() * 10);
+                reason = 'ライン切り（身内切りによる白確保）';
+              } else {
+                score = 15 + Math.floor(Math.random() * 20); // 基本は仲間を庇い低めの疑い度
+              }
+            } else {
+              // 擦り付け: 村人の中でグレーや対抗COなど疑われている人物に便乗仮票
+              score = 65 + Math.floor(Math.random() * 25);
+              if (targetCoRole !== 'grey' && targetCoRole !== voterCoRole) {
+                score += 15; // 役職対抗への擦り付け
+                reason = '役職対抗者への攻撃擦り付け';
+              } else {
+                reason = 'グレー村人への疑惑擦り付け';
+              }
+            }
+
+          } else if (realRole === 'madman') {
+            // 【狂人AI】
+            if (targetCoRole === 'seer' || targetCoRole === 'medium') {
+              score = 75 + Math.floor(Math.random() * 20);
+              reason = '真役職候補への乱れ誘発';
+            } else {
+              score = 40 + Math.floor(Math.random() * 30);
+              reason = '状況の無用な混迷化';
+            }
+
+          } else {
+            // 【村人陣営AI (村人・占い師・霊媒師・騎士・パン屋・共有者)】
+            // 1. 占い結果による絶対的判定
+            Object.keys(gameState.seerHistory).forEach(seer => {
+              if (gameState.status[seer] === 'alive') {
+                const history = gameState.seerHistory[seer] || [];
+                history.forEach(h => {
+                  if (h.target === target) {
+                    if (h.result === '人狼') {
+                      score += 45; // 占い黒結果
+                      reason = `占い師 ${seer} からの人狼判定`;
+                    } else {
+                      score -= 30; // 占い白結果
+                    }
+                  }
+                });
+              }
+            });
+
+            // 2. 霊媒結果による判定
+            Object.keys(gameState.mediumHistory).forEach(medium => {
+              if (gameState.status[medium] === 'alive') {
+                const history = gameState.mediumHistory[medium] || [];
+                history.forEach(h => {
+                  if (h.target === target && h.result === '人狼') {
+                    score += 20;
+                  }
+                });
+              }
+            });
+
+            // 3. 役職CO対抗による警戒
+            if (targetCoRole !== 'grey' && voterCoRole !== 'grey' && targetCoRole === voterCoRole) {
+              score += 35;
+              reason = `同役職 (${targetCoRole}) への対抗不信`;
+            }
+
+            // 4. 自分を疑ってきた人物への返り討ち警戒
+            const targetVote = gameState.virtualVotes[target];
+            if (targetVote && targetVote.target === voter) {
+              score += 15;
+              reason = '自分に対する一方的な不審感への反論';
+            }
+
+            score += Math.floor(Math.random() * 15) - 5;
+          }
+
+          // スコアの範囲クランプ (10% ～ 98%)
+          score = Math.max(10, Math.min(98, Math.round(score)));
+
+          if (score > maxSuspicion) {
+            maxSuspicion = score;
+            bestTarget = target;
+            bestReason = reason;
+          }
+        });
+
+        gameState.virtualVotes[voter] = {
+          target: bestTarget,
+          suspicionScore: maxSuspicion,
+          reason: bestReason
+        };
+      });
+    }
+
+    // 仮想投票履歴のアーカイブ保存
+    function recordVirtualVoteHistory(label) {
+      const tallyMap = {};
+      const votesCopy = {};
+
+      Object.keys(gameState.virtualVotes).forEach(voter => {
+        const vote = gameState.virtualVotes[voter];
+        votesCopy[voter] = { ...vote };
+
+        if (!tallyMap[vote.target]) {
+          tallyMap[vote.target] = 0;
+        }
+        tallyMap[vote.target]++;
+      });
+
+      const tally = Object.keys(tallyMap)
+        .map(target => ({ target, count: tallyMap[target] }))
+        .sort((a, b) => b.count - a.count);
+
+      gameState.virtualVoteHistory.unshift({
+        day: gameState.day,
+        label: label || `${formatDay(gameState.day)}`,
+        votes: votesCopy,
+        tally: tally
+      });
+    }
+
+    // 「2. 仮想投票・疑い度履歴」ページのレンダリング
+    function renderVoteHistoryPage() {
+      const container = document.getElementById('vote-history-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      if (!gameState.virtualVoteHistory || gameState.virtualVoteHistory.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem; text-align: center;">まだ仮想投票の記録はありません。</div>';
+        return;
+      }
+
+      gameState.virtualVoteHistory.forEach((record, idx) => {
+        const card = document.createElement('div');
+        card.className = 'vote-card';
+
+        // ヘッダー（日時・ラベル）
+        const topTarget = record.tally.length > 0 ? record.tally[0].target : 'なし';
+        card.innerHTML = `
+          <div class="vote-card-header">
+            <span>📅 ${record.label} の仮投票集計</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">最多集票: <strong style="color: var(--accent-red);">村人 ${topTarget}</strong></span>
+          </div>
+        `;
+
+        // 得票集計バッジリスト（ライン精査用）
+        const tallyList = document.createElement('div');
+        tallyList.className = 'vote-tally-list';
+        record.tally.forEach(t => {
+          const badge = document.createElement('div');
+          const isTop = (t.count === record.tally[0].count && t.count > 0);
+          badge.className = `vote-tally-badge ${isTop ? 'top-target' : ''}`;
+          badge.innerHTML = `村人 ${t.target}: <strong>${t.count}票</strong>`;
+          tallyList.appendChild(badge);
+        });
+        card.appendChild(tallyList);
+
+        // 各個人の投票先＆疑念度詳細リスト
+        const itemList = document.createElement('div');
+        itemList.className = 'vote-item-list';
+
+        Object.keys(record.votes).forEach(voter => {
+          const vote = record.votes[voter];
+          const isDeadVoter = gameState.status[voter] !== 'alive';
+
+          const row = document.createElement('div');
+          row.className = `vote-item-row ${isDeadVoter ? 'is-dead-voter' : ''}`;
+
+          let voterCoText = '（グレー）';
+          if (gameState.coRoles[voter] === 'seer') voterCoText = '（占いCO）';
+          if (gameState.coRoles[voter] === 'medium') voterCoText = '（霊媒CO）';
+          if (gameState.coRoles[voter] === 'freemason') voterCoText = '（共有CO）';
+
+          row.innerHTML = `
+            <div class="voter-name">
+              村人 ${voter} <span style="font-size:0.74rem; font-weight:normal; color:var(--text-muted);">${voterCoText}</span>
+            </div>
+            <div class="vote-target-info">
+              <span class="vote-arrow">➔</span>
+              <span class="vote-target-name">村人 ${vote.target}</span>
+              <span class="suspicion-pct">疑念 ${vote.suspicionScore}%</span>
+            </div>
+          `;
+          itemList.appendChild(row);
+        });
+
+        card.appendChild(itemList);
+        container.appendChild(card);
+      });
     }
 
     // Render Morning Comments Box
@@ -3670,6 +4962,11 @@
 
         addLogItem(`審判員 ➡️ 村人 ${char}`, `「${questionText}」`, answerText, '', char, true);
 
+        // 尋問による盤面変化を受けた仮想投票再計算＆履歴更新
+        calculateVirtualVotes();
+        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (村人 ${char})`);
+        renderVoteHistoryPage();
+
         inputEl.value = ''; // Clear input
         renderStatus();
 
@@ -3707,6 +5004,11 @@
         const answerText = getAnswer(char, questionId);
 
         addLogItem(`審判員 ➡️ 村人 ${char}`, questionText, answerText, '', char, true);
+
+        // 尋問による盤面変化を受けた仮想投票再計算＆履歴更新
+        calculateVirtualVotes();
+        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (村人 ${char})`);
+        renderVoteHistoryPage();
 
         renderStatus();
 
@@ -3786,6 +5088,20 @@
         null,
         false
       );
+
+      // 🐾 猫又処刑時の道連れ処理
+      if (realRole === 'nekomata') {
+        const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
+        if (aliveOthers.length > 0) {
+          const revengeChar = pickRandom(aliveOthers);
+          gameState.status[revengeChar] = 'executed';
+          if (gameState.roles[revengeChar] === 'wolf') {
+            gameState.wolvesExecuted++;
+          }
+          const revengeLog = `🐾 【猫又の道連れ】処刑された猫又の怨念により、村人 ${revengeChar} が巻き添えとなって死亡しました！`;
+          addLogItem('ナレーション', '', revengeLog, 'execution', null, false);
+        }
+      }
 
       selectCharacter(null);
       renderStatus();
@@ -3980,12 +5296,26 @@
           });
 
           if (guardedChar && attackTarget === guardedChar) {
-            // 護衛成功！
+            // 護衛成功！ (黒服/身代わり護衛の場合は自分が身代わり死)
+            if (gameState.roles[knightChar] === 'bodyguard') {
+              gameState.status[knightChar] = 'attacked';
+              nightVictims.push(knightChar);
+            }
           } else if (gameState.roles[attackTarget] === 'fox') {
             // 呪殺以外の狼噛み耐性（妖狐）
           } else {
             gameState.status[attackTarget] = 'attacked';
             nightVictims.push(attackTarget);
+
+            // 🐾 猫又の噛まれ道連れ
+            if (gameState.roles[attackTarget] === 'nekomata') {
+              const otherAlive = gameState.charList.filter(c => c !== attackTarget && gameState.status[c] === 'alive');
+              if (otherAlive.length > 0) {
+                const revengeTarget = pickRandom(otherAlive);
+                gameState.status[revengeTarget] = 'attacked';
+                nightVictims.push(revengeTarget);
+              }
+            }
           }
         }
 
@@ -4098,6 +5428,24 @@
       return false;
     }
 
+    function recordDailyChallengeResult() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const score = Math.max(100, 10000 - (gameState.day * 1000) - ((2 - gameState.mistakesLeft) * 2000));
+      
+      let dailyStats = {};
+      try {
+        dailyStats = JSON.parse(localStorage.getItem('jinnrou_daily_stats') || '{}');
+      } catch (e) {}
+
+      dailyStats.lastClearedDate = todayStr;
+      dailyStats.clearCount = (dailyStats.clearCount || 0) + 1;
+      dailyStats.highScore = Math.max(dailyStats.highScore || 0, score);
+
+      try {
+        localStorage.setItem('jinnrou_daily_stats', JSON.stringify(dailyStats));
+      } catch (e) {}
+    }
+
     // End Game Modal Display with Auto Narration Speech
     function endGame(result, message) {
       stopAllTimers();
@@ -4118,6 +5466,11 @@
         title.textContent = '🎉 審判成功！ - Victory -';
         title.className = 'modal-title win';
         titleSpeechText = '審判成功！人狼全滅！';
+
+        if (gameState.gameCategory === 'daily') {
+          recordDailyChallengeResult();
+          message += ' (📅 デイリーお題クリア！)';
+        }
       } else if (result === 'fox_win') {
         winningFaction = 'fox';
         playBgm('haiboku');
@@ -4184,6 +5537,7 @@
       initVoice();
       resetGameState();
       renderVillageStats();
+      updateMainMenuUI();
       playBgm('title');
 
       // ユーザーの最初の操作（タップまたはクリック）で全画面化を実行（1回のみ）
