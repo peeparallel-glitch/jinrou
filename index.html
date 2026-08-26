@@ -147,15 +147,19 @@
 
     /* --- Title Screen --- */
     #title-screen {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
+      justify-content: flex-start;
+      padding: 2rem 1.5rem 80px 1.5rem !important;
       background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url('./IMG/jinnrouyoko.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       text-align: center;
-      overflow-y: auto;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
       transition: background-image 0.3s ease-in-out;
     }
 
@@ -172,7 +176,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
-      padding-bottom: 10vh;
+      padding-bottom: 80px !important;
       background-image: url('./IMG/o-puningu1.jpg');
       background-size: cover;
       background-position: center;
@@ -180,6 +184,7 @@
       text-align: center;
       cursor: pointer;
       user-select: none;
+      box-sizing: border-box;
       transition: opacity 0.5s ease-in-out;
     }
 
@@ -1640,6 +1645,14 @@
         -webkit-overflow-scrolling: touch;
         padding-bottom: 120px !important;
         box-sizing: border-box;
+      }
+
+      /* ⑤ タイトル画面・村選択画面のスマホ用スクロール安全領域拡張 */
+      #title-screen {
+        padding-bottom: 90px !important;
+      }
+      .title-box {
+        margin-bottom: 60px !important;
       }
     }
 
