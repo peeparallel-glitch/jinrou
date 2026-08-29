@@ -259,6 +259,8 @@
       font-weight: normal;
       color: var(--accent-red);
       margin-left: 0.3rem;
+      white-space: nowrap;
+      display: inline-block;
     }
 
     .title-subtitle {
@@ -1656,33 +1658,38 @@
       }
     }
 
-    /* Speech Skip Indicator */
+    /* Speech Skip Indicator & Full Touch Capture Overlay */
     #speech-skip-overlay {
       display: none;
       position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9998;
+      pointer-events: auto;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    #speech-skip-overlay.visible {
+      display: block;
+    }
+    #speech-skip-overlay .skip-badge {
+      position: absolute;
       bottom: 1.2rem;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 9999;
-      pointer-events: none;
-    }
-    #speech-skip-overlay.visible {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      animation: speechSkipPulse 1.2s ease-in-out infinite;
-    }
-    #speech-skip-overlay .skip-badge {
-      background: rgba(59, 130, 246, 0.85);
+      background: rgba(59, 130, 246, 0.9);
       color: #fff;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: bold;
-      padding: 0.4rem 1rem;
+      padding: 0.5rem 1.2rem;
       border-radius: 2rem;
-      box-shadow: 0 2px 12px rgba(59, 130, 246, 0.5);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.6);
       white-space: nowrap;
       pointer-events: none;
       user-select: none;
+      animation: speechSkipPulse 1.2s ease-in-out infinite;
     }
     @keyframes speechSkipPulse {
       0%, 100% { opacity: 0.7; }
@@ -1931,8 +1938,8 @@
     </div>
   </div>
 
-  <!-- Speech Skip Indicator (tap anywhere to skip) -->
-  <div id="speech-skip-overlay">
+  <!-- Speech Skip Indicator & Full Touch Capture Overlay (tap anywhere to skip) -->
+  <div id="speech-skip-overlay" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">
     <div class="skip-badge">⏭ タップで読み上げスキップ</div>
   </div>
 
@@ -1946,7 +1953,7 @@
   <!-- TITLE SCREEN -->
   <div id="title-screen" class="screen">
     <div class="title-box">
-      <h1>ひとり人狼 <span>-人狼推理-</span></h1>
+      <h1 class="main-title">ひとり人狼<br><span class="sub-title">-人狼推理-</span></h1>
       <div class="title-subtitle">1人用 推理裁判パズル（対人セオリー＆心理戦AI搭載版）</div>
 
       <!-- Mode Category Selection Tabs -->
@@ -2675,9 +2682,18 @@
       if ('speechSynthesis' in window) {
         try { window.speechSynthesis.cancel(); } catch(e) {}
       }
-      // スキップインジケーターも確実に非表示にする
       if (typeof hideSpeechSkipIndicator === 'function') {
         hideSpeechSkipIndicator();
+      }
+      if (typeof window.__androidSpeechDoneCallback === 'function') {
+        const cb = window.__androidSpeechDoneCallback;
+        delete window.__androidSpeechDoneCallback;
+        try { cb(); } catch(e) {}
+      }
+      if (typeof currentSpeechResolver === 'function') {
+        const res = currentSpeechResolver;
+        currentSpeechResolver = null;
+        res();
       }
     }
 
@@ -2822,8 +2838,9 @@
       return processed.trim();
     }
 
-    // ★ Speech Skip System: Tap anywhere to skip current speech
+    // ★ Speech Skip System: Tap anywhere to skip current speech (Mobile Touch Optimized)
     let isSpeechPlaying = false;
+    let currentSpeechResolver = null;
 
     function showSpeechSkipIndicator() {
       const el = document.getElementById('speech-skip-overlay');
@@ -2837,18 +2854,29 @@
       isSpeechPlaying = false;
     }
 
-    // Global tap-to-skip listener
-    document.addEventListener('click', function(e) {
-      if (isSpeechPlaying) {
-        // Don't skip if user clicked on a button, input, or interactive element
-        const tag = e.target.tagName.toLowerCase();
-        const isInteractive = tag === 'button' || tag === 'input' || tag === 'select' || tag === 'textarea'
-          || e.target.closest('button') || e.target.closest('input') || e.target.closest('.mode-btn');
-        if (!isInteractive) {
-          cancelSpeech();
-        }
+    function triggerSpeechSkip(e) {
+      if (e) {
+        try { e.preventDefault(); } catch(err) {}
+        try { e.stopPropagation(); } catch(err) {}
       }
-    }, true);
+      if (isSpeechPlaying) {
+        cancelSpeech();
+      }
+    }
+
+    // Touch, Pointer, and Click listeners for robust cross-device mobile support
+    ['touchstart', 'pointerdown', 'click'].forEach(eventType => {
+      document.addEventListener(eventType, function(e) {
+        if (isSpeechPlaying) {
+          const tag = e.target ? e.target.tagName.toLowerCase() : '';
+          const isInteractive = tag === 'button' || tag === 'input' || tag === 'select' || tag === 'textarea'
+            || (e.target && (e.target.closest('button') || e.target.closest('input') || e.target.closest('.mode-btn') || e.target.closest('.nav-btn')));
+          if (!isInteractive) {
+            triggerSpeechSkip(e);
+          }
+        }
+      }, { capture: true, passive: false });
+    });
 
     // Synchronous Speech Promise Function: Supports AndroidHost.speak + Web Speech API Fallback
     function playSpeechAsync(text) {
@@ -2861,6 +2889,7 @@
           return;
         }
 
+        currentSpeechResolver = resolve;
         showSpeechSkipIndicator();
 
         // --- 1. Android WebView Native Host Support ---
@@ -2873,6 +2902,7 @@
             const done = () => {
               if (!resolved) {
                 resolved = true;
+                currentSpeechResolver = null;
                 delete window.__androidSpeechDoneCallback;
                 hideSpeechSkipIndicator();
                 resolve();
@@ -2892,6 +2922,7 @@
 
         // --- 2. Standard Web Speech API (Fallback) ---
         if (!('speechSynthesis' in window)) {
+          currentSpeechResolver = null;
           hideSpeechSkipIndicator();
           resolve();
           return;
@@ -2912,6 +2943,7 @@
         const done = () => {
           if (!resolved) {
             resolved = true;
+            currentSpeechResolver = null;
             hideSpeechSkipIndicator();
             resolve();
           }
@@ -4376,114 +4408,121 @@
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       gameState.virtualVotes = {};
 
+      // 1. 各生き残りメンバーの仮想投票先決定
       aliveChars.forEach(voter => {
         const realRole = gameState.roles[voter];
         const candidates = aliveChars.filter(c => c !== voter);
         if (candidates.length === 0) return;
 
         let bestTarget = candidates[0];
-        let maxSuspicion = -999;
+        let maxSuspicion = 0;
         let bestReason = 'ログ全体の違和感';
 
-        candidates.forEach(target => {
-          let score = 50; // ベース疑い度 (50%)
+        // 各候補ごとのスコアリング
+        const candidateScores = candidates.map(target => {
+          let score = 50; // 基本ベース疑い度
           let reason = '不自然な発言ログ';
 
           const targetRealRole = gameState.roles[target];
-          const targetCoRole = gameState.coRoles[target];
-          const voterCoRole = gameState.coRoles[voter];
+          const targetCoRole = gameState.coRoles[target] || 'grey';
+          const voterCoRole = gameState.coRoles[voter] || 'grey';
 
+          // --- 【人狼の思考ロジック（擬態・同調）】 ---
           if (realRole === 'wolf') {
-            // 【人狼陣営AI】
-            const fellowWolves = candidates.filter(c => gameState.roles[c] === 'wolf');
-            const targetIsWolf = targetRealRole === 'wolf';
+            const isTargetWolf = targetRealRole === 'wolf';
 
-            if (targetIsWolf) {
-              // ライン切り（身内切り）: 仲間人狼がCO対抗で追い詰められているか、村から強い疑いを受けている場合に仮票を入れる
-              const targetIsExposed = (gameState.seerHistory[voter] || []).some(h => h.target === target && h.result === '人狼');
-              if (targetIsExposed || Math.random() < 0.3) {
-                score = 85 + Math.floor(Math.random() * 10);
-                reason = 'ライン切り（身内切りによる白確保）';
+            if (isTargetWolf) {
+              // 仲間人狼への投票: 仲間が占いで黒判定された時などのみ「身内切り」として投票検討（基本は回避）
+              const targetExposed = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人狼');
+              if (targetExposed && Math.random() < 0.6) {
+                score = 62 + Math.floor(Math.random() * 10); // 62~71% に抑える
+                reason = 'ライン切り（身内切りによる村人擬態）';
               } else {
-                score = 15 + Math.floor(Math.random() * 20); // 基本は仲間を庇い低めの疑い度
+                score = 15 + Math.floor(Math.random() * 15); // 基本は仲間への疑い度を低く保持
+                reason = '身内庇い（低スコア）';
               }
             } else {
-              // 擦り付け: 村人の中でグレーや対抗COなど疑われている人物に便乗仮票
-              score = 65 + Math.floor(Math.random() * 25);
-              if (targetCoRole !== 'grey' && targetCoRole !== voterCoRole) {
-                score += 15; // 役職対抗への擦り付け
-                reason = '役職対抗者への攻撃擦り付け';
+              // 非人狼への投票（村人への擬態・ステルス）
+              if (targetCoRole === 'grey' || targetCoRole === 'villager') {
+                // 約70%の確率で「村人たちのグレー精査の流れ」に同調
+                score = 58 + Math.floor(Math.random() * 14); // 58~71% 程度の自然な数値
+                reason = 'グレー村人の発言ログの違和感';
+              } else if (targetCoRole !== 'grey' && voterCoRole !== 'grey' && targetCoRole === voterCoRole) {
+                // 自分と役職が対抗している相手（例: 騙り占い vs 真占い）へは主張のための投票
+                score = 68 + Math.floor(Math.random() * 10);
+                reason = `対抗役職 (${targetCoRole}) への主張不信`;
               } else {
-                reason = 'グレー村人への疑惑擦り付け';
+                // 真役職への不自然な投票を防止（村人と同等の低い割合に抑える）
+                score = 45 + Math.floor(Math.random() * 15);
+                reason = '役職開示者への静観';
               }
             }
-
-          } else if (realRole === 'madman') {
-            // 【狂人AI】
-            if (targetCoRole === 'seer' || targetCoRole === 'medium') {
-              score = 75 + Math.floor(Math.random() * 20);
-              reason = '真役職候補への乱れ誘発';
+          }
+          // --- 【狂人の思考ロジック（擬態・ノイズ）】 ---
+          else if (realRole === 'madman') {
+            if (targetCoRole === 'grey' || targetCoRole === 'villager') {
+              // 70%は村人の流れに合わせてグレーを追及（目立たない）
+              score = 55 + Math.floor(Math.random() * 15);
+              reason = 'グレー村人の言動の曖昧さ';
+            } else if (voterCoRole !== 'grey' && targetCoRole === voterCoRole) {
+              // 自分が騙り役職の場合の対抗攻撃
+              score = 65 + Math.floor(Math.random() * 12);
+              reason = '真役職対抗者への不信主張';
             } else {
-              score = 40 + Math.floor(Math.random() * 30);
-              reason = '状況の無用な混迷化';
+              // 乱れ誘発
+              score = 50 + Math.floor(Math.random() * 15);
+              reason = '盤面の慎重な観察';
+            }
+          }
+          // --- 【村人陣営の思考ロジック (村人・占い・霊媒・騎士・パン・共有等)】 ---
+          else {
+            // 1. 占い師・霊媒師の黒判定結果
+            const hasBlackReport = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人狼')
+              || Object.values(gameState.mediumHistory || {}).flat().some(r => r.target === target && r.result === '人狼');
+            const hasWhiteReport = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人間');
+
+            if (hasBlackReport) {
+              score += 25;
+              reason = '能力者からの【人狼判定】';
+            } else if (hasWhiteReport) {
+              score -= 25;
+              reason = '能力者からの【人間判定】';
             }
 
-          } else {
-            // 【村人陣営AI (村人・占い師・霊媒師・騎士・パン屋・共有者)】
-            // 1. 占い結果による絶対的判定
-            Object.keys(gameState.seerHistory).forEach(seer => {
-              if (gameState.status[seer] === 'alive') {
-                const history = gameState.seerHistory[seer] || [];
-                history.forEach(h => {
-                  if (h.target === target) {
-                    if (h.result === '人狼') {
-                      score += 45; // 占い黒結果
-                      reason = `占い師 ${seer} からの人狼判定`;
-                    } else {
-                      score -= 30; // 占い白結果
-                    }
-                  }
-                });
-              }
-            });
-
-            // 2. 霊媒結果による判定
-            Object.keys(gameState.mediumHistory).forEach(medium => {
-              if (gameState.status[medium] === 'alive') {
-                const history = gameState.mediumHistory[medium] || [];
-                history.forEach(h => {
-                  if (h.target === target && h.result === '人狼') {
-                    score += 20;
-                  }
-                });
-              }
-            });
-
-            // 3. 役職CO対抗による警戒
+            // 2. 役職CO対抗関係
             if (targetCoRole !== 'grey' && voterCoRole !== 'grey' && targetCoRole === voterCoRole) {
-              score += 35;
+              score += 22;
               reason = `同役職 (${targetCoRole}) への対抗不信`;
             }
 
-            // 4. 自分を疑ってきた人物への返り討ち警戒
+            // 3. 自分を疑ってきた人物への返し
             const targetVote = gameState.virtualVotes[target];
             if (targetVote && targetVote.target === voter) {
-              score += 15;
-              reason = '自分に対する一方的な不審感への反論';
+              score += 12;
+              reason = '自分に対する不審感への反論';
             }
 
-            score += Math.floor(Math.random() * 15) - 5;
+            // 4. グレーへの一般的なログ精査
+            if (targetCoRole === 'grey' || targetCoRole === 'villager') {
+              score += 8;
+            }
+
+            // スコアを 48%~85% 程度の自然な村人思考範囲に収める
+            score = Math.max(30, Math.min(88, score + Math.floor(Math.random() * 12) - 6));
           }
 
-          // スコアの範囲クランプ (10% ～ 98%)
-          score = Math.max(10, Math.min(98, Math.round(score)));
+          // ★ 表示疑心度へのランダムノイズ（±3%）の付加（人間的な思考ゆらぎ）
+          const noise = Math.floor(Math.random() * 7) - 3;
+          score = Math.max(25, Math.min(92, Math.round(score + noise)));
 
-          if (score > maxSuspicion) {
-            maxSuspicion = score;
-            bestTarget = target;
-            bestReason = reason;
-          }
+          return { target, score, reason };
         });
+
+        // 最も高いスコアの対象を本日の仮投票先に決定
+        candidateScores.sort((a, b) => b.score - a.score);
+        bestTarget = candidateScores[0].target;
+        maxSuspicion = candidateScores[0].score;
+        bestReason = candidateScores[0].reason;
 
         gameState.virtualVotes[voter] = {
           target: bestTarget,
@@ -4794,17 +4833,50 @@
       }
       return getCustomAnswer(char, '質問');
     }
-    // Dynamic Multi-Angle & Context-Aware Human-like AI Answer Generator
-    function getCustomAnswer(char, questionText) {
-      // ※ 尋問（個別質問）の場での勝手な自己防衛CO暴発を禁止するため、checkSelfPreservationCO は呼び出さない
+    // Personality Tone Map for Characters
+    function getCharPersonality(char) {
+      const code = char.charCodeAt(0) % 4;
+      if (code === 0) return 'aggressive';   // 攻撃的・強気
+      if (code === 1) return 'logical';      // 論理的・考察系
+      if (code === 2) return 'cautious';     // 慎重・防衛的
+      return 'intuitive';                    // 直感的・揺さぶり系
+    }
 
+    // Response Validation & Anti-Template Filter
+    function validateAndFilterResponse(response, char, questionText) {
+      const genericPhrases = [
+        "わかりません", "様子を見ます", "私は市民です", "ノーコメント",
+        "質問", "わかりかねます", "なんとも言えません", "別にありません"
+      ];
+
+      const isGeneric = genericPhrases.some(phrase => response.trim() === phrase || response.includes("私のアクションに嘘はありませんよ"));
+      if (isGeneric || response.length < 25) {
+        const personality = getCharPersonality(char);
+        const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
+        const target = aliveOthers.length > 0 ? pickRandom(aliveOthers) : '対抗者';
+
+        if (personality === 'aggressive') {
+          return `「……急にそんな曖昧な聞き方をされても困るな！ 今一番怪しいのは自分を隠して周りに同調している 村人 ${target} じゃないか？ 理由のない疑惑を擦り付けるなら反論させてもらうよ！」`;
+        } else if (personality === 'logical') {
+          return `「……盤面の整理が必要だね。今朝のログと投票先を見ると、村人 ${target} の発言にラインの矛盾がある。曖昧な質問に逃げるより、まずそこの真偽を洗うべきだ。」`;
+        } else if (personality === 'cautious') {
+          return `「……冤罪で釣られるのは嫌だから慎重に話すよ。村人 ${target} さんの言動が少し引っかかっているんだ。焦って決め打つより、明日の結果を見てから精査しよう。」`;
+        } else {
+          return `「ふふ、逆に私を揺さぶって視点を崩したいのかな？ 村人 ${target} とのラインを気にするより、ログ全体の矛盾を直接追及してほしいね！」`;
+        }
+      }
+      return response;
+    }
+
+    // Dynamic Multi-Angle & Mind-Game AI Interrogation Answer Generator
+    function getCustomAnswer(char, questionText) {
       const coRole = gameState.coRoles[char];
       const realRole = gameState.roles[char];
       const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
-      const aliveTotal = aliveOthers.length + 1;
       const q = (questionText || '').toLowerCase();
+      const personality = getCharPersonality(char);
 
-      // 1. 質問インテントの高度・多角的解析
+      // 質問インテント解析
       const isRoleInquiry = /役職|CO|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職/.test(q);
       const isWhy = /なぜ|理由|どうして|選んだ|意図|根拠|きっかけ|なんで/.test(q);
       const isTiming = /いつ|タイミング|遅い|初日|今|昨日|段階|遅れ/.test(q);
@@ -4815,171 +4887,118 @@
       const isTargetQ = /誰|ターゲット|目標|狙い|処刑候補|おすすめ|おすすめは|怪しい人/.test(q);
       const isWhyMe = /なぜ私|なんで私|私を|自分を|僕を|俺を|私の|質問|お前/.test(q);
 
-      // 対抗者・ターゲット・文脈の取得
       const rivalCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === coRole && coRole !== 'grey' && gameState.status[c] === 'alive');
       const rivalName = rivalCOs.length > 0 ? rivalCOs[0] : (aliveOthers[0] || '対抗者');
-      const suspicionTarget = aliveOthers.length > 0 ? pickRandom(aliveOthers) : 'A';
+
+      // グレー村人の抽出
+      const greyAlive = aliveOthers.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'grey' || gameState.coRoles[c] === 'villager');
+      const suspicionTarget = greyAlive.length > 0 ? pickRandom(greyAlive) : (aliveOthers[0] || 'A');
+
       const report = gameState.dailySeerReports[char];
       const seerTarget = report ? report.target : (aliveOthers[0] || 'A');
       const seerResult = report ? report.result : '人間';
-      const morningComment = gameState.morningComments[char] || '';
       const place = gameState.alibis[char] || '村の広場';
 
-      // 思考アングルと感情トーンのダイナミック組み合わせ
-      const tone = pickRandom(['calm_logical', 'emotional_anxious', 'bold_provocative', 'cautious_humble']);
-
+      // キャラクター性格に応じた接頭辞（トーン）
       let prefix = '';
-      if (tone === 'calm_logical') {
-        prefix = pickRandom(['「……順を追って論理的に説明しよう。', '「……客観的なログ事実から答えるよ。', '「冷静に盤面を整理した上で言うと、']);
-      } else if (tone === 'emotional_anxious') {
-        prefix = pickRandom(['「……っ！ 疑われて焦る気持ちもあるが、聞いてほしい！', '「冤罪で誤処刑されるわけにはいかないから真実を語るよ！', '「……頼むから私を真剣に観察してくれ！']);
-      } else if (tone === 'bold_provocative') {
-        prefix = pickRandom(['「ふふ、鋭い質問だね。だが私の真意はそこじゃない。', '「ははっ！ そう切り込んでくるとは面白い！', '「なるほど、私を揺さぶるつもりかい？']);
+      if (personality === 'aggressive') {
+        prefix = pickRandom(['「はっきり言わせてもらうが、', '「逃げずに強気に返答するよ。', '「私を疑うなら覚悟して聞くんだね。']);
+      } else if (personality === 'logical') {
+        prefix = pickRandom(['「客観的な盤面ログを元に論理的に答える。', '「視点整理として冷静に聞いてほしい。', '「ログの事実関係から分析すると、']);
+      } else if (personality === 'cautious') {
+        prefix = pickRandom(['「誤処刑を防ぐために慎重にお答えします。', '「軽々しい断定は避けますが、私の視点では…', '「慎重に観察した上で伝えると、']);
       } else {
-        prefix = pickRandom(['「慎重にお答えさせていただきますが…', '「自信過剰にはなりたくありませんが、分析すると…', '「……私なりの視点をお伝えしますね。']);
+        prefix = pickRandom(['「ふふ、面白い角度の質問だね。', '「逆に僕の視点を試しているのかな？', '「なるほど、直感で言うとね…']);
       }
+
+      let rawResponse = '';
 
       // --- 【0. 役職質問・直接CO強制質問 (isRoleInquiry)】 ---
       if (isRoleInquiry) {
         if (coRole !== 'grey') {
-          // すでに朝の全体発表等で公式CO済みのキャラの場合
           let roleName = '能力者';
           if (coRole === 'seer') roleName = '占い師';
           if (coRole === 'medium') roleName = '霊媒師';
           if (coRole === 'freemason') roleName = '共有者';
-          return `${prefix} 私は朝の全体発言の通り【${roleName}】としてCOし、村のために真実を報告しているよ。追加で個別に明かす隠し役職などない。`;
+          rawResponse = `${prefix} 私は朝の全体宣言通り【${roleName}】としてCOしている。個別尋問で別の役職を偽る理由などないし、真実の報告に全力を尽くしているよ。`;
         } else {
-          // 未CO（潜伏中 / グレー）の場合：尋問の場では絶対に役職を明かさない（CO禁止）！
-          return pickRandom([
-            `${prefix} 個別の尋問の場で軽々に役職を明かすつもりはないよ。人狼に有利な情報を与えるだけだからね。私は一人の人間として盤面を観察している。`,
-            `${prefix} 役職の有無をここで口にするのは村にとって不利益だ。私の発言ログと行動の整合性から、身の潔白を判断してほしい。`,
-            `${prefix} ここで口頭で役職を言ったところで言った者勝ちになるだけさ。私は一村人として客観的な議論の整理に集中しているよ。`
+          rawResponse = pickRandom([
+            `${prefix} 尋問の場で安易に役職を明かすのは人狼に襲撃目標を与えるだけさ。私の発言の矛盾の無さから一村人としての白さを判断してくれ。`,
+            `${prefix} 役職COは盤面全体にメリットがある時だけ行うべきだ。ここで個人的に口にするつもりはないよ。私の視点を信じてほしい。`,
+            `${prefix} 口頭で何とでも言える役に頼るより、ログの繋がりを見てほしい。私は村のために盤面を観察している一員だ。`
           ]);
         }
       }
-
       // --- 【1. 誰が怪しいか・処刑ターゲット質問 (isTargetQ)】 ---
-      if (isTargetQ) {
-        if (realRole === 'wolf') { // 【人狼：巧みな印象操作・ターゲット擦り付け】
-          return pickRandom([
-            `${prefix} 現状の生存${aliveTotal}人の発言を精査すると、発言が防衛的で周囲に同調している 村人 ${suspicionTarget} さんの立ち回りが一番危険だ。村を救うため彼を第一処刑候補に推す。`,
-            `${prefix} 私は 村人 ${suspicionTarget} さんの視点の狭さに強い不自然さを感じる。自身が人狼であるからこそ周囲の不整合から目を逸らそうとしているんじゃないかい？`,
-            `${prefix} 議論の開示タイミングを計りすぎている 村人 ${suspicionTarget} さんが最も怪しい。彼に処刑投票を集中させるべきだ。`
+      else if (isTargetQ) {
+        if (realRole === 'wolf') {
+          // 【人狼：ライン推量・擦り付け・ブラフ】
+          rawResponse = pickRandom([
+            `${prefix} 投票先が怪しく重なっている 村人 ${suspicionTarget} と周りのラインが気になるね。彼の発言は防衛的すぎるし、今日の処刑筆頭候補に推すよ。`,
+            `${prefix} 発言の整合性が崩れている 村人 ${suspicionTarget} だね。自分への疑いを避けるために無理な白アピールをしているように見える。`,
+            `${prefix} 村人 ${suspicionTarget} の立ち回りが一番黒い。彼を釣り除外することで村人陣営の視点がクリアになるはずだ。`
           ]);
-        } else if (realRole === 'madman') { // 【狂人：カオス誘導・人狼アシスト】
-          return `${prefix} 村人 ${suspicionTarget} だよ！ 彼のログには村を破滅に導く狂気が滲み出ている！ 今すぐ彼を処刑して白黒をはっきりさせるべきだ！」`;
-        } else if (realRole === 'fox') { // 【妖狐：静かな観察・俯瞰】
-          return `${prefix} 生存${aliveTotal}人のこの状況で、安易な決め打ちは誤処刑の引き金になる。だが強いて挙げるなら 村人 ${suspicionTarget} の言葉の二転三転が気になるね。」`;
-        } else { // 【村人・真役職：論理的考察】
-          return `${prefix} 過去のログと朝のコメントを照らし合わせた結果、発言の整合性が取れていない 村人 ${suspicionTarget} さんを検証すべき処刑対象と見ている。」`;
-        }
-      }
-
-      // --- 【2. なぜ私を疑うのか質問 (isWhyMe)】 ---
-      if (isWhyMe) {
-        if (realRole === 'wolf') { // 【人狼：被害者ぶる・逆質問・すり替え】
-          return pickRandom([
-            `${prefix} 疑っているのではなく、あなたに『村目（人間）』の証明をしてほしいだけだよ。私を追及して注意を逸らすのではなく、他のグレーの検証に協力してくれないか？`,
-            `${prefix} 私があなたを咎めているように見えるかい？ むしろあなたの発言に村を導く真摯さを感じたいからこそ、疑問を投げかけているんだ！`,
-            `${prefix} あなたの攻撃的な反論の仕方自体が、人狼が追いつめられた時の防衛反応に見えてしまうんだ。本当に村人なら冷静にログを語ってほしい。`
-          ]);
-        } else { // 【村人・真役職】
-          return `${prefix} あなたを闇雲に疑っているわけではない。ただあなたの発言のニュアンスに防衛的な緊張感を感じたから、真意を確認したかっただけだよ。」`;
-        }
-      }
-
-      // --- 【3. アリバイ・昨夜の行動質問 (isAlibi)】 ---
-      if (isAlibi) {
-        if (realRole === 'wolf') { // 【人狼：完璧なアリバイ工作と白々しい嘆き】
-          return `${prefix} 昨夜は『${place}』で静かに過ごしていたよ。人狼の襲撃に怯えながら村の平和を祈っていたが……犠牲者が出てしまい悔しい。私にやましい行動は一切ない。」`;
-        } else if (realRole === 'fox') {
-          return `${prefix} 昨夜は『${place}』にいたね。誰にも邪魔されず一人で盤面の真偽と考察を整理していたのさ。」`;
+        } else if (realRole === 'madman') {
+          rawResponse = `${prefix} 村人 ${suspicionTarget} の言動が支離滅裂だ！ 人狼の匂いがプンプンするし、今すぐ処刑して盤面を動かすべきだね！`;
         } else {
-          return `${prefix} 昨夜は『${place}』にいたよ。身の潔白は天に誓って保証できるし、怪しい動きなどしていない。」`;
+          // 【村人陣営：対人視点整理・確白精査】
+          rawResponse = pickRandom([
+            `${prefix} 今朝のログを見ると 村人 ${suspicionTarget} さんの発言に不自然な二転三転がある。あそこを処刑検証するのが一番リスクが少ないと思う。`,
+            `${prefix} 村人 ${suspicionTarget} さんの投票ラインが他の黒候補とかばい合っているのが気になる。彼の白黒をはっきりさせたいね。`,
+            `${prefix} 確かに 村人 ${suspicionTarget} に違和感はある。でも即処刑より明日の占い結果や対抗の精査を見てから決めても遅くないんじゃないかな。`
+          ]);
         }
       }
-
+      // --- 【2. なぜ私を疑うのか質問 (isWhyMe)】 ---
+      else if (isWhyMe) {
+        if (realRole === 'wolf') {
+          rawResponse = pickRandom([
+            `${prefix} 疑っているのではなく、逆になぜ私にだけ執拗に追及してくるのか気になるよ。私の視点を潰したい人狼側の動きじゃないのかな？`,
+            `${prefix} あなたの質問自体が守りに寄っていて防衛的に見えるんだ。本当に村人なら、私を疑うより他のグレーの矛盾を一緒に探さないかい？`,
+            `${prefix} 感情的になって私を攻撃する姿勢が、追いつめられた狼の防衛反応に見えてしまうんだよ。冷静にログを見直してほしい。`
+          ]);
+        } else {
+          rawResponse = `${prefix} あなたを無条件で黒視しているわけじゃない。ただ、あなたの発言のタイミングに少し違和感があったから、身の潔白を確認したかっただけさ。`;
+        }
+      }
+      // --- 【3. アリバイ・昨夜の行動質問 (isAlibi)】 ---
+      else if (isAlibi) {
+        rawResponse = `${prefix} 昨夜は『${place}』にいたよ。人狼の襲撃を警戒しながら一人で盤面ログを整理していた。身の潔白に何一つやましい点はないよ。`;
+      }
       // --- 【4. 占い・鑑定に関する質問 (isSeerQ)】 ---
-      if (isSeerQ || (coRole === 'seer' && (isWhy || isTiming || isDoubt))) {
+      else if (isSeerQ || (coRole === 'seer' && (isWhy || isTiming || isDoubt))) {
         if (coRole === 'seer') {
-          if (realRole === 'seer') { // 【真占い師】
-            if (isWhy) {
-              return `${prefix} 朝コメントで 村人 ${seerTarget} さんのログの提出タイミングに不自然さを感じて占った。鑑定結果は【${seerResult}】だったよ。`;
-            } else if (isTiming) {
-              return `${prefix} 初日に安易にCOすると人狼からの最優先襲撃標的になる。村の視点が定まる最善のタイミングを狙って開示したんだよ。」`;
-            } else if (isDoubt) {
-              return `${prefix} 私を疑う前に、対抗でCOしている ${rivalName} さんの矛盾に満ちた破綻ログを分析してほしい。私こそが真の占い師であり、結果【${seerResult}】は真実だ！」`;
-            } else {
-              return `${prefix} 結論から直球で言うが、私が本物の占い師だよ。村人 ${seerTarget} を占った結果は【${seerResult}】だった。私を信じてくれ。」`;
-            }
-          } else if (realRole === 'wolf') { // 【人狼：巧妙なブラフ・話題のすり替え】
-            if (isWhy) {
-              return pickRandom([
-                `${prefix} あえて議論の中心から外れた位置を占うことで、真占い師としての公平な視点を示したかったのさ。結果【${seerResult}】と判明したよ。`,
-                `${prefix} 村人 ${seerTarget} さんの朝の発言に後付けのような違和感があったからだよ。結果として【${seerResult}】と判明したのさ。`,
-                `${prefix} 逆に聞くけど、初日の段階で人狼を見抜くためにこれ以上のベストなアプローチがあったかい？ 村人 ${seerTarget} への結果は【${seerResult}】だ。`
-              ]);
-            } else if (isTiming) {
-              return `${prefix} 盤面の乱れを防ぐため、対抗の出方と周囲のログをじっくり観察してから出たんだ。計算したタイミングだよ。」`;
-            } else if (isDoubt) {
-              return `${prefix} 私を偽物扱いする前に、対抗の ${rivalName} さんの怪しい立ち振る舞いを見てくれ！ 私は村のために結果【${seerResult}】を提示しているんだ！」`;
-            } else {
-              return `${prefix} 私は本気で村の勝利のために名乗り出ている。村人 ${seerTarget} の鑑定結果【${seerResult}】を元に議論を進めてほしい。」`;
-            }
-          } else if (realRole === 'madman') { // 【狂人：強気・カオス誘導】
-            return `${prefix} 私こそが真の占い師さ！ 村人 ${seerTarget} 【${seerResult}】の結果を元に一気に人狼を追い詰めよう！」`;
+          if (realRole === 'seer') {
+            rawResponse = `${prefix} 占い師として 村人 ${seerTarget} を占った結果は【${seerResult}】だった。対抗の ${rivalName} の出す白先こそ怪しい。私こそが真の占い師だ！`;
+          } else {
+            rawResponse = `${prefix} 対立占い師の破綻を狙って精査しているよ。村人 ${seerTarget} への【${seerResult}】の結果を軸に、矛盾した偽物を追い詰める！`;
           }
         } else {
-          // 未CO（グレー等）の場合：占い結果は持っていないため役職暴露せず普通に回答
-          return `${prefix} 私は占い師ではないので鑑定結果など持っていないよ。全体ログの整合性と発言の矛盾から人狼を探しているんだ。」`;
+          rawResponse = `${prefix} 私は占い師ではないよ。ただ、対立している占いCO者たちの出す判定と投票ラインの矛盾を厳しく精査しているところさ。`;
         }
       }
-
-      // --- 【5. タイミング・時期に関する質問 (isTiming)】 ---
-      if (isTiming) {
-        if (coRole !== 'grey') {
-          return `${prefix} 初日に名乗り出ると襲撃リスクが跳ね上がる。盤面を見極め、確定情報が一番響くタイミングで出るのがプロの動きだよ。」`;
-        } else {
-          return `${prefix} 潜伏していたわけではなく、安易なCOで人狼に有利な状況を作らせないための戦略的観察期間だったんだ。」`;
-        }
-      }
-
-      // --- 【6. ライン・繋がりに関する質問 (isLine)】 ---
-      if (isLine) {
+      // --- 【5. ライン・繋がりに関する質問 (isLine)】 ---
+      else if (isLine) {
         if (aliveOthers.length >= 2) {
           const t1 = aliveOthers[0];
           const t2 = aliveOthers[1];
-          return `${prefix} 村人 ${t1} さんと 村人 ${t2} さんの間でお互いを庇い合う不自然なラインを感じている。片方が黒ならもう片方も黒と見て間違いない。」`;
+          rawResponse = `${prefix} 村人 ${t1} と 村人 ${t2} の間で露骨なかばい合いを感じる。あの2人の投票先が重なっているなら、黒ラインを疑うのがセオリーだね。`;
         } else {
-          return `${prefix} 他のプレイヤーと結託するラインなど存在しない。私は常に単独でログの矛盾を洗っているよ。」`;
+          rawResponse = `${prefix} 誰かと結託するラインなど存在しないよ。私は一村人として単独でログの不整合を洗っている。`;
         }
       }
-
-      // --- 【7. 理由・動機（WHY）に関する全般質問 (isWhy)】 ---
-      if (isWhy) {
-        if (morningComment) {
-          return `${prefix} 行動の背景には今朝話した『${morningComment}』という認識がある。村を誤処刑に巻き込まないための論理的選択だよ。」`;
-        } else {
-          return `${prefix} 私の全行動の根拠は『村人陣営の誤処刑を防ぐこと』に尽きる。安易な感情論ではなくログの客観的データで動いているんだ。」`;
-        }
-      }
-
-      // --- 【8. 信頼性・対抗・処刑追及（DOUBT）に関する質問 (isDoubt)】 ---
-      if (isDoubt) {
-        if (rivalCOs.length > 0) {
-          return `${prefix} 私を疑う前に、対抗の ${rivalName} さんの支離滅裂な発言と不自然な手先を見てほしい！ 彼こそが人狼の騙りだ！」`;
-        }
+      // --- 【6. 理由・動機（WHY）や追及 (isWhy / isDoubt / 汎用)】 ---
+      else {
         if (aliveOthers.length > 0) {
           const target = pickRandom(aliveOthers);
-          return `${prefix} 私は絶対に村人陣営だ。むしろ発言がコロコロ変わる 村人 ${target} さんの動向こそ警戒すべき処刑候補だよ。」`;
+          rawResponse = `${prefix} 『${questionText}』への答えとして、私は村人陣営の誤処刑を防ぐために動いている。村人 ${target} さんのようなあやふやな発言こそ精査すべきだと思うよ。`;
+        } else {
+          rawResponse = `${prefix} 『${questionText}』についてだけど、私は常に客観的なログ事実を元に発言している。感情的な決め打ちに流されるつもりはないよ。`;
         }
       }
 
-      // --- 【9. 汎用・自由質問への自然な応答フォールバック】 ---
-      if (morningComment) {
-        return `${prefix} 『${questionText}』についてのお尋ねですね。今朝話した『${morningComment}』の通り、私は一貫して村の勝利のために動いています。後ろ暗い点は一切ありません。」`;
-      }
-      return `${prefix} 『${questionText}』という質問ですが、私は常に村人陣営の勝利を最優先にして判断しています。私のアクションに嘘はありませんよ。」`;
+      // テンプレート排除＆バリデーションフィルターを通して最終出力
+      return validateAndFilterResponse(rawResponse, char, questionText);
     }
 
     // Ask Custom Question Handler with Visual Active Highlight & Auto Reset
@@ -5266,79 +5285,101 @@
         // ★ 読み上げ完了後、一呼吸おいて画面をフェードアウト（暗転）
         await new Promise(r => setTimeout(r, 1000));
 
-        // --- Night Actions Calculation (Strategic Seory-Based Logic) ---
+        // --- Night Actions Calculation (Strategic Psychological Mind-Game Logic) ---
         const nightVictims = [];
 
-        // 1. 騎士 / 狩人 (護衛ターゲット選定)
-        const knightChar = gameState.charList.find(c => gameState.roles[c] === 'knight' && gameState.status[c] === 'alive');
+        // 1. 騎士 / 狩人 / 黒服 (高度な心理戦護衛ターゲット選定)
+        const knightChar = gameState.charList.find(c => (gameState.roles[c] === 'knight' || gameState.roles[c] === 'bodyguard') && gameState.status[c] === 'alive');
         let guardedChar = null;
         if (knightChar) {
           const guardables = gameState.charList.filter(c => c !== knightChar && gameState.status[c] === 'alive');
           if (guardables.length > 0) {
-            // 過去に連続護衛禁止ルールの場合の除外処理
             const lastGuard = gameState.lastKnightGuardTarget || null;
             const validCandidates = guardables.length > 1 ? guardables.filter(c => c !== lastGuard) : guardables;
 
-            // スコアリング: CO済み真占い・確定役職を最優先(+100)、次点でCO済み霊媒(+60)、確定白村人(+40)
-            let bestTarget = validCandidates[0];
-            let maxScore = -999;
+            // CO済み確定役職者（占い・霊媒・共有等）
+            const confirmedRoleCandidates = validCandidates.filter(c => ['seer', 'medium', 'psychic', 'freemason'].includes(gameState.coRoles[c]));
+            // グレーの白い村人（COなし・発言力が高い・確定白）
+            const whiteGrayCandidates = validCandidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager' || gameState.coRoles[c] === 'grey');
 
-            validCandidates.forEach(c => {
-              let score = Math.random() * 5; // 揺らぎ
-              const coRole = gameState.coRoles[c];
-              if (coRole === 'seer') score += 100;
-              else if (coRole === 'medium') score += 60;
-              else if (coRole === 'freemason') score += 50;
+            const guardStrategy = Math.random();
 
-              // 占い師等から「白（人間）」判定されている人物
-              const isConfirmedWhite = Object.values(gameState.dailySeerReports || {}).some(r => r.target === c && r.result === '人間');
-              if (isConfirmedWhite) score += 30;
+            if (confirmedRoleCandidates.length > 0 && guardStrategy < 0.65) {
+              // 【王道護衛】（約65%）: CO済み役職者を素直に護衛
+              guardedChar = pickRandom(confirmedRoleCandidates);
+            } else if (whiteGrayCandidates.length > 0 && guardStrategy < 0.90) {
+              // 【裏読み・潜伏護衛】（約25%）: 「狼はGJを避けてグレーを噛む」と読み、白いグレー村人を保護
+              // 発言力・白判定の高い候補を優先
+              let bestGray = whiteGrayCandidates[0];
+              let maxScore = -999;
+              whiteGrayCandidates.forEach(c => {
+                let s = Math.random() * 10;
+                const isConfirmedWhite = Object.values(gameState.dailySeerReports || {}).some(r => r.target === c && r.result === '人間');
+                if (isConfirmedWhite) s += 40;
+                if (s > maxScore) {
+                  maxScore = s;
+                  bestGray = c;
+                }
+              });
+              guardedChar = bestGray;
+            } else {
+              // 【ブラフ・変則護衛】（約10%）: あえて役職者を囮にし、他候補や生存者から選択
+              guardedChar = pickRandom(validCandidates);
+            }
 
-              if (score > maxScore) {
-                maxScore = score;
-                bestTarget = c;
-              }
-            });
-
-            guardedChar = bestTarget;
             gameState.lastKnightGuardTarget = guardedChar;
           }
         }
 
-        // 2. 人狼 (襲撃ターゲット選定)
+        // 2. 人狼 (高度な心理戦襲撃ターゲット選定)
         const aliveWolves = gameState.charList.filter(c => gameState.roles[c] === 'wolf' && gameState.status[c] === 'alive');
         const aliveNonWolves = gameState.charList.filter(c => gameState.roles[c] !== 'wolf' && gameState.status[c] === 'alive');
 
         if (aliveWolves.length > 0 && aliveNonWolves.length > 0) {
-          // スコアリング: CO済み確定役職（占い・霊媒等）を優先、脅威となる鋭い議論を展開する村人を優先
-          let attackTarget = aliveNonWolves[0];
-          let maxScore = -999;
+          // 狂人・騙り自陣営を誤噛みしないためのフィルタリング
+          const targetPool = aliveNonWolves.filter(c => gameState.roles[c] !== 'madman');
+          const attackCandidates = targetPool.length > 0 ? targetPool : aliveNonWolves;
 
-          aliveNonWolves.forEach(c => {
-            let score = Math.random() * 10;
-            const coRole = gameState.coRoles[c];
-            const realRole = gameState.roles[c];
+          // 役職CO中の村人陣営（占い・霊媒等）
+          const confirmedRoleTargets = attackCandidates.filter(c => ['seer', 'medium', 'psychic', 'freemason'].includes(gameState.coRoles[c]));
+          // グレー（COのない鋭い発言者・確白村人）
+          const sharpGrayTargets = attackCandidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager' || gameState.coRoles[c] === 'grey');
 
-            // 確定真役職・CO役職の優先排除
-            if (coRole === 'seer') score += 80;
-            else if (coRole === 'medium') score += 60;
-            else if (coRole === 'freemason') score += 40;
+          let attackTarget = null;
+          const attackStrategy = Math.random();
 
-            // 狂人・騙り仲間（自陣営）の誤噛み防止
-            if (realRole === 'madman') {
-              score -= 70; // 狂人はできる限り活かす
+          // 初夜（1日目の夜）の心理戦判定
+          if (gameState.day === 1) {
+            // 初夜は約50%の確率で「騎士の初日役職護衛(GJ)を警戒」し、あえて役職を避けて鋭いグレーを襲撃
+            if (sharpGrayTargets.length > 0 && Math.random() < 0.50) {
+              attackTarget = pickRandom(sharpGrayTargets);
             }
+          }
 
-            // グレーかつ発言・推論が鋭い発言者を脅威として噛む
-            if (coRole === 'villager') {
-              score += 25;
+          if (!attackTarget) {
+            if (confirmedRoleTargets.length > 0 && attackStrategy < 0.45) {
+              // 【役職直接襲撃】（約45%）: 護衛と勝負して真役職者を直接排除
+              attackTarget = pickRandom(confirmedRoleTargets);
+            } else if (sharpGrayTargets.length > 0 && attackStrategy < 0.85) {
+              // 【グレー噛み / 役職外し】（約40%）: 騎士の護衛領域を外し、鋭い推論を展開する村人（グレー）を襲撃
+              let bestGray = sharpGrayTargets[0];
+              let maxScore = -999;
+              sharpGrayTargets.forEach(c => {
+                let s = Math.random() * 10;
+                // 確定白や村人評価が高い人物を優先脅威としてマーク
+                const isConfirmedWhite = Object.values(gameState.dailySeerReports || {}).some(r => r.target === c && r.result === '人間');
+                if (isConfirmedWhite) s += 30;
+                if (s > maxScore) {
+                  maxScore = s;
+                  bestGray = c;
+                }
+              });
+              attackTarget = bestGray;
+            } else {
+              // 【変則襲撃】（約15%）: ランダム要素を含めた混迷襲撃
+              attackTarget = pickRandom(attackCandidates);
             }
-
-            if (score > maxScore) {
-              maxScore = score;
-              attackTarget = c;
-            }
-          });
+          }
 
           if (guardedChar && attackTarget === guardedChar) {
             // 護衛成功！ (黒服/身代わり護衛の場合は自分が身代わり死)
