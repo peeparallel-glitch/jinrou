@@ -1384,6 +1384,23 @@
       background: #252a3f;
     }
 
+    .setting-select {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      margin-top: 0.3rem;
+      cursor: pointer;
+    }
+
+    .setting-select:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+    }
+
     /* Rule Explanation Styling */
     .rule-explanation {
       display: flex;
@@ -1956,6 +1973,12 @@
       <h1 class="main-title">ひとり人狼<br><span class="sub-title">-人狼推理-</span></h1>
       <div class="title-subtitle">1人用 推理裁判パズル（対人セオリー＆心理戦AI搭載版）</div>
 
+      <!-- Sub Header Buttons (遊び方・設定) -->
+      <div class="title-sub-buttons" style="margin-bottom: 0.8rem;">
+        <button class="btn-title-sub" onclick="openModal('how-to-play-modal')">📖 遊び方</button>
+        <button class="btn-title-sub" onclick="openModal('settings-modal')">⚙ 設定</button>
+      </div>
+
       <!-- Mode Category Selection Tabs -->
       <div class="mode-category-tabs">
         <button class="category-tab active" id="tab-cat-normal" onclick="selectGameCategory('normal')">通常モード</button>
@@ -1971,7 +1994,7 @@
             <div class="mode-header">
               <span>【6人村】 Beginner</span>
             </div>
-            <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 市民2</div>
+            <div class="mode-desc">配役: 人狼1 / 占い1 / 霊媒1 / 市民3</div>
             <div class="village-stats-container">
               <span class="stat-badge villager-win">👨 村人: <strong id="stats-6-villager">0</strong>勝</span>
               <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-6-wolf">0</strong>勝</span>
@@ -2051,10 +2074,6 @@
 
       <div class="title-action-buttons">
         <button class="btn-start-game" onclick="startGame()">裁判を開始する</button>
-        <div class="title-sub-buttons">
-          <button class="btn-title-sub" onclick="openModal('how-to-play-modal')">📖 遊び方</button>
-          <button class="btn-title-sub" onclick="openModal('settings-modal')">⚙ 設定</button>
-        </div>
       </div>
     </div>
   </div>
@@ -2356,14 +2375,26 @@
     </div>
   </div>
 
-  <!-- Settings Modal (音量調整) -->
+  <!-- Settings Modal (ゲーム設定・音量調整) -->
   <div id="settings-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('settings-modal')">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>⚙ 音量設定</h2>
+        <h2>⚙ ゲーム設定</h2>
         <button class="modal-close-btn" onclick="closeModal('settings-modal')">✕</button>
       </div>
       <div class="modal-body">
+        <div class="setting-item">
+          <div class="setting-label-row">
+            <label for="discussion-time-setting">💬 昼の議論時間</label>
+          </div>
+          <select id="discussion-time-setting" class="setting-select" onchange="updateDiscussionTimeSetting(this.value)">
+            <option value="180">3分（デフォルト）</option>
+            <option value="300">5分</option>
+            <option value="600">10分</option>
+            <option value="-1">無制限</option>
+          </select>
+        </div>
+
         <div class="setting-item">
           <div class="setting-label-row">
             <label for="bgm-volume">🎵 BGM 音量</label>
@@ -2402,6 +2433,11 @@
         <button class="modal-close-btn" onclick="closeModal('how-to-play-modal')">✕</button>
       </div>
       <div class="modal-body rule-explanation">
+        <div class="rule-section">
+          <h3>【操作方法】</h3>
+          <p>昼の議論は左中右の３画面を切り替え、スワイプで推理して人狼を見つけるヒントを活用してください。</p>
+        </div>
+
         <div class="rule-section">
           <h3>【ゲームの目的】</h3>
           <p>村の中に人間に化けて潜んでいる「人狼」を会話と推理で見つけ出し、処刑して村に平和を取り戻しましょう！</p>
@@ -2483,23 +2519,28 @@
     let bgmVolume = 80;
     let seVolume = 80;
     let voiceVolume = 80;
+    let discussionTimeSetting = 180; // 180 (3分), 300 (5分), 600 (10分), -1 (無制限)
 
     function loadSettings() {
       const savedBgm = localStorage.getItem('jinnrou_bgmVolume');
       const savedSe = localStorage.getItem('jinnrou_seVolume');
       const savedVoice = localStorage.getItem('jinnrou_voiceVolume');
+      const savedDiscussionTime = localStorage.getItem('jinnrou_discussionTime');
 
       if (savedBgm !== null) bgmVolume = parseInt(savedBgm, 10);
       if (savedSe !== null) seVolume = parseInt(savedSe, 10);
       if (savedVoice !== null) voiceVolume = parseInt(savedVoice, 10);
+      if (savedDiscussionTime !== null) discussionTimeSetting = parseInt(savedDiscussionTime, 10);
 
       const bgmInput = document.getElementById('bgm-volume');
       const seInput = document.getElementById('se-volume');
       const voiceInput = document.getElementById('voice-volume');
+      const discussionInput = document.getElementById('discussion-time-setting');
 
       if (bgmInput) bgmInput.value = bgmVolume;
       if (seInput) seInput.value = seVolume;
       if (voiceInput) voiceInput.value = voiceVolume;
+      if (discussionInput) discussionInput.value = discussionTimeSetting;
 
       const bgmVal = document.getElementById('bgm-volume-val');
       const seVal = document.getElementById('se-volume-val');
@@ -2520,6 +2561,12 @@
       localStorage.setItem('jinnrou_bgmVolume', bgmVolume);
       localStorage.setItem('jinnrou_seVolume', seVolume);
       localStorage.setItem('jinnrou_voiceVolume', voiceVolume);
+      localStorage.setItem('jinnrou_discussionTime', discussionTimeSetting);
+    }
+
+    function updateDiscussionTimeSetting(val) {
+      discussionTimeSetting = parseInt(val, 10);
+      saveSettings();
     }
 
     function updateVolume(type, val) {
@@ -3577,10 +3624,14 @@
       playBgm('hiru');
       setGamePhaseBg('day-debate');
       gameState.subPhase = 'discussion';
-      gameState.timeLeftSeconds = MAX_DISCUSSION_TIME_SECONDS;
+      gameState.timeLeftSeconds = discussionTimeSetting;
       updateTimerDisplay();
 
       timerInterval = setInterval(() => {
+        if (gameState.timeLeftSeconds === -1) {
+          updateTimerDisplay();
+          return;
+        }
         if (gameState.timeLeftSeconds > 0) {
           gameState.timeLeftSeconds--;
           updateTimerDisplay();
@@ -3648,12 +3699,14 @@
 
     function resumeActiveTimers() {
       if (lastPauseTimestamp && !gameState.gameOver && !gameState.executedToday) {
-        const elapsedSeconds = Math.floor((Date.now() - lastPauseTimestamp) / 1000);
-        gameState.timeLeftSeconds = Math.max(0, gameState.timeLeftSeconds - elapsedSeconds);
+        if (gameState.timeLeftSeconds !== -1) {
+          const elapsedSeconds = Math.floor((Date.now() - lastPauseTimestamp) / 1000);
+          gameState.timeLeftSeconds = Math.max(0, gameState.timeLeftSeconds - elapsedSeconds);
+        }
         lastPauseTimestamp = null;
         updateTimerDisplay();
 
-        if (gameState.timeLeftSeconds <= 0) {
+        if (gameState.timeLeftSeconds === 0) {
           if (gameState.subPhase === 'discussion') {
             startDecisionTimer();
           } else if (gameState.subPhase === 'decision') {
@@ -3664,6 +3717,10 @@
 
         if (gameState.subPhase === 'discussion') {
           timerInterval = setInterval(() => {
+            if (gameState.timeLeftSeconds === -1) {
+              updateTimerDisplay();
+              return;
+            }
             if (gameState.timeLeftSeconds > 0) {
               gameState.timeLeftSeconds--;
               updateTimerDisplay();
@@ -3705,22 +3762,29 @@
     function updateTimerDisplay() {
       const labelEl = document.getElementById('timer-label');
       const el = document.getElementById('timer-display');
-      
-      const minutes = Math.floor(gameState.timeLeftSeconds / 60);
-      const seconds = gameState.timeLeftSeconds % 60;
-      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      
-      el.textContent = formatted;
 
       if (gameState.subPhase === 'decision') {
         labelEl.textContent = '⏱️ 処刑決断:';
         el.className = 'timer-display decision';
+        const minutes = Math.floor(gameState.timeLeftSeconds / 60);
+        const seconds = gameState.timeLeftSeconds % 60;
+        el.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
       } else {
         labelEl.textContent = '⏱️ 議論時間:';
-        if (gameState.timeLeftSeconds <= 30) {
-          el.className = 'timer-display';
-        } else {
+        if (gameState.timeLeftSeconds === -1) {
+          el.textContent = '無制限';
           el.className = 'timer-display normal';
+        } else {
+          const minutes = Math.floor(gameState.timeLeftSeconds / 60);
+          const seconds = gameState.timeLeftSeconds % 60;
+          const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+          el.textContent = formatted;
+
+          if (gameState.timeLeftSeconds <= 30) {
+            el.className = 'timer-display';
+          } else {
+            el.className = 'timer-display normal';
+          }
         }
       }
     }
@@ -3790,7 +3854,7 @@
         day: 1,
         phase: '朝',
         subPhase: 'discussion',
-        timeLeftSeconds: MAX_DISCUSSION_TIME_SECONDS,
+        timeLeftSeconds: discussionTimeSetting,
         mistakesLeft: 2,
         wolvesExecuted: 0,
         selectedChar: null,
@@ -3878,12 +3942,14 @@
         if (size === 15) {
           maxMistakes = 4;
           targetWolves = 3;
+        } else if (size === 6) {
+          targetWolves = 1;
         } else {
           targetWolves = 2;
         }
 
         if (size === 6) {
-          roleDistribution = ['wolf', 'wolf', 'seer', 'medium', 'citizen', 'citizen'];
+          roleDistribution = ['wolf', 'seer', 'medium', 'citizen', 'citizen', 'citizen'];
         } else if (size === 8) {
           roleDistribution = ['wolf', 'wolf', 'seer', 'medium', 'knight', 'madman', 'citizen', 'citizen'];
         } else if (size === 10) {
