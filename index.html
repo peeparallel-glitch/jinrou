@@ -2195,7 +2195,7 @@
             <!-- Morning Comments (Collapsible) -->
             <div class="morning-comments-box">
               <div class="card-header" onclick="toggleCard(this)">
-                <span class="morning-title">💬 生存者全員の朝コメント一覧</span>
+                <span class="morning-title">💬 朝コメント過去ログ一覧</span>
                 <span class="toggle-icon">開く</span>
               </div>
               <div class="card-body collapsed">
@@ -3055,6 +3055,7 @@
       dailySeerReports: {},
       dailyMediumReports: {},
       morningComments: {},
+      morningCommentsHistory: [],
       status: {},
       revealedRoles: {},
       lastNightVictims: [],
@@ -3871,6 +3872,7 @@
         dailySeerReports: {},
         dailyMediumReports: {},
         morningComments: {},
+        morningCommentsHistory: [],
         status: {},
         revealedRoles: {},
         lastNightVictims: [],
@@ -4422,6 +4424,19 @@
             gameState.morningComments[char] = commentPattern;
           }
         }
+
+        let coText = 'グレー';
+        if (coRole === 'seer') coText = '占いCO';
+        if (coRole === 'medium') coText = '霊媒CO';
+        if (coRole === 'freemason') coText = '共有CO';
+
+        if (!gameState.morningCommentsHistory) gameState.morningCommentsHistory = [];
+        gameState.morningCommentsHistory.push({
+          day: gameState.day,
+          char: char,
+          comment: gameState.morningComments[char],
+          coText: coText
+        });
       });
     }
 
@@ -4696,27 +4711,45 @@
       });
     }
 
-    // Render Morning Comments Box
+    // Render Morning Comments Box (Full History Grouped by Day)
     function renderMorningCommentsBox() {
       const list = document.getElementById('morning-comments-list');
       list.innerHTML = '';
 
-      Object.keys(gameState.morningComments).forEach(char => {
-        const item = document.createElement('div');
-        item.className = 'morning-comment-item';
-        let coText = 'グレー';
-        if (gameState.coRoles[char] === 'seer') coText = '占いCO';
-        if (gameState.coRoles[char] === 'medium') coText = '霊媒CO';
-        if (gameState.coRoles[char] === 'freemason') coText = '共有CO';
+      const history = gameState.morningCommentsHistory || [];
+      if (history.length === 0) {
+        list.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); padding:0.4rem;">まだコメントがありません。</div>';
+        return;
+      }
 
-        const comment = gameState.morningComments[char];
-        const speakMsg = `村人 ${char}。${comment}`;
+      // 日付ごとにグループ化
+      const grouped = {};
+      history.forEach(item => {
+        if (!grouped[item.day]) grouped[item.day] = [];
+        grouped[item.day].push(item);
+      });
 
-        item.innerHTML = `
-          <div><strong>村人 ${char} (${coText})</strong>: ${comment}</div>
-          <button class="btn-speak" onclick="speakText('${speakMsg}', null, false, '${char}')">🔊</button>
-        `;
-        list.appendChild(item);
+      // 最新日〜1日目の順（降順）で表示
+      const days = Object.keys(grouped).map(Number).sort((a, b) => b - a);
+
+      days.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'morning-day-header';
+        dayHeader.style.cssText = 'font-size:0.8rem; font-weight:bold; color:var(--accent-gold); margin-top:0.4rem; margin-bottom:0.2rem; border-bottom:1px solid rgba(245,158,11,0.25); padding-bottom:0.15rem;';
+        dayHeader.textContent = `📅 ${formatDay(day)}の朝コメント`;
+        list.appendChild(dayHeader);
+
+        grouped[day].forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'morning-comment-item';
+          const speakMsg = `村人 ${item.char}。${item.comment}`;
+
+          div.innerHTML = `
+            <div><strong>村人 ${item.char} (${item.coText})</strong>: ${item.comment}</div>
+            <button class="btn-speak" onclick="speakText('${speakMsg}', null, false, '${item.char}')">🔊</button>
+          `;
+          list.appendChild(div);
+        });
       });
     }
 
