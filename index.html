@@ -4474,6 +4474,7 @@
       performNightAbilities();
       evaluateStealthCOTriggers();
       generateMorningComments();
+      await triggerMorningRoleReports();
 
       renderBulletinBoard();
       renderMorningCommentsBox();
@@ -4535,6 +4536,7 @@
       performNightAbilities();
       evaluateStealthCOTriggers();
       generateMorningComments();
+      await triggerMorningRoleReports();
 
       // ★ 朝の報告から昼の議論への遷移（フェードなしで即座にUIを更新）
       renderBulletinBoard();
@@ -4685,6 +4687,137 @@
       });
     }
 
+    // Helper function to unify speaker introduction prefix ("〇〇です。" / "〇〇（占いCO）です。")
+    function formatSpeechMessage(speakerChar, rawMessage) {
+      const displayName = getCharDisplayName(speakerChar);
+      const coRole = gameState.coRoles[speakerChar];
+      
+      let prefixStr = displayName;
+      if (coRole === 'seer') {
+        prefixStr += '（占いCO）';
+      } else if (coRole === 'medium') {
+        prefixStr += '（霊媒CO）';
+      } else if (coRole === 'knight') {
+        prefixStr += '（騎士CO）';
+      } else if (coRole === 'freemason') {
+        prefixStr += '（共有CO）';
+      }
+      
+      const fullPrefix = `${prefixStr}です。`;
+
+      // Prevent double prefix if rawMessage already starts with speaker's name or prefix
+      if (rawMessage.startsWith(fullPrefix) || rawMessage.startsWith(`${prefixStr}です`) || rawMessage.startsWith(displayName)) {
+        return rawMessage;
+      }
+
+      return `${fullPrefix}${rawMessage}`;
+    }
+
+    // Helper to fetch today's black (Wolf) investigation results from living seers
+    function getTodayBlackResults() {
+      const results = [];
+      Object.keys(gameState.dailySeerReports || {}).forEach(seerChar => {
+        const rep = gameState.dailySeerReports[seerChar];
+        if (rep && rep.day === gameState.day && rep.result === '人狼' && gameState.status[rep.target] === 'alive') {
+          results.push({ seer: seerChar, target: rep.target });
+        }
+      });
+      return results;
+    }
+
+    // Generate urgent rebuttal speech for black-result accused player
+    function generateBlackAccusedRebuttal(accusedChar, seerChar) {
+      const seerName = getCharDisplayName(seerChar);
+      const rand = Math.random();
+      const realRole = gameState.roles[accusedChar];
+
+      let msg = '';
+      if (rand < 0.50) {
+        // 【パターンA / B: 対立CO（占い騙し返し または 騎士/霊媒CO）】
+        const fakeRole = (realRole === 'wolf' || Math.random() < 0.5) ? 'seer' : 'knight';
+        gameState.isStealthing[accusedChar] = false;
+        gameState.coRoles[accusedChar] = fakeRole;
+        gameState.claimedRoleTypes[accusedChar] = fakeRole;
+
+        if (fakeRole === 'seer') {
+          msg = `嘘をつかないでください！私こそが本物の【占い師】です！${seerName}さんは村を騙す偽物（人狼）です！真の鑑定結果を述べて対抗します！`;
+        } else {
+          msg = `デタラメな占いです！私は【騎士】です！今夜守るべき重要な役職なのに、なぜ偽占いに黒出しされなきゃいけないんですか！私を吊ったら村の防衛線が崩壊します！`;
+        }
+      } else if (rand < 0.80) {
+        // 【パターンC: 論理的反論＆相手の破綻追及・ライン攻撃】
+        msg = `急な黒出しですね。${seerName}さんは昨日から誘導があからさまですし、あからさまな偽占い師の擦り付けです！私の潔白を証明するために、この偽占いの破綻を精査してください！`;
+      } else {
+        // 【パターンD: 狂人/人狼の道連れブラフ】
+        msg = `まんまと引っかかりましたね！${seerName}さんが偽物であることがこれで確定しました。村の皆さん、騙されないでこの偽占いを処刑してください！`;
+      }
+
+      return msg;
+    }
+
+    // Trigger Morning Role Reports (Seer & Medium COs post results first in morning)
+    async function triggerMorningRoleReports() {
+      if (gameState.gameOver) return;
+
+      const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      for (let char of aliveChars) {
+        const coRole = gameState.coRoles[char];
+        const displayName = getCharDisplayName(char);
+
+        if (coRole === 'seer') {
+          const rep = gameState.dailySeerReports[char];
+          if (rep && rep.target) {
+            const targetName = getCharDisplayName(rep.target);
+            const rawMsg = `昨夜は${targetName}さんを占って【${rep.result}】でした。`;
+            const formattedMsg = formatSpeechMessage(char, rawMsg);
+            const speakMsg = `${displayName}（占いCO）です。${rawMsg}`;
+            
+            addLogItem(`💬 ${displayName}`, '', formattedMsg, 'ai-discussion', char, false);
+            await playSpeechAsync(speakMsg, getCharVoiceProfileKey(char));
+
+            // ★ 占い黒出し（人狼判定）時の即時反論・必死の弁明の最優先割り込み
+            if (rep.result === '人狼' && gameState.status[rep.target] === 'alive') {
+              const accused = rep.target;
+              const accusedDisplayName = getCharDisplayName(accused);
+              const rawRebuttal = generateBlackAccusedRebuttal(accused, char);
+              const formattedRebuttal = formatSpeechMessage(accused, rawRebuttal);
+
+              // 記憶・保存
+              if (!gameState.aiStatements) gameState.aiStatements = {};
+              gameState.aiStatements[accused] = rawRebuttal;
+
+              if (!gameState.aiDiscussionHistory) gameState.aiDiscussionHistory = [];
+              gameState.aiDiscussionHistory.push({
+                day: gameState.day,
+                char: accused,
+                text: rawRebuttal,
+                isCO: true,
+                coRole: gameState.coRoles[accused],
+                isBlackRebuttal: true,
+                seerChar: char,
+                timestamp: Date.now()
+              });
+
+              lastAISpeaker = accused;
+              addLogItem(`💬 ${accusedDisplayName}`, '', formattedRebuttal, 'ai-discussion', accused, false);
+              await playSpeechAsync(formattedRebuttal, getCharVoiceProfileKey(accused));
+            }
+          }
+        } else if (coRole === 'medium') {
+          const rep = gameState.dailyMediumReports[char];
+          if (rep && rep.target) {
+            const targetName = getCharDisplayName(rep.target);
+            const rawMsg = `昨日処刑された${targetName}さんは【${rep.result}】でした。`;
+            const formattedMsg = formatSpeechMessage(char, rawMsg);
+            const speakMsg = `${displayName}（霊媒CO）です。${rawMsg}`;
+            
+            addLogItem(`💬 ${displayName}`, '', formattedMsg, 'ai-discussion', char, false);
+            await playSpeechAsync(speakMsg, getCharVoiceProfileKey(char));
+          }
+        }
+      }
+    }
+
     // Execute CO Action & Unveil Complete Past Investigation History
     function triggerCO(char) {
       const roleType = gameState.claimedRoleTypes[char];
@@ -4696,22 +4829,22 @@
       let coText = '';
       if (roleType === 'seer') {
         const history = gameState.seerHistory[char] || [];
-        const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
+        const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
         coText = `「私は占い師です！これまでの全鑑定結果を開示します。 ${historyStr}」`;
       } else if (roleType === 'medium') {
         const rep = gameState.dailyMediumReports[char];
         if (rep && rep.target) {
-          coText = `「【霊媒師CO】昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした！」`;
+          coText = `「【霊媒師CO】昨日処刑された ${getCharDisplayName(rep.target)} さんの霊媒結果は【${rep.result}】でした！」`;
         } else {
           const history = gameState.mediumHistory[char] || [];
-          const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
+          const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
           coText = `「私は霊媒師です！過去の全霊媒結果を一括報告します。 ${historyStr}」`;
         }
       } else if (roleType === 'knight') {
         coText = `「【騎士CO】私は本物の【騎士】です！人狼の襲撃から村人を防衛していました。私を処刑しないでください！」`;
       }
 
-      addLogItem(`📢 役職CO: 村人 ${char}`, '', coText, 'narration', char, false);
+      addLogItem(`📢 役職CO: ${getCharDisplayName(char)}`, '', coText, 'narration', char, false);
     }
 
     // Self-Preservation CO Trigger (When Interrogated / Under Suspicion)
@@ -4938,26 +5071,93 @@
       return null;
     }
 
+    // --- 占い白出し（人間判定）結果の盤面集約ヘルパー ---
+    function getSeerWhiteResults() {
+      const whiteResults = [];
+      Object.keys(gameState.seerHistory || {}).forEach(seerChar => {
+        if (gameState.status[seerChar] === 'alive' || gameState.coRoles[seerChar] === 'seer') {
+          const history = gameState.seerHistory[seerChar] || [];
+          history.forEach(rep => {
+            if (rep.result === '人間' && gameState.status[rep.target] === 'alive') {
+              whiteResults.push({ seer: seerChar, target: rep.target });
+            }
+          });
+        }
+      });
+      return whiteResults;
+    }
+
+    // --- 直前の発言から「村人X」または「カスタム名」での指名を抽出するヘルパー ---
+    function findMentionedChar(lastText) {
+      if (!lastText) return null;
+      for (let char of gameState.charList) {
+        if (gameState.status[char] !== 'alive') continue;
+        const customName = getCharDisplayName(char);
+        const nameClean = customName.replace(/^村人\s*/, '');
+        if (
+          lastText.includes(`村人 ${char}`) ||
+          lastText.includes(`村人${char}`) ||
+          lastText.includes(customName) ||
+          (nameClean && lastText.includes(nameClean))
+        ) {
+          return char;
+        }
+      }
+      return null;
+    }
+
+    // --- 直近ログとの重複・無意味な発言の検知フィルター ---
+    function isDuplicateOrMeaningless(newText, recentHistory) {
+      if (!newText) return true;
+      const cleanNew = newText.replace(/「|」|！|？|。|、|\s/g, '');
+
+      for (let item of recentHistory) {
+        if (!item || !item.text) continue;
+        const cleanOld = item.text.replace(/「|」|！|？|。|、|\s/g, '');
+        // 完全一致または前方高確率一致
+        if (cleanNew === cleanOld) return true;
+        if (cleanNew.length > 10 && cleanOld.length > 10) {
+          if (cleanNew.includes(cleanOld.substring(0, 15)) || cleanOld.includes(cleanNew.substring(0, 15))) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     async function generateAIDiscussionStep() {
       if (gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
 
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       if (aliveChars.length < 2) return;
 
-      // 直前発言者以外の生存AIを優先して選出
-      let candidates = aliveChars.filter(c => c !== lastAISpeaker);
-      if (candidates.length === 0) candidates = aliveChars;
-      const speaker = pickRandom(candidates);
+      // 直近の他AI発言ログを取得
+      const recentHistory = (gameState.aiDiscussionHistory || []).slice(-5);
+      const lastItem = recentHistory.length > 0 ? recentHistory[recentHistory.length - 1] : null;
+
+      // ★ ② 指名質問に対する即時応答（ターン割り込み）ロジック
+      let speaker = null;
+      const mentionedChar = lastItem ? findMentionedChar(lastItem.text) : null;
+      if (mentionedChar && mentionedChar !== lastItem.char && gameState.status[mentionedChar] === 'alive') {
+        speaker = mentionedChar; // 質問されたAIがターンを割り込んで即座に回答
+      } else {
+        // 通常の選出（直前発言者以外の生存AI）
+        let candidates = aliveChars.filter(c => c !== lastAISpeaker);
+        if (candidates.length === 0) candidates = aliveChars;
+        speaker = pickRandom(candidates);
+      }
       lastAISpeaker = speaker;
 
       const realRole = gameState.roles[speaker];
       const coRole = gameState.coRoles[speaker] || 'grey';
       const aliveOthers = aliveChars.filter(c => c !== speaker);
-      const target = pickRandom(aliveOthers) || 'A';
 
-      // 直近の他AI発言ログを取得
-      const recentHistory = (gameState.aiDiscussionHistory || []).slice(-5);
-      const lastItem = recentHistory.length > 0 ? recentHistory[recentHistory.length - 1] : null;
+      // ★ ① 占い師の白出し（人間判定）情報を集約
+      const whiteResults = getSeerWhiteResults();
+      const whiteTargets = whiteResults.map(w => w.target);
+      // 白出しされていないグレー候補を優先ターゲット選出
+      const nonWhiteOthers = aliveOthers.filter(c => !whiteTargets.includes(c));
+      const target = nonWhiteOthers.length > 0 ? pickRandom(nonWhiteOthers) : (pickRandom(aliveOthers) || 'A');
 
       let msg = '';
 
@@ -4966,6 +5166,29 @@
 
       if (defensiveCO) {
         msg = defensiveCO.text;
+      }
+      // ★ 1.5. 朝の黒出し＆必死の反論に対する周囲のリアクション追随
+      else if (lastItem && lastItem.isBlackRebuttal && lastItem.char !== speaker) {
+        const accusedName = getCharDisplayName(lastItem.char);
+        const seerName = lastItem.seerChar ? getCharDisplayName(lastItem.seerChar) : '占い師';
+
+        if (realRole === 'wolf') {
+          msg = pickRandom([
+            `「${accusedName}さんの激しい反論ですが、${seerName}さんの黒判定を無視するわけにはいきません。破綻がないか精査しましょう。」`,
+            `「${accusedName}さんと${seerName}さんで完全に主張が真っ向対決していますね。双方の意見を聞いてラインを見定めましょう。」`
+          ]);
+        } else if (realRole === 'madman') {
+          msg = pickRandom([
+            `「${accusedName}さんの必死の弁明！ですが${seerName}さんからの黒出しは決定打ですよ！もっと徹底追及すべきです！」`,
+            `「おっと、${accusedName}さんが対立主張をしてきましたね！これは村の議論が大きく荒れそうで面白い展開です！」`
+          ]);
+        } else {
+          msg = pickRandom([
+            `「${accusedName}さんへの黒出しと即時反论……！単なる命乞いか本当の対立COか、${accusedName}さんと${seerName}さんの発言ログを徹底精査しましょう！」`,
+            `「${accusedName}さんから強い反論が出ましたね。軽率に処刑を決め打たず、両者の対抗関係と理由をしっかり見極めましょう。」`,
+            `「黒出しされた${accusedName}さんの主張と、${seerName}さんの鑑定根拠のどちらに矛盾があるか、村全体で集中検証すべきです！」`
+          ]);
+        }
       }
       // ★ 2. 直前に他AIがCOした場合のリアルタイムリアクション対話
       else if (lastItem && lastItem.isCO && lastItem.char !== speaker) {
@@ -4990,8 +5213,35 @@
           ]);
         }
       }
-      // ★ 3. 通常の会話・議論キャッチボール
-      else if (lastItem && lastItem.char !== speaker && Math.random() < 0.65) {
+      // ★ 3. 占い白出し情報を踏まえた会話・議論考察（①の高度化）
+      else if (whiteResults.length > 0 && Math.random() < 0.55) {
+        const whiteInfo = pickRandom(whiteResults);
+        const wTarget = whiteInfo.target;
+        const wSeer = whiteInfo.seer;
+
+        if (wTarget === speaker) {
+          // 自分が白出しされている場合
+          msg = pickRandom([
+            `「占い師の 村人 ${wSeer} さんから白判定をいただいていますが、身の潔白に偽りはありません。今日はグレーの 村人 ${target} さんを精査したいです。」`,
+            `「私への白出し結果を元に視点を広げましょう。グレーに潜んでいる人狼を炙り出すため、村人 ${target} さんの言動に注目しています。」`
+          ]);
+        } else {
+          // 他者が白出しされている場合
+          if (realRole === 'wolf') {
+            msg = pickRandom([
+              `「村人 ${wTarget} さんは占い師から白出しされていますが、あの占い師自体が真か偽か見極める必要がありますね。」`,
+              `「白が出ている 村人 ${wTarget} さんの位置を安易に安全圏と決めつけず、グレーの 村人 ${target} さんの精査を進めましょう。」`
+            ]);
+          } else {
+            msg = pickRandom([
+              `「村人 ${wTarget} さんには白結果が出ているので一旦処刑候補から外し、完全グレーの 村人 ${target} さんを精査すべきです。」`,
+              `「占い師の 村人 ${wSeer} さんの白結果を信頼するなら、残る人狼位置はグレーの 村人 ${target} さん周辺に絞られますね。」`
+            ]);
+          }
+        }
+      }
+      // ★ 4. 通常の会話・指名割り込みへの応答・議論キャッチボール
+      else if (lastItem && lastItem.char !== speaker && Math.random() < 0.70) {
         const other = lastItem.char;
         if (realRole === 'wolf') {
           msg = pickRandom([
@@ -5037,6 +5287,12 @@
         }
       }
 
+      // ★ ③ 重複・無意味な発言のフィルタリング（スキップ）
+      if (!defensiveCO && isDuplicateOrMeaningless(msg, recentHistory)) {
+        console.log(`[AI議論] 重複・類似発言をスキップしました: (${speaker}: ${msg})`);
+        return; // 出力せずにスキップ
+      }
+
       // 記憶・保存
       if (!gameState.aiStatements) gameState.aiStatements = {};
       gameState.aiStatements[speaker] = msg;
@@ -5058,11 +5314,15 @@
         renderVoteHistoryPage();
       }
 
-      // タイムラインへチャットアイテムとして描画（autoSpeakはfalse、読み上げは下で直接制御）
-      addLogItem(`💬 村人 ${speaker}`, '', msg, 'ai-discussion', speaker, false);
+      // メッセージに「〇〇（CO役職）です。」自己紹介接頭辞を適用
+      const formattedMsg = formatSpeechMessage(speaker, msg);
+      const speakerDisplayName = getCharDisplayName(speaker);
 
-      // 読み上げテキスト（日時プレフィックスなし）
-      const speakMsg = `村人 ${speaker}。${msg}`;
+      // タイムラインへチャットアイテムとして描画（autoSpeakはfalse、読み上げは下で直接制御）
+      addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', speaker, false);
+
+      // 読み上げテキスト（「〇〇です。」「〇〇（占いCO）です。」も含めて音声出力）
+      const speakMsg = formattedMsg;
       // 読み上げ完了まで待機してからreturn（非同期ループで次の発言へ進む）
       await playSpeechAsync(speakMsg, getCharVoiceProfileKey(speaker));
     }
