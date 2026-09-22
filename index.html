@@ -1114,6 +1114,28 @@
     .log-item.narration { border-left-color: var(--accent-amber); background-color: rgba(25, 23, 19, 0.92); }
     .log-item.baker { border-left-color: var(--baker-color); background-color: rgba(40, 24, 15, 0.92); }
     .log-item.execution { border-left-color: var(--accent-amber); background-color: rgba(38, 28, 16, 0.92); }
+    .log-item.ai-discussion { border-left-color: #3b82f6; background-color: rgba(15, 23, 42, 0.92); box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1); }
+
+    .btn-pursue {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
+      border: 1px solid var(--accent-amber);
+      color: #fbbf24;
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .btn-pursue:hover {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+    }
 
     .log-header {
       display: flex;
@@ -1401,6 +1423,76 @@
       border-color: var(--accent-gold);
     }
 
+    /* Name Settings Modal Styling */
+    .name-input-scroll-container {
+      max-height: 55vh;
+      overflow-y: auto;
+      padding-right: 0.4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.6rem;
+      margin: 0.8rem 0;
+    }
+
+    .name-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .name-input-row label {
+      font-size: 0.75rem;
+      color: var(--accent-amber);
+      font-weight: bold;
+    }
+
+    .name-input-row input {
+      width: 100%;
+      padding: 0.35rem 0.45rem;
+      font-size: 0.85rem;
+      background: rgba(10, 15, 30, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .name-input-row input:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
+    }
+
+    .modal-btn-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin: 0.6rem 0;
+    }
+
+    .modal-btn-group button {
+      flex: 1;
+      min-width: 90px;
+      padding: 0.45rem 0.4rem;
+      font-size: 0.78rem;
+      font-weight: bold;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-group button:hover {
+      background: var(--card-border);
+      border-color: var(--accent-amber);
+    }
+
     /* Rule Explanation Styling */
     .rule-explanation {
       display: flex;
@@ -1675,7 +1767,7 @@
       }
     }
 
-    /* Speech Skip Indicator & Full Touch Capture Overlay */
+    /* Speech Skip Indicator & Button Only Capture Overlay */
     #speech-skip-overlay {
       display: none;
       position: fixed;
@@ -1684,9 +1776,7 @@
       width: 100vw;
       height: 100vh;
       z-index: 9998;
-      pointer-events: auto;
-      touch-action: manipulation;
-      cursor: pointer;
+      pointer-events: none;
     }
     #speech-skip-overlay.visible {
       display: block;
@@ -1696,17 +1786,20 @@
       bottom: 1.2rem;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(59, 130, 246, 0.9);
+      background: rgba(59, 130, 246, 0.95);
       color: #fff;
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       font-weight: bold;
-      padding: 0.5rem 1.2rem;
+      padding: 0.6rem 1.4rem;
       border-radius: 2rem;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.6);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.7);
       white-space: nowrap;
-      pointer-events: none;
+      pointer-events: auto;
+      touch-action: manipulation;
+      cursor: pointer;
       user-select: none;
       animation: speechSkipPulse 1.2s ease-in-out infinite;
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
     @keyframes speechSkipPulse {
       0%, 100% { opacity: 0.7; }
@@ -1955,9 +2048,9 @@
     </div>
   </div>
 
-  <!-- Speech Skip Indicator & Full Touch Capture Overlay (tap anywhere to skip) -->
-  <div id="speech-skip-overlay" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">
-    <div class="skip-badge">⏭ タップで読み上げスキップ</div>
+  <!-- Speech Skip Indicator Button (tap button only to skip) -->
+  <div id="speech-skip-overlay">
+    <div class="skip-badge" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">⏭ タップで読み上げスキップ</div>
   </div>
 
   <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
@@ -2206,7 +2299,12 @@
             </div>
           </div>
 
-          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:bold; flex-shrink:0;">タイムライン・尋問ログ</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:0.2rem;">
+            <div style="font-size:0.9rem; color:var(--text-muted); font-weight:bold;">タイムライン・尋問ログ</div>
+            <button id="btn-toggle-discussion-pause" onclick="toggleDiscussionPause()" style="font-size:0.88rem; font-weight:bold; padding:0.45rem 1rem; background:linear-gradient(135deg, #3a3f58, #2a2d42); border:1.5px solid var(--accent-amber); color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition:all 0.2s ease;">
+              <span>⏸️ 議論を一時停止</span>
+            </button>
+          </div>
           <div class="log-timeline" id="log-timeline">
             <!-- Logs dynamically added -->
           </div>
@@ -2383,6 +2481,12 @@
         <button class="modal-close-btn" onclick="closeModal('settings-modal')">✕</button>
       </div>
       <div class="modal-body">
+        <div class="setting-item" style="margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+          <button class="btn btn-secondary" onclick="openNameModal()" style="width: 100%; font-weight: bold; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 0.7rem; font-size: 0.9rem;">
+            📝 村人の名前設定（カスタマイズ）
+          </button>
+        </div>
+
         <div class="setting-item">
           <div class="setting-label-row">
             <label for="discussion-time-setting">💬 昼の議論時間</label>
@@ -2421,6 +2525,35 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" onclick="closeModal('settings-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Name Settings Modal (村人の名前カスタマイズ) -->
+  <div id="name-settings-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeNameModal()">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2>📝 村人の名前設定</h2>
+        <button class="modal-close-btn" onclick="closeNameModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.5rem 0;">
+          ゲーム内に登場する村人たちの名前（A〜T）を自由に変更できます。
+        </p>
+
+        <div id="name-input-list" class="name-input-scroll-container">
+          <!-- JavaScriptで入力フォームを動的生成 -->
+        </div>
+
+        <div class="modal-btn-group">
+          <button onclick="generateRandomNames('japanese')">🎲 日本人風ランダム</button>
+          <button onclick="generateRandomNames('western')">🎲 洋風ランダム</button>
+          <button onclick="resetDefaultNames()">🔄 デフォルト（村人A〜）</button>
+        </div>
+      </div>
+      <div class="modal-footer" style="gap: 0.5rem;">
+        <button class="btn btn-secondary" onclick="closeNameModal()">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveCustomNames()">設定を保存</button>
       </div>
     </div>
   </div>
@@ -2521,16 +2654,36 @@
     let voiceVolume = 80;
     let discussionTimeSetting = 180; // 180 (3分), 300 (5分), 600 (10分), -1 (無制限)
 
+    // --- デフォルト名とカスタム名の管理 ---
+    const DEFAULT_CHAR_NAMES = {
+      'A': '村人A', 'B': '村人B', 'C': '村人C', 'D': '村人D', 'E': '村人E',
+      'F': '村人F', 'G': '村人G', 'H': '村人H', 'I': '村人I', 'J': '村人J',
+      'K': '村人K', 'L': '村人L', 'M': '村人M', 'N': '村人N', 'O': '村人O',
+      'P': '村人P', 'Q': '村人Q', 'R': '村人R', 'S': '村人S', 'T': '村人T'
+    };
+
+    let playerCustomNames = { ...DEFAULT_CHAR_NAMES };
+
     function loadSettings() {
       const savedBgm = localStorage.getItem('jinnrou_bgmVolume');
       const savedSe = localStorage.getItem('jinnrou_seVolume');
       const savedVoice = localStorage.getItem('jinnrou_voiceVolume');
       const savedDiscussionTime = localStorage.getItem('jinnrou_discussionTime');
+      const savedNames = localStorage.getItem('custom_player_names');
 
       if (savedBgm !== null) bgmVolume = parseInt(savedBgm, 10);
       if (savedSe !== null) seVolume = parseInt(savedSe, 10);
       if (savedVoice !== null) voiceVolume = parseInt(savedVoice, 10);
       if (savedDiscussionTime !== null) discussionTimeSetting = parseInt(savedDiscussionTime, 10);
+
+      if (savedNames) {
+        try {
+          const parsed = JSON.parse(savedNames);
+          playerCustomNames = Object.assign({}, DEFAULT_CHAR_NAMES, parsed);
+        } catch (e) {
+          playerCustomNames = { ...DEFAULT_CHAR_NAMES };
+        }
+      }
 
       const bgmInput = document.getElementById('bgm-volume');
       const seInput = document.getElementById('se-volume');
@@ -2562,6 +2715,88 @@
       localStorage.setItem('jinnrou_seVolume', seVolume);
       localStorage.setItem('jinnrou_voiceVolume', voiceVolume);
       localStorage.setItem('jinnrou_discussionTime', discussionTimeSetting);
+      localStorage.setItem('custom_player_names', JSON.stringify(playerCustomNames));
+    }
+
+    // アルファベットID（A〜T）からカスタム表示名（例: 「村人A」または「アリス」）を取得
+    function getCharDisplayName(charKey) {
+      if (!charKey) return '';
+      return playerCustomNames[charKey] || `村人${charKey}`;
+    }
+
+    // 名前カスタマイズモーダルの操作ロジック
+    function openNameModal() {
+      const container = document.getElementById('name-input-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      CHAR_NAMES_20.forEach(key => {
+        const row = document.createElement('div');
+        row.className = 'name-input-row';
+        row.innerHTML = `
+          <label>ID ${key}:</label>
+          <input type="text" id="name-input-${key}" value="${playerCustomNames[key] || '村人' + key}" maxlength="10">
+        `;
+        container.appendChild(row);
+      });
+
+      openModal('name-settings-modal');
+    }
+
+    function closeNameModal() {
+      closeModal('name-settings-modal');
+    }
+
+    function saveCustomNames() {
+      CHAR_NAMES_20.forEach(key => {
+        const input = document.getElementById(`name-input-${key}`);
+        if (input) {
+          const val = input.value.trim();
+          playerCustomNames[key] = val || `村人${key}`;
+        }
+      });
+
+      saveSettings();
+      closeNameModal();
+
+      // ゲーム画面の表示を一括更新
+      if (typeof renderCharacters === 'function') renderCharacters();
+      if (typeof renderStatus === 'function') renderStatus();
+      if (typeof renderBulletinBoard === 'function') renderBulletinBoard();
+      if (typeof renderMorningCommentsBox === 'function') renderMorningCommentsBox();
+      if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
+    }
+
+    const RANDOM_NAME_PRESETS = {
+      japanese: [
+        'タクミ', 'アオイ', 'ケンジ', 'サクラ', 'レン', 'ユウキ', 'ハルカ', 'ショウ', 'マイ', 'ダイキ',
+        'ナナミ', 'ソウタ', 'カエデ', 'リク', 'ヒナタ', 'コウキ', 'ミズキ', 'ヤマト', 'ツバサ', 'アカリ'
+      ],
+      western: [
+        'アリス', 'ボブ', 'チャーリー', 'デイビッド', 'エマ', 'フランク', 'グレイス', 'ヘンリー', 'イザベラ', 'ジャック',
+        'ケイト', 'レオ', 'ミア', 'ノア', 'オリビア', 'ピーター', 'クイン', 'レイチェル', 'サム', 'トマス'
+      ]
+    };
+
+    function generateRandomNames(type = 'japanese') {
+      const presets = RANDOM_NAME_PRESETS[type] || RANDOM_NAME_PRESETS.japanese;
+      const shuffled = [...presets].sort(() => Math.random() - 0.5);
+
+      CHAR_NAMES_20.forEach((key, index) => {
+        const input = document.getElementById(`name-input-${key}`);
+        if (input) {
+          input.value = shuffled[index % shuffled.length];
+        }
+      });
+    }
+
+    function resetDefaultNames() {
+      CHAR_NAMES_20.forEach(key => {
+        const input = document.getElementById(`name-input-${key}`);
+        if (input) {
+          input.value = `村人${key}`;
+        }
+      });
     }
 
     function updateDiscussionTimeSetting(val) {
@@ -2819,8 +3054,53 @@
       }
     }
 
+    // --- 音声プロファイル定義（老若男女バリエーション） ---
+    const VOICE_PROFILES = {
+      NARRATOR:      { pitch: 1.0,  rate: 0.9,  preferGender: 'female' }, // ナレーション（落ち着いた女性）
+      YOUNG_FEMALE:  { pitch: 1.5,  rate: 1.1,  preferGender: 'female' }, // 若い女性・少女
+      YOUNG_MALE:    { pitch: 1.2,  rate: 1.15, preferGender: 'male'   }, // 熱血・若い男性
+      OLD_MAN:       { pitch: 0.6,  rate: 0.8,  preferGender: 'male'   }, // 老人・落ち着いた男性
+      MIDDLE_MALE:   { pitch: 0.8,  rate: 0.95, preferGender: 'male'   }, // 中年男性
+      CALM_FEMALE:   { pitch: 1.1,  rate: 0.9,  preferGender: 'female' }, // 落ち着いた女性
+      BOLD_MALE:     { pitch: 0.9,  rate: 1.05, preferGender: 'male'   }, // 力強い男性
+      CHILD:         { pitch: 1.7,  rate: 1.2,  preferGender: 'female' }  // 子供・ボーイソプラノ
+    };
+
+    // キャラコード（A～T）からボイスプロファイルキーを決定的に割り当てる
+    const CHAR_VOICE_MAP = [
+      'YOUNG_FEMALE',  // A
+      'OLD_MAN',       // B
+      'YOUNG_MALE',    // C
+      'CALM_FEMALE',   // D
+      'MIDDLE_MALE',   // E
+      'CHILD',         // F
+      'BOLD_MALE',     // G
+      'YOUNG_FEMALE',  // H
+      'OLD_MAN',       // I
+      'YOUNG_MALE',    // J
+      'CALM_FEMALE',   // K
+      'MIDDLE_MALE',   // L
+      'BOLD_MALE',     // M
+      'CHILD',         // N
+      'YOUNG_FEMALE',  // O
+      'OLD_MAN',       // P
+      'YOUNG_MALE',    // Q
+      'CALM_FEMALE',   // R
+      'MIDDLE_MALE',   // S
+      'BOLD_MALE'      // T
+    ];
+
+    function getCharVoiceProfileKey(charSeed) {
+      if (!charSeed) return 'NARRATOR';
+      const idx = charSeed.charCodeAt(0) - 'A'.charCodeAt(0);
+      if (idx >= 0 && idx < CHAR_VOICE_MAP.length) return CHAR_VOICE_MAP[idx];
+      return 'NARRATOR';
+    }
+
     // --- Natural Speech Synthesis (TTS) Engine ---
     let preferredJapaneseVoice = null;
+    let japaneseVoiceMale = null;
+    let japaneseVoiceFemale = null;
 
     function initVoice() {
       if (!('speechSynthesis' in window)) return;
@@ -2834,6 +3114,21 @@
           jaVoices.find(v => v.name.includes('Kyoko') || v.name.includes('Otoya') || v.name.includes('Hattori')) ||
           jaVoices[0] ||
           null;
+
+        // 男性・女性ボイスを識別してキャッシュ
+        // よくある日本語ボイス名のパターンで判別
+        const maleKeywords = ['Male', 'Ichiro', 'Otoya', 'Hattori', 'Takumi', 'Kenji', 'male'];
+        const femaleKeywords = ['Female', 'Kyoko', 'Haruka', 'Mizuki', 'Nanami', 'female', 'O-Ren'];
+
+        japaneseVoiceFemale =
+          jaVoices.find(v => femaleKeywords.some(kw => v.name.includes(kw))) ||
+          jaVoices.find(v => !maleKeywords.some(kw => v.name.includes(kw))) ||
+          preferredJapaneseVoice;
+
+        japaneseVoiceMale =
+          jaVoices.find(v => maleKeywords.some(kw => v.name.includes(kw))) ||
+          jaVoices.find(v => v !== japaneseVoiceFemale) ||
+          preferredJapaneseVoice;
       };
 
       loadVoices();
@@ -2842,10 +3137,27 @@
       }
     }
 
+    // テキスト内の「村人 A」「村人B」「村人A」等をカスタマイズ名に一括置換する関数
+    function replaceNamePlaceholders(text) {
+      if (!text) return '';
+      let result = text;
+      // 長いマッチ（「村人 A さん」や「村人A」）から置換
+      CHAR_NAMES_20.forEach(key => {
+        const customName = getCharDisplayName(key);
+        // 「村人 A」「村人A」を置換
+        const reg1 = new RegExp(`村人\\s*${key}`, 'g');
+        const reg2 = new RegExp(`むらびと\\s*${key}`, 'g');
+        result = result.replace(reg1, customName).replace(reg2, customName);
+      });
+      return result;
+    }
+
     // Text Preprocessing Function for Speech
     function formatTextForSpeech(rawText) {
       if (!rawText) return '';
-      let processed = rawText
+
+      // カスタム名で一括置換
+      let processed = replaceNamePlaceholders(rawText)
         .replace(/<[^>]*>?/gm, '')
         .replace(/[\u1F60-\u1F64]|[\u2702-\u27B0]|[\u1F68-\u1F6C]|[\u1F30-\u1F5F]/g, '')
         .replace(/---/g, '…… ')
@@ -2911,22 +3223,10 @@
       }
     }
 
-    // Touch, Pointer, and Click listeners for robust cross-device mobile support
-    ['touchstart', 'pointerdown', 'click'].forEach(eventType => {
-      document.addEventListener(eventType, function(e) {
-        if (isSpeechPlaying) {
-          const tag = e.target ? e.target.tagName.toLowerCase() : '';
-          const isInteractive = tag === 'button' || tag === 'input' || tag === 'select' || tag === 'textarea'
-            || (e.target && (e.target.closest('button') || e.target.closest('input') || e.target.closest('.mode-btn') || e.target.closest('.nav-btn')));
-          if (!isInteractive) {
-            triggerSpeechSkip(e);
-          }
-        }
-      }, { capture: true, passive: false });
-    });
+
 
     // Synchronous Speech Promise Function: Supports AndroidHost.speak + Web Speech API Fallback
-    function playSpeechAsync(text) {
+    function playSpeechAsync(text, voiceProfileKey = 'NARRATOR') {
       return new Promise((resolve) => {
         cancelSpeech();
 
@@ -2978,12 +3278,20 @@
         const utterance = new SpeechSynthesisUtterance(processedText);
         utterance.lang = 'ja-JP';
 
-        if (preferredJapaneseVoice) {
+        // 音声プロファイルに基づいてpitch/rate/voiceを設定
+        const profile = VOICE_PROFILES[voiceProfileKey] || VOICE_PROFILES.NARRATOR;
+
+        // 男女音声の切り替え
+        if (profile.preferGender === 'male' && japaneseVoiceMale) {
+          utterance.voice = japaneseVoiceMale;
+        } else if (profile.preferGender === 'female' && japaneseVoiceFemale) {
+          utterance.voice = japaneseVoiceFemale;
+        } else if (preferredJapaneseVoice) {
           utterance.voice = preferredJapaneseVoice;
         }
 
-        utterance.rate = 1.15;
-        utterance.pitch = 1.0;
+        utterance.rate = profile.rate;
+        utterance.pitch = profile.pitch;
         utterance.volume = Math.max(0, Math.min(1, voiceVolume / 100));
 
         let resolved = false;
@@ -3016,7 +3324,8 @@
 
     // Standard Non-Blocking Speech Function for UI & Manual Speaker Buttons
     function speakText(text, onEndCallback = null, isNarration = false, charSeed = null) {
-      playSpeechAsync(text).then(() => {
+      const profileKey = isNarration ? 'NARRATOR' : getCharVoiceProfileKey(charSeed);
+      playSpeechAsync(text, profileKey).then(() => {
         if (onEndCallback) onEndCallback();
       });
     }
@@ -3056,6 +3365,8 @@
       dailyMediumReports: {},
       morningComments: {},
       morningCommentsHistory: [],
+      aiDiscussionHistory: [],
+      aiStatements: {},
       status: {},
       revealedRoles: {},
       lastNightVictims: [],
@@ -3620,6 +3931,53 @@
     }
 
     // Timer Management
+    let aiDiscussionActive = false;
+    let isDiscussionPaused = false;
+
+    function toggleDiscussionPause() {
+      isDiscussionPaused = !isDiscussionPaused;
+      const btn = document.getElementById('btn-toggle-discussion-pause');
+      if (btn) {
+        if (isDiscussionPaused) {
+          btn.innerHTML = '<span>▶️ 議論を再開</span>';
+          btn.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
+          btn.style.borderColor = '#fbbf24';
+          btn.style.color = '#fff';
+        } else {
+          btn.innerHTML = '<span>⏸️ 議論を一時停止</span>';
+          btn.style.background = 'linear-gradient(135deg, #3a3f58, #2a2d42)';
+          btn.style.borderColor = 'var(--accent-amber)';
+          btn.style.color = '#fff';
+        }
+      }
+    }
+
+    async function startAIDiscussionTimer() {
+      // 既に走っている場合は何もしない
+      if (aiDiscussionActive) return;
+      aiDiscussionActive = true;
+
+      // 初回遅延（2.5秒）
+      await new Promise(r => setTimeout(r, 2500));
+
+      // 非同期ループ：読み上げ完了を待ってから次の発言を生成
+      while (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+        // 一時停止状態の場合は解除されるまで待機
+        while (isDiscussionPaused && aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+          await new Promise(r => setTimeout(r, 500));
+        }
+        if (!aiDiscussionActive || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) break;
+
+        await generateAIDiscussionStep();
+
+        // 発言間に少し間を空ける（1.5秒）
+        if (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+          await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+      aiDiscussionActive = false;
+    }
+
     function startDiscussionTimer() {
       stopAllTimers();
       playBgm('hiru');
@@ -3627,6 +3985,8 @@
       gameState.subPhase = 'discussion';
       gameState.timeLeftSeconds = discussionTimeSetting;
       updateTimerDisplay();
+
+      startAIDiscussionTimer();
 
       timerInterval = setInterval(() => {
         if (gameState.timeLeftSeconds === -1) {
@@ -3687,6 +4047,7 @@
         clearInterval(timerInterval);
         timerInterval = null;
       }
+      aiDiscussionActive = false;
       lastPauseTimestamp = null;
     }
 
@@ -3696,6 +4057,7 @@
         clearInterval(timerInterval);
         timerInterval = null;
       }
+      aiDiscussionActive = false;
     }
 
     function resumeActiveTimers() {
@@ -3717,6 +4079,7 @@
         }
 
         if (gameState.subPhase === 'discussion') {
+          startAIDiscussionTimer();
           timerInterval = setInterval(() => {
             if (gameState.timeLeftSeconds === -1) {
               updateTimerDisplay();
@@ -3828,6 +4191,15 @@
       stopAllTimers();
       cancelSpeech();
 
+      isDiscussionPaused = false;
+      const btnPause = document.getElementById('btn-toggle-discussion-pause');
+      if (btnPause) {
+        btnPause.innerHTML = '<span>⏸️ 議論を一時停止</span>';
+        btnPause.style.background = 'linear-gradient(135deg, #3a3f58, #2a2d42)';
+        btnPause.style.borderColor = 'var(--accent-amber)';
+        btnPause.style.color = '#fff';
+      }
+
       // DOM Clear
       const grid = document.getElementById('character-grid');
       if (grid) grid.innerHTML = '';
@@ -3873,6 +4245,8 @@
         dailyMediumReports: {},
         morningComments: {},
         morningCommentsHistory: [],
+        aiDiscussionHistory: [],
+        aiStatements: {},
         status: {},
         revealedRoles: {},
         lastNightVictims: [],
@@ -4440,6 +4814,285 @@
       });
     }
 
+    // --- AI同士の自動リアルタイム議論（会話生成）エンジン ---
+    let lastAISpeaker = null;
+
+    // AI発言時の緊急防衛CO / 偽COチェックロジック
+    function checkAndGenerateDefensiveCO(speaker) {
+      // 生存チェック
+      if (gameState.status[speaker] !== 'alive') return null;
+
+      // 自身の被疑心度（他者からの仮投票集中状況）を測定
+      calculateVirtualVotes();
+      const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      const aliveTotal = aliveChars.length;
+      let votesAgainstSpeaker = 0;
+      Object.keys(gameState.virtualVotes || {}).forEach(voter => {
+        if (voter !== speaker && gameState.virtualVotes[voter] && gameState.virtualVotes[voter].target === speaker) {
+          votesAgainstSpeaker++;
+        }
+      });
+
+      // 危機的状況の判定（仮投票で最多票が集中している、かつ被疑心が非常に高い危機状態）
+      const sortedByVotes = aliveChars.map(c => {
+        let count = 0;
+        Object.keys(gameState.virtualVotes || {}).forEach(voter => {
+          if (voter !== c && gameState.virtualVotes[voter] && gameState.virtualVotes[voter].target === c) count++;
+        });
+        return { char: c, count };
+      }).sort((a, b) => b.count - a.count);
+
+      const topVotedChar = sortedByVotes.length > 0 ? sortedByVotes[0].char : null;
+      const myVoteCount = votesAgainstSpeaker;
+
+      // 「自身が最多票を集めている」かつ「2票以上または過半数の票が集まっている」、かつ「疑心度が80以上」の場合のみ処刑危機とみなす
+      const isUnderAttack = (speaker === topVotedChar && myVoteCount >= 2 && myVoteCount >= Math.floor(aliveTotal * 0.4)) ||
+                            (gameState.virtualVotes[speaker] && gameState.virtualVotes[speaker].suspicionScore >= 80);
+
+      if (!isUnderAttack) return null;
+
+      const realRole = gameState.roles[speaker];
+      const coRole = gameState.coRoles[speaker] || 'grey';
+
+      // --- 1. 潜伏役職者（真役職）の緊急防衛CO ---
+      if (gameState.isStealthing[speaker] && (realRole === 'seer' || realRole === 'medium' || realRole === 'knight' || realRole === 'freemason')) {
+        // CO登録
+        gameState.isStealthing[speaker] = false;
+        gameState.coRoles[speaker] = realRole;
+        gameState.claimedRoleTypes[speaker] = realRole;
+
+        let coMsg = '';
+        if (realRole === 'seer') {
+          const history = gameState.seerHistory[speaker] || [];
+          const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
+          coMsg = `「待ってください、私への疑いは完全な誤解です！実は【占い師】です！これまでの鑑定結果は（${historyStr || 'まだありません'}）です！私を吊ると村が負けます！」`;
+        } else if (realRole === 'medium') {
+          const rep = gameState.dailyMediumReports[speaker];
+          coMsg = `「ちょっと待って！私を処刑するのは危険すぎます！実は【霊媒師】です！${rep && rep.target ? `昨日処刑された 村人 ${rep.target} は【${rep.result}】でした！` : ''} 私を吊らないでください！」`;
+        } else if (realRole === 'knight') {
+          coMsg = `「待ってください！私に票を集めるのは村の破滅です！実は【騎士】です！昨夜も密かに護衛を行っていました！私を処刑しないでください！」`;
+        } else if (realRole === 'freemason') {
+          coMsg = `「落ち着いてください！私は【共有者】です！人間であることが確定しています！私を処刑するのは無駄吊りです！」`;
+        }
+
+        renderBulletinBoard();
+        renderMorningCommentsBox();
+        renderCharacters();
+
+        return { type: 'defensive-co', role: realRole, text: coMsg };
+      }
+
+      // --- 2. 人狼・狂人の緊急偽CO（真に追い詰められた時のみ約30%の確率でブラフ） ---
+      if ((coRole === 'grey' || coRole === 'villager') && (realRole === 'wolf' || realRole === 'madman') && Math.random() < 0.30) {
+        // 騙る役職の戦略的選定（占いCO・霊媒CO・騎士CO）
+        const existingCOs = Object.values(gameState.coRoles);
+        let fakeRole = 'seer';
+        if (!existingCOs.includes('seer')) {
+          fakeRole = 'seer';
+        } else if (!existingCOs.includes('medium')) {
+          fakeRole = 'medium';
+        } else if (!existingCOs.includes('knight')) {
+          fakeRole = 'knight';
+        } else {
+          fakeRole = pickRandom(['seer', 'medium', 'knight']);
+        }
+
+        // CO登録
+        gameState.isStealthing[speaker] = false;
+        gameState.coRoles[speaker] = fakeRole;
+        gameState.claimedRoleTypes[speaker] = fakeRole;
+
+        // 偽の報告データの補填生成
+        if (fakeRole === 'seer' && (!gameState.seerHistory[speaker] || gameState.seerHistory[speaker].length === 0)) {
+          const aliveOthers = gameState.charList.filter(c => c !== speaker && gameState.status[c] === 'alive');
+          const target = pickRandom(aliveOthers) || 'A';
+          const fakeResult = (realRole === 'wolf') ? '人間' : pickRandom(['人間', '人狼']);
+          gameState.seerHistory[speaker] = [{ day: gameState.day, target, result: fakeResult }];
+          gameState.dailySeerReports[speaker] = { day: gameState.day, target, result: fakeResult };
+        } else if (fakeRole === 'medium' && (!gameState.mediumHistory[speaker] || gameState.mediumHistory[speaker].length === 0)) {
+          if (gameState.lastExecutedChar) {
+            const fakeResult = pickRandom(['人間', '人狼']);
+            gameState.mediumHistory[speaker] = [{ day: gameState.day, target: gameState.lastExecutedChar, result: fakeResult }];
+            gameState.dailyMediumReports[speaker] = { day: gameState.day, target: gameState.lastExecutedChar, result: fakeResult };
+          }
+        }
+
+        let coMsg = '';
+        if (fakeRole === 'seer') {
+          const history = gameState.seerHistory[speaker] || [];
+          const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
+          coMsg = `「ここまできたら隠せません！私こそが真の【占い師】です！${historyStr ? `鑑定結果: ${historyStr}` : ''} 対抗のCOは全員偽者です！」`;
+        } else if (fakeRole === 'medium') {
+          coMsg = `「待ちなさい！私を吊るならハッキリ言います、私こそが真の【霊媒師】です！私を処分すれば村の霊媒視点が途絶えますよ！」`;
+        } else {
+          coMsg = `「緊急事態なのでCOします！私は【騎士】です！今私を処刑すれば、今夜人狼の襲撃を誰一人防げなくなりますよ！」`;
+        }
+
+        renderBulletinBoard();
+        renderMorningCommentsBox();
+        renderCharacters();
+
+        return { type: 'fake-co', role: fakeRole, text: coMsg };
+      }
+
+      return null;
+    }
+
+    async function generateAIDiscussionStep() {
+      if (gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
+
+      const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      if (aliveChars.length < 2) return;
+
+      // 直前発言者以外の生存AIを優先して選出
+      let candidates = aliveChars.filter(c => c !== lastAISpeaker);
+      if (candidates.length === 0) candidates = aliveChars;
+      const speaker = pickRandom(candidates);
+      lastAISpeaker = speaker;
+
+      const realRole = gameState.roles[speaker];
+      const coRole = gameState.coRoles[speaker] || 'grey';
+      const aliveOthers = aliveChars.filter(c => c !== speaker);
+      const target = pickRandom(aliveOthers) || 'A';
+
+      // 直近の他AI発言ログを取得
+      const recentHistory = (gameState.aiDiscussionHistory || []).slice(-5);
+      const lastItem = recentHistory.length > 0 ? recentHistory[recentHistory.length - 1] : null;
+
+      let msg = '';
+
+      // ★ 1. 緊急防衛CO / 偽CO判定
+      const defensiveCO = checkAndGenerateDefensiveCO(speaker);
+
+      if (defensiveCO) {
+        msg = defensiveCO.text;
+      }
+      // ★ 2. 直前に他AIがCOした場合のリアルタイムリアクション対話
+      else if (lastItem && lastItem.isCO && lastItem.char !== speaker) {
+        const coChar = lastItem.char;
+        const coRoleName = lastItem.coRole === 'seer' ? '占い師' : (lastItem.coRole === 'medium' ? '霊媒師' : '騎士');
+        
+        if (realRole === 'wolf') {
+          msg = pickRandom([
+            `「えっ、村人 ${coChar} さんが【${coRoleName}】をCOしたんですか！？ 処刑回避のための土壇場騙りの可能性も疑うべきです！」`,
+            `「村人 ${coChar} さんの突然の【${coRoleName}】COで盤面が一変しましたね。真偽判定を慎重に行いましょう。」`
+          ]);
+        } else if (realRole === 'madman') {
+          msg = pickRandom([
+            `「村人 ${coChar} さんの【${coRoleName}】CO！これは面白い展開になってきましたね！対抗CO者は黙っている場合じゃないですよ！」`,
+            `「本当に村人 ${coChar} さんが真の【${coRoleName}】なのか？偽者の命乞いCOのラインも十分あり得ますよ！」`
+          ]);
+        } else {
+          msg = pickRandom([
+            `「えっ！村人 ${coChar} さんが【${coRoleName}】CO！？もし本当なら今日の処刑対象を即刻変更しなければなりません！」`,
+            `「村人 ${coChar} さんのCOを受け、対抗の真偽ラインとグレーの範囲を再計算する必要がありますね。」`,
+            `「土壇場での【${coRoleName}】CO……！村人 ${coChar} さんの主張の真偽をしっかり精査しましょう！」`
+          ]);
+        }
+      }
+      // ★ 3. 通常の会話・議論キャッチボール
+      else if (lastItem && lastItem.char !== speaker && Math.random() < 0.65) {
+        const other = lastItem.char;
+        if (realRole === 'wolf') {
+          msg = pickRandom([
+            `「村人 ${other} さんの仰る通りですが、村人 ${target} さんの言動の怪しさも無視できませんよ。」`,
+            `「村人 ${other} さん、そう焦って話題を打ち切ろうとするのは少し防衛的すぎませんか？」`,
+            `「村人 ${other} さんの指摘には一理あります。ただ村人 ${target} さんの昨日の動きも精査すべきです。」`
+          ]);
+        } else if (realRole === 'madman') {
+          msg = pickRandom([
+            `「村人 ${other} さんの意見で盤面が迷走し始めていますね！もっと根本的な白黒判定に注目すべきです！」`,
+            `「なるほど、村人 ${other} さんの視点も一理ありますが、村人 ${target} さんの沈黙こそ最大の謎ですよ！」`
+          ]);
+        } else {
+          msg = pickRandom([
+            `「村人 ${other} さんの考えに同意です。村人 ${target} さんの発言ログとの整合性も見ていきましょう。」`,
+            `「村人 ${other} さん、その根拠についてもう少し詳しく聞かせていただけますか？」`,
+            `「なるほど。村人 ${other} さんの指摘を踏まえると、村人 ${target} さんの位置が急浮上してきますね。」`
+          ]);
+        }
+      } else {
+        // 単独での盤面考察発言
+        if (coRole === 'seer') {
+          msg = `「占い師の立場から言わせていただくが、生き残っているグレーの精査とライン判定を最優先にすべきだ。」`;
+        } else if (coRole === 'medium') {
+          msg = `「霊媒報告の事実関係を元に、これ以上村人を誤処刑しないよう慎重に議論を繋ぎましょう。」`;
+        } else if (realRole === 'wolf') {
+          msg = pickRandom([
+            `「村人 ${target} さんの発言にどこか狼側の擦り付けを感じます。皆さんはどう思いますか？」`,
+            `「人狼の潜伏位置として、村人 ${target} さんの昨夜からのスタンス変化に強い違和感があります。」`,
+            `「議論が特定の人物だけに偏るのは危険です。静観している村人 ${target} さんにも意見を求めたいですね。」`
+          ]);
+        } else if (realRole === 'madman') {
+          msg = pickRandom([
+            `「真役職のCO対抗関係が非常に怪しい！村人 ${target} さん、あなたも疑念を抱いていませんか？」`,
+            `「疑心暗鬼を生む前に、発言の少ない人物からどんどん突っ込んで白黒を炙り出しましょう！」`
+          ]);
+        } else {
+          msg = pickRandom([
+            `「村人 ${target} さんの前日の投票傾向と先ほどの発言が食い違っていませんか？精査したいです。」`,
+            `「誤処刑を防ぐためにも、村人 ${target} さんの視点整理を聞いてみたいです。」`,
+            `「人狼側は必ずログのどこかに足跡を残しているはずです。村人 ${target} さんの位置を再確認しましょう。」`
+          ]);
+        }
+      }
+
+      // 記憶・保存
+      if (!gameState.aiStatements) gameState.aiStatements = {};
+      gameState.aiStatements[speaker] = msg;
+
+      if (!gameState.aiDiscussionHistory) gameState.aiDiscussionHistory = [];
+      gameState.aiDiscussionHistory.push({
+        day: gameState.day,
+        char: speaker,
+        text: msg,
+        isCO: !!defensiveCO,
+        coRole: defensiveCO ? defensiveCO.role : null,
+        timestamp: Date.now()
+      });
+
+      // COが発生した場合は盤面仮想投票を再計算してリアルタイムに推理ラインを切り替える
+      if (defensiveCO) {
+        calculateVirtualVotes();
+        recordVirtualVoteHistory(`${formatDay(gameState.day)} ${defensiveCO.role.toUpperCase()}CO発生 (村人 ${speaker})`);
+        renderVoteHistoryPage();
+      }
+
+      // タイムラインへチャットアイテムとして描画（autoSpeakはfalse、読み上げは下で直接制御）
+      addLogItem(`💬 村人 ${speaker}`, '', msg, 'ai-discussion', speaker, false);
+
+      // 読み上げテキスト（日時プレフィックスなし）
+      const speakMsg = `村人 ${speaker}。${msg}`;
+      // 読み上げ完了まで待機してからreturn（非同期ループで次の発言へ進む）
+      await playSpeechAsync(speakMsg, getCharVoiceProfileKey(speaker));
+    }
+
+    // プレイヤーによる「🎯 発言を追及する」アクション
+    function pursueAIDiscussion(char, text) {
+      if (gameState.status[char] !== 'alive') {
+        showCustomAlertModal(`村人 ${char} は既に生存していません。`);
+        return;
+      }
+
+      // 1. そのキャラクターを選択状態にする
+      selectCharacter(char);
+
+      // 2. 質問入力欄に追及クエリをセット
+      const inputEl = document.getElementById('custom-question-input');
+      if (inputEl) {
+        const cleanText = text.replace(/^「|」$/g, '');
+        const shortQuote = cleanText.length > 25 ? cleanText.substring(0, 25) + '…' : cleanText;
+        inputEl.value = `「『${shortQuote}』と言っていた件について追及する」`;
+        inputEl.focus();
+      }
+
+      // 3. 情報画面から尋問操作画面へビュー切り替え
+      switchView(1);
+
+      // トースト通知
+      showCustomAlertModal(`🎯 村人 ${char} の発言を追及枠にセットしました！\n「送信」ボタンで追及を直接ぶつけることができます。`);
+    }
+
     // Render Bulletin Board (Includes Full Past Investigation History Layout)
     function renderBulletinBoard() {
       const list = document.getElementById('bulletin-list');
@@ -4448,15 +5101,17 @@
 
       gameState.charList.forEach(char => {
         const coRole = gameState.coRoles[char];
+        const speakerName = getCharDisplayName(char);
         if (coRole === 'seer') {
           hasReport = true;
           const history = gameState.seerHistory[char] || [];
           history.forEach(h => {
-            const text = `村人 ${char} 占いCO。${formatDay(h.day)} 占い: 村人 ${h.target} は ${h.result}。`;
+            const targetName = getCharDisplayName(h.target);
+            const text = `${speakerName} 占いCO。${formatDay(h.day)} 占い: ${targetName} は ${h.result}。`;
             const item = document.createElement('div');
             item.className = 'bulletin-item';
             item.innerHTML = `
-              <div>🔮 <strong>村人 ${char} (占いCO)</strong> ➡️ [${formatDay(h.day)}] 村人 <strong>${h.target}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
+              <div>🔮 <strong>${speakerName} (占いCO)</strong> ➡️ [${formatDay(h.day)}] <strong>${targetName}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
               <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
             `;
             list.appendChild(item);
@@ -4465,11 +5120,12 @@
           hasReport = true;
           const history = gameState.mediumHistory[char] || [];
           history.forEach(h => {
-            const text = `村人 ${char} 霊媒CO。${formatDay(h.day)} 霊媒: 処刑者 ${h.target} は ${h.result}。`;
+            const targetName = getCharDisplayName(h.target);
+            const text = `${speakerName} 霊媒CO。${formatDay(h.day)} 霊媒: 処刑者 ${targetName} は ${h.result}。`;
             const item = document.createElement('div');
             item.className = 'bulletin-item';
             item.innerHTML = `
-              <div>👻 <strong>村人 ${char} (霊媒CO)</strong> ➡️ [${formatDay(h.day)}] 処刑者 <strong>${h.target}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
+              <div>👻 <strong>${speakerName} (霊媒CO)</strong> ➡️ [${formatDay(h.day)}] 処刑者 <strong>${targetName}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
               <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
             `;
             list.appendChild(item);
@@ -4657,11 +5313,11 @@
         card.className = 'vote-card';
 
         // ヘッダー（日時・ラベル）
-        const topTarget = record.tally.length > 0 ? record.tally[0].target : 'なし';
+        const topTargetName = record.tally.length > 0 ? getCharDisplayName(record.tally[0].target) : 'なし';
         card.innerHTML = `
           <div class="vote-card-header">
             <span>📅 ${record.label} の仮投票集計</span>
-            <span style="font-size: 0.78rem; color: var(--text-muted);">最多集票: <strong style="color: var(--accent-red);">村人 ${topTarget}</strong></span>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">最多集票: <strong style="color: var(--accent-red);">${topTargetName}</strong></span>
           </div>
         `;
 
@@ -4672,7 +5328,7 @@
           const badge = document.createElement('div');
           const isTop = (t.count === record.tally[0].count && t.count > 0);
           badge.className = `vote-tally-badge ${isTop ? 'top-target' : ''}`;
-          badge.innerHTML = `村人 ${t.target}: <strong>${t.count}票</strong>`;
+          badge.innerHTML = `${getCharDisplayName(t.target)}: <strong>${t.count}票</strong>`;
           tallyList.appendChild(badge);
         });
         card.appendChild(tallyList);
@@ -4695,11 +5351,11 @@
 
           row.innerHTML = `
             <div class="voter-name">
-              村人 ${voter} <span style="font-size:0.74rem; font-weight:normal; color:var(--text-muted);">${voterCoText}</span>
+              ${getCharDisplayName(voter)} <span style="font-size:0.74rem; font-weight:normal; color:var(--text-muted);">${voterCoText}</span>
             </div>
             <div class="vote-target-info">
               <span class="vote-arrow">➔</span>
-              <span class="vote-target-name">村人 ${vote.target}</span>
+              <span class="vote-target-name">${getCharDisplayName(vote.target)}</span>
               <span class="suspicion-pct">疑念 ${vote.suspicionScore}%</span>
             </div>
           `;
@@ -4742,10 +5398,12 @@
         grouped[day].forEach(item => {
           const div = document.createElement('div');
           div.className = 'morning-comment-item';
-          const speakMsg = `村人 ${item.char}。${item.comment}`;
+          const speakerName = getCharDisplayName(item.char);
+          const displayComment = replaceNamePlaceholders(item.comment);
+          const speakMsg = `${speakerName}。${displayComment}`;
 
           div.innerHTML = `
-            <div><strong>村人 ${item.char} (${item.coText})</strong>: ${item.comment}</div>
+            <div><strong>${speakerName} (${item.coText})</strong>: ${displayComment}</div>
             <button class="btn-speak" onclick="speakText('${speakMsg}', null, false, '${item.char}')">🔊</button>
           `;
           list.appendChild(div);
@@ -4831,9 +5489,11 @@
 
         const memoRole = gameState.memoRoles[char] || 'none';
 
+        const displayName = getCharDisplayName(char);
+
         card.innerHTML = `
           <div class="char-avatar">${char}</div>
-          <div class="char-name">村人 ${char}</div>
+          <div class="char-name">${displayName}</div>
           <div class="char-co-badge ${coBadgeClass}">${coBadgeText}</div>
           <div class="char-status ${statusClass}">${statusText}</div>
           <select class="memo-select memo-${memoRole}" onclick="event.stopPropagation()" onchange="updateMemoRole('${char}', this.value, event)">
@@ -4915,7 +5575,7 @@
         if (gameState.coRoles[gameState.selectedChar] === 'medium') coText = '（霊媒CO）';
         if (gameState.coRoles[gameState.selectedChar] === 'freemason') coText = '（共有CO）';
 
-        targetInfo.textContent = `選択中: 村人 ${gameState.selectedChar} ${coText}`;
+        targetInfo.textContent = `選択中: ${getCharDisplayName(gameState.selectedChar)} ${coText}`;
       } else {
         targetInfo.textContent = '尋問・処刑する人物を選択してください';
       }
@@ -4976,6 +5636,7 @@
       const personality = getCharPersonality(char);
 
       // 質問インテント解析
+      const isPursue = /追及|言っていた|言ってた|発言|さっき|言った件|矛盾/.test(q);
       const isRoleInquiry = /役職|CO|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職/.test(q);
       const isWhy = /なぜ|理由|どうして|選んだ|意図|根拠|きっかけ|なんで/.test(q);
       const isTiming = /いつ|タイミング|遅い|初日|今|昨日|段階|遅れ/.test(q);
@@ -5011,6 +5672,26 @@
       }
 
       let rawResponse = '';
+
+      // --- 【-1. AI自身の直前発言への追及 (isPursue)】 ---
+      const pastStatement = gameState.aiStatements ? gameState.aiStatements[char] : null;
+      if (isPursue && pastStatement) {
+        if (realRole === 'wolf') {
+          rawResponse = pickRandom([
+            `${prefix} 『${pastStatement}』と発言したのは事実だが、それは村の議論を前に進めるための投げかけだよ！言葉足らずな部分を捉えて人狼扱いするのは強引すぎないか？`,
+            `${prefix} 揚げ足を取らないでほしいね。私のあの発言はログの不整合を指摘したまでだ。私を黒仕立てに誘導しようとしているのは君の方じゃないのか？`,
+            `${prefix} その発言の真意を誤解しているね。私は村のために盤面を整理しただけで、人狼としての誘導など一切していないよ。`
+          ]);
+        } else if (realRole === 'madman') {
+          rawResponse = `${prefix} フフ…『${pastStatement}』の真意が気になって仕方ないようだな！盤面を撹乱する意図があったか、それとも真実の叫びか、自分の目で確かめてごらん！`;
+        } else {
+          rawResponse = pickRandom([
+            `${prefix} 先ほど『${pastStatement}』と発言した件だね。あれは当時の投票結果とCO状況を踏まえた考察だよ。疑問に思うなら別の角度からも説明するよ。`,
+            `${prefix} ああ、その発言だね。誤解を与えてしまったなら言葉を足すよ。私は村人陣営として誤処刑を防ぐために、客観的な不自然さを指摘したまでさ。`
+          ]);
+        }
+        return validateAndFilterResponse(rawResponse, char, questionText);
+      }
 
       // --- 【0. 役職質問・直接CO強制質問 (isRoleInquiry)】 ---
       if (isRoleInquiry) {
@@ -5190,31 +5871,44 @@
     // Add Log Entry
     function addLogItem(title, question, answer, typeClass = '', charSeed = null, autoSpeak = false) {
       const timeline = document.getElementById('log-timeline');
+      if (!timeline) return;
       const item = document.createElement('div');
       item.className = `log-item ${typeClass}`;
-      
-      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
 
-      let speechTitle = (title === 'ナレーション') ? '' : title;
-      
-      const speakMsg = `${getDaySpeechText(gameState.day)}の${gameState.phase}…… ${question ? question + '。' : ''} ${answer}`;
+      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
+      const isAIDiscussion = (typeClass === 'ai-discussion');
+
+      // AI議論時は日時プレフィックスを省略し「村人 X。発言内容」形式にする
+      const speakMsg = isAIDiscussion
+        ? `村人 ${charSeed || ''}。${answer}`
+        : `${getDaySpeechText(gameState.day)}の${gameState.phase}…… ${question ? question + '。' : ''} ${answer}`;
+
+      const safeAnswer = answer.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      const displayTitle = replaceNamePlaceholders(title);
+      const displayQuestion = replaceNamePlaceholders(question);
+      const displayAnswer = replaceNamePlaceholders(answer);
 
       item.innerHTML = `
         <div class="log-header">
-          <span>${title}</span>
+          <span>${displayTitle}</span>
           <span>${dateText}</span>
         </div>
-        ${question ? `<div class="log-question">${question}</div>` : ''}
+        ${displayQuestion ? `<div class="log-question">${displayQuestion}</div>` : ''}
         <div class="log-answer">
-          <div>${answer}</div>
-          <button class="btn-speak" onclick="speakText('${speakMsg.replace(/'/g, "\\'")}', null, ${typeClass === 'narration'}, '${charSeed || 'A'}')">🔊</button>
+          <div>${displayAnswer}</div>
+          <div class="log-actions" style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0; margin-left:0.4rem;">
+            ${isAIDiscussion && charSeed ? `<button class="btn-pursue" onclick="pursueAIDiscussion('${charSeed}', '${safeAnswer}')" title="この発言を引用して追及質問を行う">🎯 追及する</button>` : ''}
+            <button class="btn-speak" onclick="speakText('${speakMsg.replace(/'/g, "\\'")}', null, ${typeClass === 'narration'}, '${charSeed || 'A'}')">🔊</button>
+          </div>
         </div>
       `;
 
       timeline.appendChild(item);
       timeline.scrollTop = timeline.scrollHeight;
 
-      if (autoSpeak) {
+      // AI議論の自動読み上げは非同期ループ側で制御するのでここではスキップ
+      if (autoSpeak && !isAIDiscussion) {
         speakText(speakMsg, null, typeClass === 'narration', charSeed);
       }
     }
