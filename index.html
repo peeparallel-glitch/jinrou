@@ -3054,16 +3054,16 @@
       }
     }
 
-    // --- 音声プロファイル定義（老若男女バリエーション） ---
+    // --- 音声プロファイル定義（老若男女バリエーション - 自然な速度 1.0〜1.25基準） ---
     const VOICE_PROFILES = {
-      NARRATOR:      { pitch: 1.0,  rate: 0.9,  preferGender: 'female' }, // ナレーション（落ち着いた女性）
-      YOUNG_FEMALE:  { pitch: 1.5,  rate: 1.1,  preferGender: 'female' }, // 若い女性・少女
-      YOUNG_MALE:    { pitch: 1.2,  rate: 1.15, preferGender: 'male'   }, // 熱血・若い男性
-      OLD_MAN:       { pitch: 0.6,  rate: 0.8,  preferGender: 'male'   }, // 老人・落ち着いた男性
-      MIDDLE_MALE:   { pitch: 0.8,  rate: 0.95, preferGender: 'male'   }, // 中年男性
-      CALM_FEMALE:   { pitch: 1.1,  rate: 0.9,  preferGender: 'female' }, // 落ち着いた女性
-      BOLD_MALE:     { pitch: 0.9,  rate: 1.05, preferGender: 'male'   }, // 力強い男性
-      CHILD:         { pitch: 1.7,  rate: 1.2,  preferGender: 'female' }  // 子供・ボーイソプラノ
+      NARRATOR:      { pitch: 1.0,  rate: 1.1,  preferGender: 'female' }, // ナレーション（1.1）
+      YOUNG_FEMALE:  { pitch: 1.4,  rate: 1.25, preferGender: 'female' }, // 若い女性・少女 (1.25)
+      YOUNG_MALE:    { pitch: 1.2,  rate: 1.25, preferGender: 'male'   }, // 熱血・若い男性 (1.25)
+      OLD_MAN:       { pitch: 0.7,  rate: 1.0,  preferGender: 'male'   }, // 老人・落ち着いた男性 (1.0)
+      MIDDLE_MALE:   { pitch: 0.85, rate: 1.1,  preferGender: 'male'   }, // 中年男性 (1.1)
+      CALM_FEMALE:   { pitch: 1.1,  rate: 1.15, preferGender: 'female' }, // 落ち着いた女性 (1.15)
+      BOLD_MALE:     { pitch: 0.9,  rate: 1.2,  preferGender: 'male'   }, // 力強い男性 (1.2)
+      CHILD:         { pitch: 1.6,  rate: 1.25, preferGender: 'female' }  // 子供 (1.25)
     };
 
     // キャラコード（A～T）からボイスプロファイルキーを決定的に割り当てる
@@ -4439,6 +4439,22 @@
       setupDayOneDirectly();
     }
 
+    // 議論制限時間の日本語アナウンス文字列を取得（例: 「3分」「5分」「10分」「無制限」）
+    function getFormattedDiscussionTimeText() {
+      if (discussionTimeSetting < 0) {
+        return '無制限';
+      }
+      const mins = Math.floor(discussionTimeSetting / 60);
+      const secs = discussionTimeSetting % 60;
+      if (mins > 0 && secs > 0) {
+        return `${mins}分${secs}秒`;
+      } else if (mins > 0) {
+        return `${mins}分`;
+      } else {
+        return `${discussionTimeSetting}秒`;
+      }
+    }
+
     // Direct Initial Morning Setup for Day 1
     async function setupDayOneDirectly() {
       playBgm('asa');
@@ -4450,8 +4466,9 @@
       gameState.dailyMediumReports = {};
       gameState.morningComments = {};
 
+      const timeLimitText = getFormattedDiscussionTimeText();
       const dateText = `${formatDay(1)} (${gameState.phase})`;
-      const morningNewsText = `初日の朝、昨夜の犠牲者は居ませんでした。全員無事です。これより1日目の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
+      const morningNewsText = `初日の朝、昨夜の犠牲者は居ませんでした。全員無事です。これより1日目の議論を開始します。制限時間は${timeLimitText}です。自由に対象へ質問を行ってください。`;
       addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
       await playSpeechAsync(`${getDaySpeechText(1)}…… ${morningNewsText}`);
 
@@ -4511,8 +4528,9 @@
         victimText = `${formatDay(gameState.day)}の朝…… 昨夜、村人 ${victims.join(' と 村人 ')} が冷たい遺体となって発見されました。`;
       }
 
+      const timeLimitText = getFormattedDiscussionTimeText();
       const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const morningNewsText = `${victimText} これより${formatDay(gameState.day)}の議論を開始します。制限時間は3分です。自由に対象へ質問を行ってください。`;
+      const morningNewsText = `${victimText} これより${formatDay(gameState.day)}の議論を開始します。制限時間は${timeLimitText}です。自由に対象へ質問を行ってください。`;
 
       addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
       await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${morningNewsText}`);
@@ -5058,7 +5076,7 @@
         } else if (fakeRole === 'medium') {
           coMsg = `「待ちなさい！私を吊るならハッキリ言います、私こそが真の【霊媒師】です！私を処分すれば村の霊媒視点が途絶えますよ！」`;
         } else {
-          coMsg = `「緊急事態なのでCOします！私は【騎士】です！今私を処刑すれば、今夜人狼の襲撃を誰一人防げなくなりますよ！」`;
+          coMsg = `「緊急事態なのでCOします！私は【騎士】です！今夜私を処刑すれば、今夜人狼の襲撃を誰一人防げなくなりますよ！」`;
         }
 
         renderBulletinBoard();
@@ -5069,6 +5087,76 @@
       }
 
       return null;
+    }
+
+    // --- 役職結果（占い・霊媒）の矛盾・違和感 自動検知ヘルパー ---
+    function detectRoleContradictions() {
+      const contradictions = [];
+
+      // 1. 【黒出し重複・白黒矛盾破綻】同一対象へ異なる結果（黒 vs 白）を出した占い師ペア
+      const inspectionsByTarget = {};
+      Object.keys(gameState.seerHistory || {}).forEach(seer => {
+        if (gameState.status[seer] !== 'alive' && gameState.coRoles[seer] !== 'seer') return;
+        const history = gameState.seerHistory[seer] || [];
+        history.forEach(rep => {
+          if (!inspectionsByTarget[rep.target]) inspectionsByTarget[rep.target] = [];
+          inspectionsByTarget[rep.target].push({ seer, result: rep.result, day: rep.day });
+        });
+      });
+
+      Object.keys(inspectionsByTarget).forEach(target => {
+        const reports = inspectionsByTarget[target];
+        const blacks = reports.filter(r => r.result === '人狼');
+        const whites = reports.filter(r => r.result === '人間');
+        if (blacks.length > 0 && whites.length > 0) {
+          const bSeer = blacks[0].seer;
+          const wSeer = whites[0].seer;
+          contradictions.push({
+            type: 'black_white_conflict',
+            target,
+            bSeer,
+            wSeer,
+            text: `ちょっと待ってください！${getCharDisplayName(target)}さんに対して、${getCharDisplayName(bSeer)}さんは【人狼】、${getCharDisplayName(wSeer)}さんは【人間】と判定しています！真と偽で完全な白黒破綻が起きていますよ！`
+          });
+        }
+      });
+
+      // 2. 【霊媒結果とのズレ破綻】前日処刑者の霊媒結果と占い結果の喰い違い
+      if (gameState.lastExecutedChar) {
+        const execChar = gameState.lastExecutedChar;
+        const mediumClaimants = gameState.charList.filter(c => (gameState.coRoles[c] === 'medium' || gameState.claimedRoleTypes[c] === 'medium') && gameState.status[c] === 'alive');
+        mediumClaimants.forEach(med => {
+          const medRep = gameState.dailyMediumReports[med];
+          if (medRep && medRep.target === execChar) {
+            // 過去にexecCharを占った占い師と比較
+            Object.keys(gameState.seerHistory || {}).forEach(seer => {
+              if (gameState.status[seer] !== 'alive' && gameState.coRoles[seer] !== 'seer') return;
+              const seerRep = (gameState.seerHistory[seer] || []).find(r => r.target === execChar);
+              if (seerRep && seerRep.result !== medRep.result) {
+                contradictions.push({
+                  type: 'medium_seer_conflict',
+                  target: execChar,
+                  medSeer: med,
+                  seerChar: seer,
+                  text: `待ってください！昨日処刑された${getCharDisplayName(execChar)}さんについて、霊媒師の${getCharDisplayName(med)}さんは【${medRep.result}】、占い師の${getCharDisplayName(seer)}さんは【${seerRep.result}】と鑑定しており整合性が崩れています！`
+                });
+              }
+            });
+          }
+        });
+      }
+
+      // 3. 【3人以上占いCOの乱立・破綻盤面】
+      const seerCOs = gameState.charList.filter(c => gameState.coRoles[c] === 'seer' && gameState.status[c] === 'alive');
+      if (seerCOs.length >= 3) {
+        const names = seerCOs.map(c => getCharDisplayName(c)).join('さん、');
+        contradictions.push({
+          type: 'triple_seer_co',
+          text: `落ち着いて整理しましょう！占い師COが${names}さん3人も乱立しています！間違いなく2人以上の偽者（人狼・狂人）が紛れ込んでいます！`
+        });
+      }
+
+      return contradictions;
     }
 
     // --- 占い白出し（人間判定）結果の盤面集約ヘルパー ---
@@ -5166,6 +5254,12 @@
 
       if (defensiveCO) {
         msg = defensiveCO.text;
+      }
+      // ★ 1.2. 占い・霊媒結果の矛盾・違和感の自動検知と突っ込み（詰め）議論
+      else if (Math.random() < 0.85 && (detectRoleContradictions().length > 0)) {
+        const contradictions = detectRoleContradictions();
+        const contra = contradictions[0];
+        msg = contra.text;
       }
       // ★ 1.5. 朝の黒出し＆必死の反論に対する周囲のリアクション追随
       else if (lastItem && lastItem.isBlackRebuttal && lastItem.char !== speaker) {
@@ -6041,6 +6135,14 @@
       return validateAndFilterResponse(rawResponse, char, questionText);
     }
 
+    // Helper filter to strip unnecessary time/context prefaces from player input
+    function cleanPlayerQuestionText(rawText) {
+      if (!rawText) return '';
+      let cleaned = rawText.replace(/^(.*日目|朝|夜|現在|時間|今).*?(ですが|です|において|に関して|について|だけど|だけどさ)[、,\s]*/, '');
+      if (!cleaned) cleaned = rawText;
+      return cleaned.trim();
+    }
+
     // Ask Custom Question Handler with Visual Active Highlight & Auto Reset
     async function askCustomQuestion() {
       if (!gameState.selectedChar || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
@@ -6052,8 +6154,11 @@
       const q3Btn = document.getElementById('btn-q3');
 
       if (!inputEl) return;
-      const questionText = inputEl.value.trim();
-      if (!questionText) return; // Prevent empty submission
+      const rawText = inputEl.value.trim();
+      if (!rawText) return; // Prevent empty submission
+
+      // 前処理フィルタ（不要な時間・状況前置きを自動除去）
+      const cleanedQuestionText = cleanPlayerQuestionText(rawText);
 
       // 1. 全質問ボタンを一時無効化 & 実行中ボタンをハイライト
       const allBtns = [q1Btn, q2Btn, q3Btn, btnCustom, inputEl].filter(Boolean);
@@ -6061,21 +6166,31 @@
       if (btnCustom) btnCustom.classList.add('is-active');
 
       try {
-        const char = gameState.selectedChar;
-        const answerText = getCustomAnswer(char, questionText);
+        // ★ ③ AI自動議論・音声進行を即座に一時停止（割り込み）
+        cancelSpeech();
 
-        addLogItem(`審判員 ➡️ 村人 ${char}`, `「${questionText}」`, answerText, '', char, true);
+        const char = gameState.selectedChar;
+        const targetDisplayName = getCharDisplayName(char);
+
+        // ★ プレイヤーの質問を最優先で音声読み上げ
+        const playerSpeechText = `プレイヤーから${targetDisplayName}へ質問。「${cleanedQuestionText}」`;
+        await playSpeechAsync(playerSpeechText, 'YOUNG_MALE');
+
+        const answerText = getCustomAnswer(char, cleanedQuestionText);
+
+        addLogItem(`審判員 ➡️ ${targetDisplayName}`, `「${cleanedQuestionText}」`, answerText, '', char, false);
+
+        // ★ 回答するAIの返答音声の優先読み上げ
+        const formattedAnswer = formatSpeechMessage(char, answerText);
+        await playSpeechAsync(formattedAnswer, getCharVoiceProfileKey(char));
 
         // 尋問による盤面変化を受けた仮想投票再計算＆履歴更新
         calculateVirtualVotes();
-        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (村人 ${char})`);
+        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (${targetDisplayName})`);
         renderVoteHistoryPage();
 
         inputEl.value = ''; // Clear input
         renderStatus();
-
-        // 応答完了フィードバック待機（1.2秒）
-        await new Promise(r => setTimeout(r, 1200));
 
       } catch (err) {
         console.error('自由質問処理エラー:', err);
@@ -6103,21 +6218,31 @@
       if (selectedBtn) selectedBtn.classList.add('is-active');
 
       try {
+        // ★ ③ AI自動議論・音声進行を即座に一時停止（割り込み）
+        cancelSpeech();
+
         const char = gameState.selectedChar;
+        const targetDisplayName = getCharDisplayName(char);
         const questionText = selectedBtn ? selectedBtn.textContent.trim() : '';
+
+        // ★ プレイヤーの質問を最優先で音声読み上げ
+        const playerSpeechText = `プレイヤーから${targetDisplayName}へ質問。「${questionText}」`;
+        await playSpeechAsync(playerSpeechText, 'YOUNG_MALE');
+
         const answerText = getAnswer(char, questionId);
 
-        addLogItem(`審判員 ➡️ 村人 ${char}`, questionText, answerText, '', char, true);
+        addLogItem(`審判員 ➡️ ${targetDisplayName}`, questionText, answerText, '', char, false);
+
+        // ★ 回答するAIの返答音声の優先読み上げ
+        const formattedAnswer = formatSpeechMessage(char, answerText);
+        await playSpeechAsync(formattedAnswer, getCharVoiceProfileKey(char));
 
         // 尋問による盤面変化を受けた仮想投票再計算＆履歴更新
         calculateVirtualVotes();
-        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (村人 ${char})`);
+        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (${targetDisplayName})`);
         renderVoteHistoryPage();
 
         renderStatus();
-
-        // 応答完了フィードバック待機（1.2秒）
-        await new Promise(r => setTimeout(r, 1200));
 
       } catch (err) {
         console.error('定型質問処理エラー:', err);
