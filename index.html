@@ -3968,7 +3968,11 @@
         }
         if (!aiDiscussionActive || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) break;
 
-        await generateAIDiscussionStep();
+        try {
+          await generateAIDiscussionStep();
+        } catch (stepErr) {
+          console.error('[AI議論] ステップ生成中にエラーが発生しました:', stepErr);
+        }
 
         // 発言間に少し間を空ける（1.5秒）
         if (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
@@ -4432,8 +4436,30 @@
       const placeShuffled = [...PLACES].sort(() => 0.5 - Math.random());
       chars.forEach((c, idx) => gameState.alibis[c] = placeShuffled[idx % placeShuffled.length]);
 
+      // 配役集計テキストの生成 (例: 8人村 (人狼2/占い1/霊媒1/騎士1/狂人1/市民2))
+      const ROLE_LABELS = {
+        wolf: '人狼', seer: '占い', medium: '霊媒', knight: '騎士', madman: '狂人',
+        baker: 'パン', cakeShop: 'ケーキ', freemason: '共有', psychic: '霊能',
+        nekomata: '猫又', bodyguard: '黒服', fox: '妖狐', citizen: '市民'
+      };
+      const roleCounts = {};
+      Object.values(gameState.roles).forEach(r => {
+        roleCounts[r] = (roleCounts[r] || 0) + 1;
+      });
+      const roleOrder = ['wolf', 'seer', 'medium', 'psychic', 'knight', 'bodyguard', 'madman', 'baker', 'cakeShop', 'freemason', 'nekomata', 'fox', 'citizen'];
+      const roleParts = [];
+      roleOrder.forEach(r => {
+        if (roleCounts[r]) {
+          roleParts.push(`${ROLE_LABELS[r] || r}${roleCounts[r]}`);
+        }
+      });
+      const roleSummaryText = roleParts.join('/');
+
       document.getElementById('log-timeline').innerHTML = '';
-      document.getElementById('village-size-display').textContent = `${size}人村`;
+      const sizeEl = document.getElementById('village-size-display');
+      if (sizeEl) {
+        sizeEl.innerHTML = `<strong>${size}人村</strong> <span style="font-size: 0.74rem; font-weight: normal; color: rgba(255, 255, 255, 0.78); margin-left: 0.25rem;">(${roleSummaryText})</span>`;
+      }
 
       switchView(1);
       setupDayOneDirectly();
@@ -4523,9 +4549,11 @@
       if (victims.length === 0) {
         victimText = `${formatDay(gameState.day)}の朝…… 昨夜の犠牲者は居ませんでした。全員無事です。`;
       } else if (victims.length === 1) {
-        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、村人 ${victims[0]} が冷たい遺体となって発見されました。`;
+        const victimName = getCharDisplayName(victims[0]);
+        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、${victimName} が冷たい遺体となって発見されました。`;
       } else if (victims.length >= 2) {
-        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、村人 ${victims.join(' と 村人 ')} が冷たい遺体となって発見されました。`;
+        const victimNames = victims.map(v => getCharDisplayName(v)).join(' と ');
+        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、${victimNames} が冷たい遺体となって発見されました。`;
       }
 
       const timeLimitText = getFormattedDiscussionTimeText();
@@ -5346,6 +5374,8 @@
       const logicalTargetName = getCharDisplayName(logicalTargetChar);
       const isCertain = logicalDeduction ? logicalDeduction.isCertain : false;
 
+      const defensiveCO = checkAndGenerateDefensiveCO(speaker);
+
       let msg = '';
 
       // ★ 0. 確定破綻者（100%人狼/偽物）が存在する場合、他の無関係な人物への疑いを禁止し徹底追及
@@ -5689,7 +5719,19 @@
       const aliveOthers = aliveChars.filter(c => c !== speakerAI);
       if (aliveOthers.length === 0) return null;
 
-      // 1. 確定破綻者が存在する場合、他の無関係な人物への疑い・投票を禁止し100%ロックオン
+      // 1. 自身が占い師COしており、黒（人狼）を出している対象がいる場合、その黒出し対象を100%徹底追及（他者への浮気禁止）
+      if (gameState.coRoles[speakerAI] === 'seer') {
+        const seerRep = gameState.dailySeerReports[speakerAI];
+        if (seerRep && seerRep.result === '人狼' && aliveChars.includes(seerRep.target)) {
+          return {
+            target: seerRep.target,
+            reason: `自身の鑑定結果で【人狼】と確定判明しているため`,
+            isCertain: true
+          };
+        }
+      }
+
+      // 1.2. 確定破綻者が存在する場合、他の無関係な人物への疑い・投票を禁止し100%ロックオン
       const bustedList = getDefiniteBustedPlayers();
       const validBusted = bustedList.filter(b => b.target !== speakerAI && aliveChars.includes(b.target));
       if (validBusted.length > 0) {
@@ -6584,7 +6626,8 @@
         gameState.mistakesLeft--;
       }
 
-      const logText = `【判決：処刑実行】村人 ${char} の処刑を執り行いました。正体は明かされません。（翌朝の霊媒結果をお待ちください）`;
+      const charName = getCharDisplayName(char);
+      const logText = `【判決：処刑実行】${charName} の処刑を執り行いました。正体は明かされません。（翌朝の霊媒結果をお待ちください）`;
       const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
       const speakMsg = `${getDaySpeechText(gameState.day)}、 ${logText}`;
 
@@ -6602,11 +6645,12 @@
         const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
         if (aliveOthers.length > 0) {
           const revengeChar = pickRandom(aliveOthers);
+          const revengeName = getCharDisplayName(revengeChar);
           gameState.status[revengeChar] = 'executed';
           if (gameState.roles[revengeChar] === 'wolf') {
             gameState.wolvesExecuted++;
           }
-          const revengeLog = `🐾 【猫又の道連れ】処刑された猫又の怨念により、村人 ${revengeChar} が巻き添えとなって死亡しました！`;
+          const revengeLog = `🐾 【猫又の道連れ】処刑された猫又の怨念により、${revengeName} が巻き添えとなって死亡しました！`;
           addLogItem('ナレーション', '', revengeLog, 'execution', null, false);
         }
       }
@@ -6868,6 +6912,9 @@
 
         gameState.lastNightVictims = nightVictims;
 
+        // 次の日へ進める
+        gameState.day++;
+
         // Step 2: 暗転（フェードアウト） ➔ 裏でUI準備 ➔ 【フェードイン開始 ＆ ナレーション再生開始】
         const line1 = `夜が明け、${gameState.day}日目の朝が来ます。`;
         const line2 = '朝の光が村を包み込みます。';
@@ -6882,7 +6929,6 @@
         }
 
         // 暗転中で見えない間に朝の訪れ画面のテキスト等を準備
-        gameState.day++;
         if (wolfEyes) wolfEyes.classList.remove('visible');
         if (titleEl) titleEl.textContent = '☀️ 朝の訪れ ☀️';
         if (descEl) descEl.textContent = dawnDisplay;
@@ -7038,7 +7084,8 @@
         if (gameState.status[char] === 'cursed') st = '呪殺死';
         if (gameState.status[char] === 'executed') st = '処刑済';
 
-        revealHTML += `村人 ${char}: ${tag}（${st}）<br>`;
+        const charName = getCharDisplayName(char);
+        revealHTML += `${charName}: ${tag}（${st}）<br>`;
       });
       reveal.innerHTML = revealHTML;
 
