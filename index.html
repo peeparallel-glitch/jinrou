@@ -4878,22 +4878,24 @@
     // Generate Morning Comments (Highly Dynamic & Context-Aware)
     function generateMorningComments() {
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      const isDayOne = gameState.day === 1;
 
       aliveChars.forEach(char => {
         const coRole = gameState.coRoles[char];
         const realRole = gameState.roles[char];
         const aliveOthers = aliveChars.filter(c => c !== char);
         const target = pickRandom(aliveOthers) || 'A';
+        const targetName = getCharDisplayName(target);
 
         if (coRole === 'seer') {
           const history = gameState.seerHistory[char] || [];
           if (history.length > 1) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
             gameState.morningComments[char] = `「占い師CO。これまでの全鑑定結果です。【 ${historyStr} 】」`;
           } else {
             const rep = gameState.dailySeerReports[char];
             if (rep) {
-              gameState.morningComments[char] = `「真占い師として報告します。昨夜は 村人 ${rep.target} さんを占い、結果は【${rep.result}】でした。」`;
+              gameState.morningComments[char] = `「真占い師として報告します。昨夜は ${getCharDisplayName(rep.target)} さんを占い、結果は【${rep.result}】でした。」`;
             } else {
               gameState.morningComments[char] = `「私は本物の占い師です。村を誤処刑から守るため、全力を尽くして鑑定します。」`;
             }
@@ -4904,46 +4906,58 @@
           
           if (rep && rep.target) {
             if (history.length > 1) {
-              const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
-              gameState.morningComments[char] = `「霊媒結果の報告です！昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした。（全霊媒履歴: ${historyStr}）」`;
+              const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
+              gameState.morningComments[char] = `「霊媒結果の報告です！昨日処刑された ${getCharDisplayName(rep.target)} さんの霊媒結果は【${rep.result}】でした。（全霊媒履歴: ${historyStr}）」`;
             } else {
-              gameState.morningComments[char] = `「霊媒結果を報告します！昨日処刑された 村人 ${rep.target} さんの霊媒結果は【${rep.result}】でした。」`;
+              gameState.morningComments[char] = `「霊媒結果を報告します！昨日処刑された ${getCharDisplayName(rep.target)} さんの霊媒結果は【${rep.result}】でした。」`;
             }
           } else if (history.length > 0) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${h.target}【${h.result}】`).join('、 ');
+            const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
             gameState.morningComments[char] = `「霊媒師CO。これまでの霊媒鑑定結果一覧です。【 ${historyStr} 】」`;
           } else {
             gameState.morningComments[char] = `「私は霊媒師です。処刑された人物の真の姿を明らかにしていきます。」`;
           }
         } else if (coRole === 'freemason') {
           const partnerMason = gameState.charList.find(c => c !== char && gameState.roles[c] === 'freemason');
-          gameState.morningComments[char] = `「私たちは【共有者】です（パートナー: 村人 ${partnerMason}）。二人とも絶対に人間であることを保証します。」`;
+          gameState.morningComments[char] = `「私たちは【共有者】です（パートナー: ${getCharDisplayName(partnerMason)}）。二人とも絶対に人間であることを保証します。」`;
         } else {
           if (realRole === 'wolf') {
-            const commentPattern = pickRandom([
-              `「昨夜も犠牲者が出てしまいましたね……。村人 ${target} さんの発言にどこか防衛的な違和感を感じています。」`,
-              `「夜が無事に明けて安堵しています。ですが、村人 ${target} さんの視点の狭さがどうしても引っかかります。」`,
-              `「人狼の潜伏が巧妙になっていますね。村人 ${target} さんの過去のログと矛盾がないか注視すべきです。」`
+            const commentPattern = isDayOne ? pickRandom([
+              `「初日の朝を無事に迎えられて安堵しています。ですが、${targetName} さんの視点の置き方に少し違和感を感じています。」`,
+              `「人狼の潜伏を見破るため、${targetName} さんのこれからの発言を注意深く観察したいですね。」`,
+              `「初日ですので慎重に手掛かりを探していきましょう。${targetName} さんの意見に注目しています。」`
+            ]) : pickRandom([
+              `「昨夜も犠牲者が出てしまいましたね……。${targetName} さんの発言にどこか防衛的な違和感を感じています。」`,
+              `「夜が無事に明けて安堵しています。ですが、${targetName} さんの視点の狭さがどうしても引っかかります。」`,
+              `「人狼の潜伏が巧妙になっていますね。${targetName} さんの過去のログと矛盾がないか注視すべきです。」`
             ]);
             gameState.morningComments[char] = commentPattern;
           } else if (realRole === 'madman') {
-            const commentPattern = pickRandom([
-              `「真実を隠している者がこの中にいます！ 村人 ${target} さんの言動、極めて怪しいですよ！」`,
-              `「占い師や霊媒師の結果だけでなく、発言の不自然さにも目を向けるべきです。村人 ${target} さん、何か隠していませんか？」`,
+            const commentPattern = isDayOne ? pickRandom([
+              `「真実を隠している者がこの中にいます！ ${targetName} さんの言動、気になりますよ！」`,
+              `「占い師のCO結果だけでなく、発言の不自然さにも目を向けるべきです。${targetName} さん、何か隠していませんか？」`,
+              `「初日から混乱に陥る前に、発言の曖昧な人物を炙り出しましょう！」`
+            ]) : pickRandom([
+              `「真実を隠している者がこの中にいます！ ${targetName} さんの言動、極めて怪しいですよ！」`,
+              `「占い師や霊媒師の結果だけでなく、発言の不自然さにも目を向けるべきです。${targetName} さん、何か隠していませんか？」`,
               `「村が混乱に陥る前に、発言の二転三転している人物を炙り出しましょう！」`
             ]);
             gameState.morningComments[char] = commentPattern;
           } else if (realRole === 'fox') {
             const commentPattern = pickRandom([
-              `「安易な感情論や誘導に乗らないことが肝要です。村人 ${target} さんの意見の整合性をじっくり検証しましょう。」`,
+              `「安易な感情論や誘導に乗らないことが肝要です。${targetName} さんの意見の整合性をじっくり検証しましょう。」`,
               `「人狼の甘言に騙されないよう、冷静に盤面を整理して議論を進めたいですね。」`,
               `「静観しているだけでは見えてこない真実があります。皆様の考察をしっかり聞かせていただきます。」`
             ]);
             gameState.morningComments[char] = commentPattern;
           } else {
-            const commentPattern = pickRandom([
-              `「無事に朝を迎えられて良かったです。村人 ${target} さんの発言や視点に矛盾がないか、しっかり観察していきます。」`,
-              `「夜の恐怖に負けず、全員で手掛かりを繋ぎ合わせましょう。村人 ${target} さんの意見に注目しています。」`,
+            const commentPattern = isDayOne ? pickRandom([
+              `「初日の朝を全員で無事に迎えられて良かったです。${targetName} さんの視点に矛盾がないか、しっかり観察していきます。」`,
+              `「夜の恐怖に負けず、全員で手掛かりを繋ぎ合わせましょう。${targetName} さんの意見に注目しています。」`,
+              `「誤処刑だけは絶対に避けなければなりません。気になる点があればどんなことでも議論に出してください。」`
+            ]) : pickRandom([
+              `「無事に朝を迎えられて良かったです。${targetName} さんの発言や視点に矛盾がないか、しっかり観察していきます。」`,
+              `「夜の恐怖に負けず、全員で手掛かりを繋ぎ合わせましょう。${targetName} さんの意見に注目しています。」`,
               `「誤処刑だけは絶対に避けなければなりません。気になる点があればどんなことでも議論に出してください。」`
             ]);
             gameState.morningComments[char] = commentPattern;
@@ -5326,22 +5340,31 @@
       const nonWhiteOthers = aliveOthers.filter(c => !whiteTargets.includes(c));
       const target = nonWhiteOthers.length > 0 ? pickRandom(nonWhiteOthers) : (pickRandom(aliveOthers) || 'A');
 
+      // ★ 論理思考エンジン（破綻者100%ロックオン / 消去法ターゲット）
+      const logicalDeduction = getLogicalDeductionTarget(speaker);
+      const logicalTargetChar = logicalDeduction ? logicalDeduction.target : target;
+      const logicalTargetName = getCharDisplayName(logicalTargetChar);
+      const isCertain = logicalDeduction ? logicalDeduction.isCertain : false;
+
       let msg = '';
 
+      // ★ 0. 確定破綻者（100%人狼/偽物）が存在する場合、他の無関係な人物への疑いを禁止し徹底追及
+      if (isCertain) {
+        msg = pickRandom([
+          `ちょっと待って！${logicalTargetName}さんはどう考えても完全破綻してるでしょ！${logicalDeduction.reason}なんだから、今日吊るなら${logicalTargetName}さん一択だと思うんだよね。`,
+          `みなさん落ち着いて！${logicalTargetName}さんの主張は完全に崩れてるよ！${logicalDeduction.reason}だし、他の人を疑う前に${logicalTargetName}さんを処刑すべきじゃない？`
+        ]);
+      }
       // ★ 1. 緊急防衛CO / 偽CO判定
-      const defensiveCO = checkAndGenerateDefensiveCO(speaker);
-
-      if (defensiveCO) {
+      else if (defensiveCO) {
         msg = defensiveCO.text;
       }
       // ★ 1.1. ③ 敗北危機（「次間違えると村が負ける」PP警告）ロジック
-      else if (checkMustWinCondition().isCritical && Math.random() < 0.80) {
-        const deduction = getDeductionTarget(speaker);
-        const accusedName = deduction && deduction.target ? getCharDisplayName(deduction.target) : getCharDisplayName(target);
+      else if (checkMustWinCondition().isCritical && Math.random() < 0.85) {
         if (realRole === 'wolf') {
-          msg = `【警告】皆さん、今日の間違いは即敗北に直結します！ここで村人を処刑すれば人狼と同数になって村の負けが決定します！不審な【${accusedName}さん】を吊るしかありません！`;
+          msg = `【警告】今日の間違いは即敗北に直結するよ！ここで村人を吊ったら人狼と同数で村の負けが決まっちゃうから、絶対に不審な【${logicalTargetName}さん】を吊るしかないと思う！`;
         } else {
-          msg = `【危険】皆さん落ち着いて聞いてください！今日の処刑で人狼を吊れないと夜噛まれて過半数を奪われ、村の負けが確定します（次で間違えたら終わりです）！絶対に【${accusedName}さん】に票を合わせましょう！`;
+          msg = `【危険】みんな落ち着いて聞いて！今日の処刑で人狼を吊れないと、夜噛まれて過半数を取られて村の敗北が確定しちゃう（次で間違えたら終わり）！絶対に【${logicalTargetName}さん】に票を合わせよう！`;
         }
       }
       // ★ 1.2. 占い・霊媒結果の矛盾・違和感の自動検知と突っ込み（詰め）議論
@@ -5351,10 +5374,9 @@
         msg = contra.text;
       }
       // ★ 1.3. ② 終盤の詰め（生存6人以下）名指し告発・消去法推理
-      else if (aliveChars.length <= 6 && Math.random() < 0.70) {
-        const deduction = getDeductionTarget(speaker);
-        if (deduction && deduction.target) {
-          msg = `これまでの白出し結果と役職COを整理しました。${deduction.reason}！本日の処刑は【${getCharDisplayName(deduction.target)}さん】一択でいきましょう！`;
+      else if (aliveChars.length <= 6 && Math.random() < 0.75) {
+        if (logicalDeduction) {
+          msg = `これまでの白出し結果と役職COを整理したよ。${logicalDeduction.reason}！だから今日の処刑は【${logicalTargetName}さん】一択でいこうよ！`;
         }
       }
       // ★ 1.4. ① 序盤〜中盤の定番ルール・セオリーの進行提案
@@ -5368,115 +5390,128 @@
 
         if (realRole === 'wolf') {
           msg = pickRandom([
-            `「${accusedName}さんの激しい反論ですが、${seerName}さんの黒判定を無視するわけにはいきません。破綻がないか精査しましょう。」`,
-            `「${accusedName}さんと${seerName}さんで完全に主張が真っ向対決していますね。双方の意見を聞いてラインを見定めましょう。」`
+            `「${accusedName}さんの激しい反論だけど、${seerName}さんの黒判定を無視するのは危険じゃない？破綻がないか精査しようよ。」`,
+            `「${accusedName}さんと${seerName}さんで完全に対立してるね。両方の意見を聞いてラインを見極めようよ。」`
           ]);
         } else if (realRole === 'madman') {
           msg = pickRandom([
-            `「${accusedName}さんの必死の弁明！ですが${seerName}さんからの黒出しは決定打ですよ！もっと徹底追及すべきです！」`,
-            `「おっと、${accusedName}さんが対立主張をしてきましたね！これは村の議論が大きく荒れそうで面白い展開です！」`
+            `「${accusedName}さんの必死の弁明！でも${seerName}さんからの黒出しはかなり決定打だよね！もっと徹底追及しようよ！」`,
+            `「おっと、${accusedName}さんが対立主張してきたね！これは村の議論が荒れて面白い展開になってきたんじゃない？」`
           ]);
         } else {
           msg = pickRandom([
-            `「${accusedName}さんへの黒出しと即時反论……！単なる命乞いか本当の対立COか、${accusedName}さんと${seerName}さんの発言ログを徹底精査しましょう！」`,
-            `「${accusedName}さんから強い反論が出ましたね。軽率に処刑を決め打たず、両者の対抗関係と理由をしっかり見極めましょう。」`,
-            `「黒出しされた${accusedName}さんの主張と、${seerName}さんの鑑定根拠のどちらに矛盾があるか、村全体で集中検証すべきです！」`
+            `「${accusedName}さんへの黒出しと即時反論か……！命乞いなのか本当の対抗COなのか、${accusedName}さんと${seerName}さんの発言ログを徹底精査しよう！」`,
+            `「${accusedName}さんから強い反論が出たね。焦って決め打たずに、二人の対抗関係と理由をしっかり見極めようよ。」`,
+            `「黒出しされた${accusedName}さんの主張と、${seerName}さんの鑑定根拠のどちらに矛盾があるか、みんなで集中検証しよう！」`
           ]);
         }
       }
       // ★ 2. 直前に他AIがCOした場合のリアルタイムリアクション対話
       else if (lastItem && lastItem.isCO && lastItem.char !== speaker) {
         const coChar = lastItem.char;
+        const coName = getCharDisplayName(coChar);
         const coRoleName = lastItem.coRole === 'seer' ? '占い師' : (lastItem.coRole === 'medium' ? '霊媒師' : '騎士');
         
         if (realRole === 'wolf') {
           msg = pickRandom([
-            `「えっ、村人 ${coChar} さんが【${coRoleName}】をCOしたんですか！？ 処刑回避のための土壇場騙りの可能性も疑うべきです！」`,
-            `「村人 ${coChar} さんの突然の【${coRoleName}】COで盤面が一変しましたね。真偽判定を慎重に行いましょう。」`
+            `「えっ、${coName}さんが【${coRoleName}】をCOしたの！？ 処刑回避のための土壇場騙りの可能性も疑った方がいいんじゃない？」`,
+            `「${coName}さんの突然の【${coRoleName}】COで盤面が一変したね。真偽判定を慎重に行おうよ。」`
           ]);
         } else if (realRole === 'madman') {
           msg = pickRandom([
-            `「村人 ${coChar} さんの【${coRoleName}】CO！これは面白い展開になってきましたね！対抗CO者は黙っている場合じゃないですよ！」`,
-            `「本当に村人 ${coChar} さんが真の【${coRoleName}】なのか？偽者の命乞いCOのラインも十分あり得ますよ！」`
+            `「${coName}さんの【${coRoleName}】CO！これは面白い展開になってきたね！対抗CO者は黙ってちゃダメだよ！」`,
+            `「本当に${coName}さんが真の【${coRoleName}】なのかな？偽者の命乞いCOのラインも十分あり得るよね！」`
           ]);
         } else {
           msg = pickRandom([
-            `「えっ！村人 ${coChar} さんが【${coRoleName}】CO！？もし本当なら今日の処刑対象を即刻変更しなければなりません！」`,
-            `「村人 ${coChar} さんのCOを受け、対抗の真偽ラインとグレーの範囲を再計算する必要がありますね。」`,
-            `「土壇場での【${coRoleName}】CO……！村人 ${coChar} さんの主張の真偽をしっかり精査しましょう！」`
+            `「えっ！${coName}さんが【${coRoleName}】CO！？もし本当なら今日の処刑対象を即変更しなきゃダメじゃん！」`,
+            `「${coName}さんのCOを受けて、対抗の真偽ラインとグレーの範囲を計算し直す必要があるね。」`,
+            `「土壇場での【${coRoleName}】CO……！${coName}さんの主張の真偽をしっかり精査しようよ！」`
           ]);
         }
       }
       // ★ 3. 占い白出し情報を踏まえた会話・議論考察（①の高度化）
       else if (whiteResults.length > 0 && Math.random() < 0.55) {
         const whiteInfo = pickRandom(whiteResults);
-        const wTarget = whiteInfo.target;
-        const wSeer = whiteInfo.seer;
+        const wTargetName = getCharDisplayName(whiteInfo.target);
+        const wSeerName = getCharDisplayName(whiteInfo.seer);
 
-        if (wTarget === speaker) {
+        if (whiteInfo.target === speaker) {
           // 自分が白出しされている場合
           msg = pickRandom([
-            `「占い師の 村人 ${wSeer} さんから白判定をいただいていますが、身の潔白に偽りはありません。今日はグレーの 村人 ${target} さんを精査したいです。」`,
-            `「私への白出し結果を元に視点を広げましょう。グレーに潜んでいる人狼を炙り出すため、村人 ${target} さんの言動に注目しています。」`
+            `「占い師の ${wSeerName} さんから白判定をもらってるけど、身の潔白に偽りはないよ。今日はグレーの ${logicalTargetName} さんを精査したいな。」`,
+            `「私への白出し結果を元に視点を広げようよ。グレーに潜んでる人狼を炙り出すために、${logicalTargetName} さんの言動に注目してるんだ。」`
           ]);
         } else {
           // 他者が白出しされている場合
           if (realRole === 'wolf') {
             msg = pickRandom([
-              `「村人 ${wTarget} さんは占い師から白出しされていますが、あの占い師自体が真か偽か見極める必要がありますね。」`,
-              `「白が出ている 村人 ${wTarget} さんの位置を安易に安全圏と決めつけず、グレーの 村人 ${target} さんの精査を進めましょう。」`
+              `「${wTargetName} さんは白出しされてるけど、あの占い師自体が真か偽か見極める必要があるんじゃない？」`,
+              `「白が出てる ${wTargetName} さんの位置を安易に安全圏と決めつけず、グレーの ${logicalTargetName} さんの精査を進めようよ。」`
             ]);
           } else {
             msg = pickRandom([
-              `「村人 ${wTarget} さんには白結果が出ているので一旦処刑候補から外し、完全グレーの 村人 ${target} さんを精査すべきです。」`,
-              `「占い師の 村人 ${wSeer} さんの白結果を信頼するなら、残る人狼位置はグレーの 村人 ${target} さん周辺に絞られますね。」`
+              `「${wTargetName} さんには白結果が出てるから一旦処刑候補から外して、完全グレーの ${logicalTargetName} さんを精査すべきだよ。」`,
+              `「占い師の ${wSeerName} さんの白結果を信頼するなら、残る人狼位置はグレーの ${logicalTargetName} さん周辺に絞られるよね。」`
             ]);
           }
         }
       }
-      // ★ 4. 通常の会話・指名割り込みへの応答・議論キャッチボール
-      else if (lastItem && lastItem.char !== speaker && Math.random() < 0.70) {
-        const other = lastItem.char;
+      // ★ 4. 通常の会話・直前発言へのリアルタイム口語応答・議論キャッチボール
+      else if (lastItem && lastItem.char !== speaker && Math.random() < 0.75) {
+        const otherChar = lastItem.char;
+        const otherName = getCharDisplayName(otherChar);
+
         if (realRole === 'wolf') {
           msg = pickRandom([
-            `「村人 ${other} さんの仰る通りですが、村人 ${target} さんの言動の怪しさも無視できませんよ。」`,
-            `「村人 ${other} さん、そう焦って話題を打ち切ろうとするのは少し防衛的すぎませんか？」`,
-            `「村人 ${other} さんの指摘には一理あります。ただ村人 ${target} さんの昨日の動きも精査すべきです。」`
+            `「${otherName} さんの言う通りだけど、${logicalTargetName} さんの言動の怪しさも無視できないんじゃない？」`,
+            `「${otherName} さん、そう焦って話題を打ち切ろうとするのはちょっと防衛的すぎないかな？」`,
+            `「${otherName} さんの指摘には一理あるね。ただ ${logicalTargetName} さんの昨日の動きも精査した方がいいと思うな。」`
           ]);
         } else if (realRole === 'madman') {
           msg = pickRandom([
-            `「村人 ${other} さんの意見で盤面が迷走し始めていますね！もっと根本的な白黒判定に注目すべきです！」`,
-            `「なるほど、村人 ${other} さんの視点も一理ありますが、村人 ${target} さんの沈黙こそ最大の謎ですよ！」`
+            `「${otherName} さんの意見で盤面が迷走し始めてるね！もっと根本的な白黒判定に注目しようよ！」`,
+            `「なるほど、${otherName} さんの視点も一理あるけど、${logicalTargetName} さんの沈黙こそ最大の謎じゃない？」`
           ]);
         } else {
           msg = pickRandom([
-            `「村人 ${other} さんの考えに同意です。村人 ${target} さんの発言ログとの整合性も見ていきましょう。」`,
-            `「村人 ${other} さん、その根拠についてもう少し詳しく聞かせていただけますか？」`,
-            `「なるほど。村人 ${other} さんの指摘を踏まえると、村人 ${target} さんの位置が急浮上してきますね。」`
+            `「${otherName} さんの考えに同意だよ！${logicalTargetName} さんの発言ログとの整合性も見ていこうよ。」`,
+            `「${otherName} さん、その根拠についてもう少し詳しく聞かせてほしいな！」`,
+            `「なるほどね。${otherName} さんの指摘を踏まえると、${logicalTargetName} さんの位置が急浮上してくる気がするよ。」`
           ]);
         }
       } else {
-        // 単独での盤面考察発言
+        // 単独での盤面考察発言（自然な口語体・日時に応じた切り替え）
+        const isDayOne = gameState.day === 1;
+
         if (coRole === 'seer') {
-          msg = `「占い師の立場から言わせていただくが、生き残っているグレーの精査とライン判定を最優先にすべきだ。」`;
+          msg = `「占い師の立場から言わせてもらうけど、生き残ってるグレーの精査とライン判定を最優先にすべきだと思うよ。」`;
         } else if (coRole === 'medium') {
-          msg = `「霊媒報告の事実関係を元に、これ以上村人を誤処刑しないよう慎重に議論を繋ぎましょう。」`;
+          msg = `「霊媒報告の事実関係を元に、これ以上村人を誤処刑しないよう慎重に議論をつなげていこうよ。」`;
         } else if (realRole === 'wolf') {
-          msg = pickRandom([
-            `「村人 ${target} さんの発言にどこか狼側の擦り付けを感じます。皆さんはどう思いますか？」`,
-            `「人狼の潜伏位置として、村人 ${target} さんの昨夜からのスタンス変化に強い違和感があります。」`,
-            `「議論が特定の人物だけに偏るのは危険です。静観している村人 ${target} さんにも意見を求めたいですね。」`
+          msg = isDayOne ? pickRandom([
+            `「${logicalTargetName} さんの発言にどこか人狼側の擦り付けを感じるんだけど、みんなはどう思う？」`,
+            `「初日の段階だけど、${logicalTargetName} さんのスタンスの取り方に少し違和感があるんだよね。」`,
+            `「議論が特定の人だけに偏るのは危険だよ。静観してる ${logicalTargetName} さんにも意見を求めたいな。」`
+          ]) : pickRandom([
+            `「${logicalTargetName} さんの発言にどこか人狼側の擦り付けを感じるんだけど、みんなはどう思う？」`,
+            `「人狼の潜伏位置として、${logicalTargetName} さんの昨夜からのスタンス変化に強い違和感があるんだよね。」`,
+            `「議論が特定の人だけに偏るのは危険だよ。静観してる ${logicalTargetName} さんにも意見を求めたいな。」`
           ]);
         } else if (realRole === 'madman') {
           msg = pickRandom([
-            `「真役職のCO対抗関係が非常に怪しい！村人 ${target} さん、あなたも疑念を抱いていませんか？」`,
-            `「疑心暗鬼を生む前に、発言の少ない人物からどんどん突っ込んで白黒を炙り出しましょう！」`
+            `「真役職のCO対抗関係がすごく怪しいよ！${logicalTargetName} さん、あなたも疑念を抱いてない？」`,
+            `「疑心暗鬼を生む前に、発言の少ない人からどんどん突っ込んで白黒を炙り出そうよ！」`
           ]);
         } else {
-          msg = pickRandom([
-            `「村人 ${target} さんの前日の投票傾向と先ほどの発言が食い違っていませんか？精査したいです。」`,
-            `「誤処刑を防ぐためにも、村人 ${target} さんの視点整理を聞いてみたいです。」`,
-            `「人狼側は必ずログのどこかに足跡を残しているはずです。村人 ${target} さんの位置を再確認しましょう。」`
+          msg = isDayOne ? pickRandom([
+            `「初日だけど、${logicalTargetName} さんの視点の置き方に不自然さがないか精査したいな。」`,
+            `「誤処刑を防ぐためにも、${logicalTargetName} さんの視点整理を聞いてみたいな。」`,
+            `「人狼側は必ずログのどこかに足跡を残してるはずだよ。${logicalTargetName} さんの位置を再確認しよう。」`
+          ]) : pickRandom([
+            `「${logicalTargetName} さんの前日の投票傾向と先ほどの発言が食い違ってないかな？精査したいな。」`,
+            `「誤処刑を防ぐためにも、${logicalTargetName} さんの視点整理を聞いてみたいな。」`,
+            `「人狼側は必ずログのどこかに足跡を残してるはずだよ。${logicalTargetName} さんの位置を再確認しよう。」`
           ]);
         }
       }
@@ -5592,6 +5627,105 @@
       }
     }
 
+    // --- 【論理思考エンジン①】確定破綻者（100%人狼/偽物）の検出ヘルパー ---
+    function getDefiniteBustedPlayers() {
+      const busted = [];
+      const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+
+      // 1. 白出しした人物が死亡し、霊媒結果や過去役職で「人狼」と確定判明しているにもかかわらず「白出し」していた占い師（破綻占い）
+      Object.keys(gameState.seerHistory || {}).forEach(seer => {
+        if (!aliveChars.includes(seer)) return;
+        const history = gameState.seerHistory[seer] || [];
+        history.forEach(rep => {
+          // 占った対象が死亡しており、かつ実際が人狼（霊媒結果で確定、あるいは霊媒結果と矛盾）
+          if (gameState.status[rep.target] === 'dead' && rep.result === '人間') {
+            const medHistory = Object.values(gameState.mediumHistory || {}).flat();
+            const medRep = medHistory.find(m => m.target === rep.target);
+            if (medRep && medRep.result === '人狼') {
+              busted.push({
+                target: seer,
+                reason: `霊媒結果で【人狼】と確定した${getCharDisplayName(rep.target)}さんを【人間】と偽判定していたため（完全破綻）`,
+                isCertain: true
+              });
+            }
+          }
+        });
+      });
+
+      // 2. 3人目の占いCO（進行上破綻）
+      const seerCOs = aliveChars.filter(c => gameState.coRoles[c] === 'seer');
+      if (seerCOs.length >= 3) {
+        seerCOs.forEach(c => {
+          if (!busted.some(b => b.target === c)) {
+            busted.push({
+              target: c,
+              reason: `占いCOが3人以上乱立しており構造的に破綻しているため`,
+              isCertain: true
+            });
+          }
+        });
+      }
+
+      // 3. 2人目の霊媒CO（1人死亡後の3人目等）または霊媒破綻
+      const medCOs = aliveChars.filter(c => gameState.coRoles[c] === 'medium');
+      if (medCOs.length >= 3) {
+        medCOs.forEach(c => {
+          if (!busted.some(b => b.target === c)) {
+            busted.push({
+              target: c,
+              reason: `霊媒COが複数破綻して乱立しているため`,
+              isCertain: true
+            });
+          }
+        });
+      }
+
+      return busted;
+    }
+
+    // --- 【論理思考エンジン②】消去法・破綻検知による追及・投票ターゲット取得 ---
+    function getLogicalDeductionTarget(speakerAI) {
+      const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      const aliveOthers = aliveChars.filter(c => c !== speakerAI);
+      if (aliveOthers.length === 0) return null;
+
+      // 1. 確定破綻者が存在する場合、他の無関係な人物への疑い・投票を禁止し100%ロックオン
+      const bustedList = getDefiniteBustedPlayers();
+      const validBusted = bustedList.filter(b => b.target !== speakerAI && aliveChars.includes(b.target));
+      if (validBusted.length > 0) {
+        return {
+          target: validBusted[0].target,
+          reason: validBusted[0].reason,
+          isCertain: true
+        };
+      }
+
+      // 2. 消去法ロジック（確白・保護役職を除外）
+      const whiteResults = getSeerWhiteResults();
+      const whiteTargets = whiteResults.map(w => w.target);
+      const confirmedWhitePlayers = aliveOthers.filter(c => whiteTargets.includes(c) || gameState.coRoles[c] === 'freemason');
+
+      // グレー枠（非COかつ白出し未実施）
+      const grayPlayers = aliveOthers.filter(c => !confirmedWhitePlayers.includes(c));
+      const targetCandidates = grayPlayers.length > 0 ? grayPlayers : aliveOthers;
+
+      // 最も不自然な人物を選定
+      const selectedTarget = pickRandom(targetCandidates);
+      const isGrey = grayPlayers.includes(selectedTarget);
+      
+      let reasonStr = 'これまでの発言ログと仮投票ラインの不自然さ';
+      if (isGrey && confirmedWhitePlayers.length > 0) {
+        const whiteNames = confirmedWhitePlayers.map(c => getCharDisplayName(c)).join('さんや');
+        reasonStr = `${whiteNames}さんの白確定枠を除外した消去法`;
+      }
+
+      return {
+        target: selectedTarget,
+        reason: reasonStr,
+        isCertain: false
+      };
+    }
+
     // =====================================================
     // 仮想投票・疑い度算出＆履歴アーカイブシステム
     // =====================================================
@@ -5599,11 +5733,25 @@
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       gameState.virtualVotes = {};
 
+      const bustedList = getDefiniteBustedPlayers();
+
       // 1. 各生き残りメンバーの仮想投票先決定
       aliveChars.forEach(voter => {
         const realRole = gameState.roles[voter];
         const candidates = aliveChars.filter(c => c !== voter);
         if (candidates.length === 0) return;
+
+        // ★ 確定破綻者がいる場合、村人陣営は100%破綻者へロックオン
+        const validBusted = bustedList.filter(b => b.target !== voter && candidates.includes(b.target));
+        if (realRole !== 'wolf' && validBusted.length > 0) {
+          const bTarget = validBusted[0].target;
+          gameState.virtualVotes[voter] = {
+            target: bTarget,
+            suspicionScore: 95,
+            reason: validBusted[0].reason
+          };
+          return;
+        }
 
         let bestTarget = candidates[0];
         let maxSuspicion = 0;
@@ -5667,44 +5815,50 @@
           }
           // --- 【村人陣営の思考ロジック (村人・占い・霊媒・騎士・パン・共有等)】 ---
           else {
-            // 1. 占い師・霊媒師の黒判定結果
-            const hasBlackReport = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人狼')
-              || Object.values(gameState.mediumHistory || {}).flat().some(r => r.target === target && r.result === '人狼');
-            const hasWhiteReport = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人間');
+            // ★ 確白（白出しされた人物・共有者）への不自然な投票・疑心を排除（スコア激減）
+            const whiteResults = getSeerWhiteResults();
+            const whiteTargets = whiteResults.map(w => w.target);
+            const isConfirmedWhite = whiteTargets.includes(target) || gameState.coRoles[target] === 'freemason';
 
-            if (hasBlackReport) {
-              score += 25;
-              reason = '能力者からの【人狼判定】';
-            } else if (hasWhiteReport) {
-              score -= 25;
-              reason = '能力者からの【人間判定】';
+            if (isConfirmedWhite) {
+              score = 10;
+              reason = '確白判定者への信頼（除外）';
+            } else {
+              // 1. 占い師・霊媒師の黒判定結果
+              const hasBlackReport = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人狼')
+                || Object.values(gameState.mediumHistory || {}).flat().some(r => r.target === target && r.result === '人狼');
+
+              if (hasBlackReport) {
+                score += 35;
+                reason = '能力者からの【人狼判定】';
+              }
+
+              // 2. 役職CO対抗関係
+              if (targetCoRole !== 'grey' && voterCoRole !== 'grey' && targetCoRole === voterCoRole) {
+                score += 22;
+                reason = `同役職 (${targetCoRole}) への対抗不信`;
+              }
+
+              // 3. 自分を疑ってきた人物への返し
+              const targetVote = gameState.virtualVotes[target];
+              if (targetVote && targetVote.target === voter) {
+                score += 12;
+                reason = '自分に対する不審感への反論';
+              }
+
+              // 4. グレーへの一般的なログ精査
+              if (targetCoRole === 'grey' || targetCoRole === 'villager') {
+                score += 15;
+              }
+
+              // スコアを 48%~85% 程度の自然な村人思考範囲に収める
+              score = Math.max(30, Math.min(88, score + Math.floor(Math.random() * 12) - 6));
             }
-
-            // 2. 役職CO対抗関係
-            if (targetCoRole !== 'grey' && voterCoRole !== 'grey' && targetCoRole === voterCoRole) {
-              score += 22;
-              reason = `同役職 (${targetCoRole}) への対抗不信`;
-            }
-
-            // 3. 自分を疑ってきた人物への返し
-            const targetVote = gameState.virtualVotes[target];
-            if (targetVote && targetVote.target === voter) {
-              score += 12;
-              reason = '自分に対する不審感への反論';
-            }
-
-            // 4. グレーへの一般的なログ精査
-            if (targetCoRole === 'grey' || targetCoRole === 'villager') {
-              score += 8;
-            }
-
-            // スコアを 48%~85% 程度の自然な村人思考範囲に収める
-            score = Math.max(30, Math.min(88, score + Math.floor(Math.random() * 12) - 6));
           }
 
           // ★ 表示疑心度へのランダムノイズ（±3%）の付加（人間的な思考ゆらぎ）
           const noise = Math.floor(Math.random() * 7) - 3;
-          score = Math.max(25, Math.min(92, Math.round(score + noise)));
+          score = Math.max(10, Math.min(95, Math.round(score + noise)));
 
           return { target, score, reason };
         });
