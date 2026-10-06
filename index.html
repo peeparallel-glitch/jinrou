@@ -510,10 +510,55 @@
       transition: all 0.2s;
     }
 
-    .nav-btn.active {
-      color: var(--accent-blue);
-      border-bottom: 3px solid var(--accent-blue);
-      background-color: rgba(59, 130, 246, 0.1);
+    /* 1. 仮想投票・疑い度履歴 (シアン・ミントグリーン) */
+    #nav-btn-0 {
+      color: #2dd4bf;
+    }
+    #nav-btn-0.active {
+      color: #67e8f9;
+      border-bottom: 3px solid #06b6d4;
+      background: linear-gradient(180deg, rgba(6, 182, 212, 0.05), rgba(6, 182, 212, 0.22));
+      text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+    }
+
+    /* 2. 村人一覧・尋問 (ゴールド・アンバー) */
+    #nav-btn-1 {
+      color: #fcd34d;
+    }
+    #nav-btn-1.active {
+      color: #fef08a;
+      border-bottom: 3px solid #f59e0b;
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.22));
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+
+    /* 3. 発言ログ・確定情報 (パープル・ブルー) */
+    #nav-btn-2 {
+      color: #a5b4fc;
+    }
+    #nav-btn-2.active {
+      color: #93c5fd;
+      border-bottom: 3px solid #3b82f6;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.22));
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    /* 📌 タグボタン色付けスタイル */
+    .btn-tag-marker {
+      background: linear-gradient(135deg, #ec4899, #d946ef);
+      color: #ffffff !important;
+      border: 1px solid #f472b6 !important;
+      border-radius: 12px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.76rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(236, 72, 153, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-tag-marker:hover {
+      background: linear-gradient(135deg, #f472b6, #ec4899);
+      transform: translateY(-1px);
     }
 
     /* Viewport Area */
@@ -550,6 +595,10 @@
       flex-direction: column;
       gap: 0.6rem;
       backdrop-filter: blur(4px);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
     }
 
     .vote-card-header {
@@ -1312,6 +1361,58 @@
       max-width: 560px;
     }
 
+    .modal-content.modal-result {
+      max-width: 1150px;
+      width: 95%;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    .result-columns {
+      display: flex;
+      gap: 1.2rem;
+      align-items: flex-start;
+    }
+
+    .result-col-left {
+      flex: 1.1;
+      min-width: 0;
+    }
+
+    .result-col-right {
+      flex: 1.4;
+      min-width: 0;
+    }
+
+    .reveal-list {
+      text-align: left;
+      background: #111320;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      margin: 0.8rem 0;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .reveal-items-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 0.8rem;
+      margin-top: 0.4rem;
+    }
+
+    @media (min-width: 900px) {
+      .reveal-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1050px) {
+      .reveal-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -1370,6 +1471,455 @@
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: flex-end;
+    }
+
+    /* Result IQ & Rank Card Styling */
+    .result-rank-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: linear-gradient(135deg, rgba(20, 26, 45, 0.9), rgba(12, 16, 28, 0.95));
+      border: 2px solid var(--accent-amber);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.8rem;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
+    }
+
+    .result-rank-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rank-letter {
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1;
+      font-family: 'Cinzel', 'Arial Black', sans-serif;
+      text-shadow: 0 0 15px currentColor;
+    }
+
+    .rank-letter.rank-S { color: #f59e0b; }
+    .rank-letter.rank-A { color: #e11d48; }
+    .rank-letter.rank-B { color: #3b82f6; }
+    .rank-letter.rank-C { color: #10b981; }
+    .rank-letter.rank-D { color: #94a3b8; }
+
+    .rank-title-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--text-main);
+      margin-top: 0.2rem;
+    }
+
+    .result-iq-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+      padding-left: 1.2rem;
+    }
+
+    .iq-score-val {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #38bdf8;
+      line-height: 1.1;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .iq-score-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    .result-score-detail {
+      background: rgba(15, 20, 32, 0.7);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 1.25rem;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    }
+
+    .score-row:last-child {
+      border-bottom: none;
+    }
+
+    .score-row.total-row {
+      border-top: 1px solid rgba(245, 158, 11, 0.4);
+      margin-top: 0.3rem;
+      padding-top: 0.4rem;
+      font-weight: bold;
+      font-size: 0.92rem;
+      color: var(--accent-amber);
+    }
+
+    .result-action-buttons {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    /* Rank Info Modal Styling */
+    .rank-summary-card {
+      background: linear-gradient(135deg, rgba(20, 26, 45, 0.95), rgba(10, 14, 25, 0.98));
+      border: 2px solid var(--accent-amber);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+    }
+    .rank-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+    }
+    .rank-stat-item {
+      background: rgba(15, 20, 32, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      text-align: center;
+    }
+    .rank-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+    .rank-stat-val {
+      font-size: 1.35rem;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+    .rank-guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.6rem;
+      font-size: 0.88rem;
+    }
+    .rank-guide-table th {
+      background: rgba(30, 40, 65, 0.8);
+      color: var(--accent-amber);
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .rank-guide-table td {
+      padding: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .rank-badge-inline {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.82rem;
+    }
+
+    .btn-result-action {
+      flex: 1;
+      padding: 0.7rem;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-result-restart {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-result-restart:hover {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      transform: translateY(-1px);
+    }
+
+    .btn-result-title {
+      background: #252a3f;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-result-title:hover {
+      background: #323854;
+    }
+
+    /* =====================================================
+       思考整理ボード & 突きつけシステム CSS
+       ===================================================== */
+    /* マーカーバッジ & ログハイライト */
+    .log-item {
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .log-item:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+    .log-marker-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: bold;
+      margin-left: 0.4rem;
+      cursor: pointer;
+    }
+    .marker-white {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+    }
+    .marker-black {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+    }
+    .marker-contradiction {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #fef08a;
+    }
+    .marker-co {
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid #a855f7;
+      color: #d8b4fe;
+    }
+
+    .log-item.marked-white {
+      border-left: 3px solid #3b82f6 !important;
+      background: rgba(59, 130, 246, 0.08);
+    }
+    .log-item.marked-black {
+      border-left: 3px solid #ef4444 !important;
+      background: rgba(239, 68, 68, 0.08);
+    }
+    .log-item.marked-contradiction {
+      border-left: 3px solid #f59e0b !important;
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .log-item.marked-co {
+      border-left: 3px solid #a855f7 !important;
+      background: rgba(168, 85, 247, 0.08);
+    }
+
+    /* 相関図ツールバー & ボード */
+    .corr-tool-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      background: rgba(15, 20, 32, 0.7);
+      padding: 0.5rem 0.8rem;
+      border-radius: 8px;
+      margin-bottom: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.82rem;
+    }
+    .corr-type-btn {
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.06);
+      transition: all 0.2s ease;
+    }
+    .corr-type-btn.active {
+      border-color: var(--accent-amber);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.15);
+    }
+
+    .corr-board-container {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      min-height: 400px;
+      background: rgba(10, 14, 25, 0.95);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      padding: 0;
+    }
+    .corr-svg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .corr-nodes-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    .corr-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: 10px;
+      background: rgba(22, 28, 45, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      min-width: 75px;
+    }
+    .corr-node:hover {
+      border-color: var(--accent-amber);
+      transform: scale(1.05);
+    }
+    .corr-node.selected-from {
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+      background: rgba(56, 189, 248, 0.2);
+    }
+    .corr-node.is-dead {
+      opacity: 0.4;
+      filter: grayscale(80%);
+    }
+
+    .corr-lines-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .corr-line-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 20, 32, 0.7);
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* 突きつけ処刑モーダル */
+    .accuse-section {
+      background: rgba(15, 20, 32, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+    .accuse-step-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--accent-amber);
+      margin-bottom: 0.5rem;
+    }
+    .accuse-target-card {
+      background: rgba(225, 29, 72, 0.15);
+      border: 1px solid var(--accent-red);
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-size: 1.05rem;
+    }
+    .accuse-reason-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .reason-radio-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      background: rgba(20, 26, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+    .reason-radio-item:hover, .reason-radio-item:has(input:checked) {
+      border-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.1);
+    }
+    .reason-title {
+      font-weight: bold;
+      font-size: 0.88rem;
+      color: #fef08a;
+      display: block;
+    }
+    .reason-desc {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+    .accuse-evidence-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .evidence-item-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      background: rgba(10, 14, 25, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* 突きつけリザルトカード & カードアニメーション */
+    .accuse-result-card {
+      background: linear-gradient(135deg, rgba(20, 26, 45, 0.95), rgba(12, 16, 28, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 0.7rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.85rem;
+    }
+    .accuse-eval-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.82rem;
+    }
+    .eval-ronpa {
+      background: rgba(34, 197, 94, 0.25);
+      border: 1px solid #22c55e;
+      color: #86efac;
+    }
+    .eval-enzyai {
+      background: rgba(239, 68, 68, 0.25);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
     }
 
     /* Setting Items Styling */
@@ -1576,15 +2126,7 @@
     .role-freemason { background: #6366f1; }
     .role-fox { background: #f59e0b; }
 
-    .reveal-list {
-      text-align: left;
-      background: #111320;
-      padding: 0.8rem;
-      border-radius: 6px;
-      margin: 0.8rem 0;
-      font-size: 0.8rem;
-      line-height: 1.5;
-    }
+
 
     .warning-box {
       color: var(--accent-amber);
@@ -2066,9 +2608,10 @@
       <h1 class="main-title">ひとり人狼<br><span class="sub-title">-人狼推理-</span></h1>
       <div class="title-subtitle">1人用 推理裁判パズル（対人セオリー＆心理戦AI搭載版）</div>
 
-      <!-- Sub Header Buttons (遊び方・設定) -->
+      <!-- Sub Header Buttons (遊び方・ランク・設定) -->
       <div class="title-sub-buttons" style="margin-bottom: 0.8rem;">
         <button class="btn-title-sub" onclick="openModal('how-to-play-modal')">📖 遊び方</button>
+        <button class="btn-title-sub" onclick="openRankModal()">🏆 ランク</button>
         <button class="btn-title-sub" onclick="openModal('settings-modal')">⚙ 設定</button>
       </div>
 
@@ -2177,7 +2720,9 @@
     <header>
       <h1>ひとり人狼 <span>-人狼推理-</span></h1>
       <div class="header-buttons">
+        <button class="btn-header-icon" onclick="openMindBoardModal()" title="思考整理">🧠 思考整理</button>
         <button class="btn-header-icon" onclick="openModal('how-to-play-modal')" title="遊び方">📖 遊び方</button>
+        <button class="btn-header-icon" onclick="openRankModal()" title="ランク">🏆 ランク</button>
         <button class="btn-header-icon" onclick="openModal('settings-modal')" title="設定">⚙ 設定</button>
         <button class="btn-title-mini" onclick="showTitleScreen()">タイトルへ</button>
       </div>
@@ -2264,7 +2809,7 @@
             </div>
             
             <div id="action-warning" class="warning-box" style="display: none;">
-              ⚠️ 議論時間が終了しました。15秒以内に処刑対象を選択するか、処刑を見送ってください。
+              ⚠️ 議論時間が終了しました。処刑対象を選択するか、処刑を見送ってください。
             </div>
           </div>
         </div>
@@ -2301,9 +2846,14 @@
 
           <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:0.2rem;">
             <div style="font-size:0.9rem; color:var(--text-muted); font-weight:bold;">タイムライン・尋問ログ</div>
-            <button id="btn-toggle-discussion-pause" onclick="toggleDiscussionPause()" style="font-size:0.88rem; font-weight:bold; padding:0.45rem 1rem; background:linear-gradient(135deg, #3a3f58, #2a2d42); border:1.5px solid var(--accent-amber); color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition:all 0.2s ease;">
-              <span>⏸️ 議論を一時停止</span>
-            </button>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <button id="btn-open-mind-board" onclick="openMindBoardModal()" style="font-size:0.85rem; font-weight:bold; padding:0.45rem 0.9rem; background:linear-gradient(135deg, #ec4899, #be185d); border:1.5px solid #f472b6; color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 10px rgba(236,72,153,0.35); transition:all 0.2s ease;">
+                <span>🧠 思考整理</span>
+              </button>
+              <button id="btn-toggle-discussion-pause" onclick="toggleDiscussionPause()" style="font-size:0.85rem; font-weight:bold; padding:0.45rem 0.9rem; background:linear-gradient(135deg, #3a3f58, #2a2d42); border:1.5px solid var(--accent-amber); color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition:all 0.2s ease;">
+                <span>⏸️ 議論を一時停止</span>
+              </button>
+            </div>
           </div>
           <div class="log-timeline" id="log-timeline">
             <!-- Logs dynamically added -->
@@ -2330,11 +2880,21 @@
 
   <!-- Modal Result Screen -->
   <div class="modal-overlay hidden" id="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content modal-result">
       <div id="modal-title" class="modal-title"></div>
-      <div id="modal-body" class="modal-body"></div>
-      <div class="reveal-list" id="modal-reveal"></div>
-      <button class="btn btn-start-game" onclick="showTitleScreen()">タイトルに戻る</button>
+      <div class="result-columns">
+        <div class="result-col-left">
+          <div id="modal-result-card"></div>
+          <div id="modal-body" class="modal-body"></div>
+        </div>
+        <div class="result-col-right">
+          <div class="reveal-list" id="modal-reveal"></div>
+        </div>
+      </div>
+      <div class="result-action-buttons">
+        <button class="btn-result-action btn-result-restart" onclick="startGame()">🔄 もう一度プレイ</button>
+        <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">🏠 タイトルへ</button>
+      </div>
     </div>
   </div>
 
@@ -2581,7 +3141,7 @@
           <ul>
             <li><strong>☀️ 朝のフェーズ:</strong> 夜の犠牲者や各種役職のCO（カミングアウト）報告を確認します。</li>
             <li><strong>💬 昼の議論 (3分):</strong> 生存する村人・AIたちの発言を観察し、定型質問や自由質問を使って疑わしい点を探ります。メモ機能で役職予想を整理できます。</li>
-            <li><strong>⚖️ 処刑決断 (15秒):</strong> 昼の最後に最も怪しいと思う人物を1人選んで処刑します（処刑見送りも可）。誤処刑限界回数を超えると敗北となります。</li>
+            <li><strong>⚖️ 処刑決断 (無制限):</strong> 昼の最後に最も怪しいと思う人物を1人選んで処刑（または見送り）します。じっくり思考整理をして処刑対象を選択できます。</li>
             <li><strong>🌕 夜の暗躍:</strong> 人狼が村人を襲撃し、占い師や霊媒師は能力で正体を鑑定します。</li>
           </ul>
         </div>
@@ -2610,6 +3170,168 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" onclick="closeModal('how-to-play-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rank Info Modal -->
+  <div id="rank-info-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('rank-info-modal')">
+    <div class="modal-content" style="max-width: 600px; width: 94%;">
+      <div class="modal-header">
+        <h2>🏆 推理ランク＆実績分析</h2>
+        <button class="modal-close-btn" onclick="closeModal('rank-info-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="rank-modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Dynamically rendered via renderRankModalContent() -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('rank-info-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🧠 思考整理ボード＆相関図モーダル -->
+  <div id="mind-board-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('mind-board-modal')">
+    <div class="modal-content" style="max-width: 96vw; width: 96vw; max-height: 94vh; padding: 1rem;">
+      <div class="modal-header">
+        <h2>🧠 思考整理ボード（相関図・メモ）</h2>
+        <button class="modal-close-btn" onclick="closeModal('mind-board-modal')">✕</button>
+      </div>
+      
+      <!-- タブ切替ボタン -->
+      <div class="mind-tab-buttons" style="display: flex; gap: 0.5rem; margin-bottom: 0.8rem;">
+        <button class="category-tab active" id="mind-tab-corr" onclick="switchMindTab('corr')">🕸️ 人物相関図</button>
+        <button class="category-tab" id="mind-tab-markers" onclick="switchMindTab('markers')">📌 マーカーメモ発言</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- TAB 1: 人物相関図 -->
+        <div id="mind-tab-content-corr">
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+            キャラアイコンを順番に2人タップして矢印線を引き、人物関係を整理できます。
+          </div>
+          
+          <!-- 線種選択バー -->
+          <div class="corr-tool-bar">
+            <span>矢印の種類:</span>
+            <label class="corr-type-btn active" data-type="suspicion" onclick="selectCorrType('suspicion', this)">
+              🔴 疑い
+            </label>
+            <label class="corr-type-btn" data-type="trust" onclick="selectCorrType('trust', this)">
+              🔵 信頼
+            </label>
+            <label class="corr-type-btn" data-type="conflict" onclick="selectCorrType('conflict', this)">
+              ⚔️ 対立
+            </label>
+            <label class="corr-type-btn" data-type="co_counter" onclick="selectCorrType('co_counter', this)">
+              🔮 対抗CO
+            </label>
+            <button class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.78rem; margin-left: auto;" onclick="clearAllCorrLines()">
+              🗑️ 全リセット
+            </button>
+          </div>
+
+          <!-- 相関図描画キャンバス＆ノードエリア -->
+          <div class="corr-board-container" id="corr-board-container">
+            <svg class="corr-svg-layer" id="corr-svg-layer"></svg>
+            <div class="corr-nodes-grid" id="corr-nodes-grid"></div>
+          </div>
+
+          <!-- 設定された相関線リスト -->
+          <div style="margin-top: 0.8rem;">
+            <div style="font-weight: bold; font-size: 0.85rem; color: var(--accent-amber); margin-bottom: 0.3rem;">
+              引いた相関線一覧:
+            </div>
+            <div id="corr-lines-list" class="corr-lines-list"></div>
+          </div>
+        </div>
+
+        <!-- TAB 2: マーカーメモ発言 -->
+        <div id="mind-tab-content-markers" style="display: none;">
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+            ログ画面でタグ付けしたマーカー発言の一覧です。
+          </div>
+          <div id="marked-logs-container" class="marked-logs-container">
+            <!-- Dynamic marked logs -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('mind-board-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚖️ 「突きつけ」処刑モーダル -->
+  <div id="accuse-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 650px; width: 95%;">
+      <div class="modal-header">
+        <h2>⚖ 罪状の突きつけと処刑実行</h2>
+        <button class="modal-close-btn" onclick="closeModal('accuse-modal')">✕</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Step 1: 対象確認 -->
+        <div class="accuse-section">
+          <div class="accuse-step-title">【1. 処刑対象の確認】</div>
+          <div class="accuse-target-card">
+            処刑対象: <strong id="accuse-target-name-display" style="color: var(--accent-red); font-size: 1.2rem;">-</strong>
+          </div>
+        </div>
+
+        <!-- Step 2: 罪状（理由）の選択 -->
+        <div class="accuse-section">
+          <div class="accuse-step-title">【2. 処刑理由（罪状）を選択】</div>
+          <div class="accuse-reason-options">
+            <label class="reason-radio-item">
+              <input type="radio" name="accuse-reason" value="contradiction" checked>
+              <div class="reason-text-group">
+                <span class="reason-title">A. 発言の矛盾</span>
+                <span class="reason-desc">（過去の発言と今日の主張・投票行動が食い違っている）</span>
+              </div>
+            </label>
+            <label class="reason-radio-item">
+              <input type="radio" name="accuse-reason" value="role_break">
+              <div class="reason-text-group">
+                <span class="reason-title">B. 役職の破綻</span>
+                <span class="reason-desc">（占い・霊媒結果やCO情報の整合性が取れていない）</span>
+              </div>
+            </label>
+            <label class="reason-radio-item">
+              <input type="radio" name="accuse-reason" value="stealth">
+              <div class="reason-text-group">
+                <span class="reason-title">C. 潜伏・不審な動向</span>
+                <span class="reason-desc">（議論を誘導せず発言を濁す、不自然な黒塗り）</span>
+              </div>
+            </label>
+            <label class="reason-radio-item">
+              <input type="radio" name="accuse-reason" value="intuition">
+              <div class="reason-text-group">
+                <span class="reason-title">D. 直感・その他の理由</span>
+                <span class="reason-desc">（疑念度の高さやその他の直感）</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 3: 証拠発言の選択 (1~2件) -->
+        <div class="accuse-section">
+          <div class="accuse-step-title">【3. 根拠となる証拠発言を選択（最大2件）】</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+            📌 マーカーを付けた発言（優先）およびログから突きつける証拠を選択してください。
+          </div>
+          <div id="accuse-evidence-list" class="accuse-evidence-list">
+            <!-- Dynamic evidence items -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button class="btn btn-secondary" onclick="closeModal('accuse-modal')">キャンセル</button>
+        <button class="btn btn-danger" style="padding: 0.65rem 1.4rem; font-weight: bold; font-size: 1rem;" onclick="confirmAccusationExecution()">
+          ⚡ 証拠を突きつけて処刑実行
+        </button>
       </div>
     </div>
   </div>
@@ -3334,7 +4056,7 @@
     const CHAR_NAMES_20 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
     const CHAR_NAMES_15 = CHAR_NAMES_20;
     const MAX_DISCUSSION_TIME_SECONDS = 180;
-    const MAX_DECISION_TIME_SECONDS = 15;
+    const MAX_DECISION_TIME_SECONDS = -1; // -1 = 無制限
     const PLACES = ['時計塔', '広場', '教会', '井戸端', '西の森', '見張り台', '裏路地', '風車小屋', '廃校校舎', '裏山小屋'];
 
     let selectedVillageSize = 6;
@@ -3372,6 +4094,10 @@
       lastNightVictims: [],
       virtualVotes: {},         // char -> { target, suspicionScore, reason }
       virtualVoteHistory: [],   // Array of { day, label, votes: { char: { target, suspicionScore } }, tally: [ { target, count } ] }
+      logMarkers: {},           // logId -> 'white' | 'black' | 'contradiction' | 'co'
+      logItemsList: [],         // list of log items with unique IDs
+      accusationHistory: [],    // Array of { day, target, reasonKey, reasonLabel, evidenceLogIds, evidenceTexts, targetRole, isWolf }
+      correlationLines: [],     // Array of { id, from, to, labelType, labelText }
       gameOver: false
     };
 
@@ -4012,14 +4738,14 @@
       playBgm('syokei');
       setGamePhaseBg('execution');
       gameState.subPhase = 'decision';
-      gameState.timeLeftSeconds = MAX_DECISION_TIME_SECONDS;
+      gameState.timeLeftSeconds = MAX_DECISION_TIME_SECONDS; // -1 = 無制限
 
       updateTimerDisplay();
       renderCharacters();
       selectCharacter(gameState.selectedChar);
 
       const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const decisionLogText = '議論を終了し、処刑決断に入ります。15秒以内に処刑対象を選択するか、処刑を見送ってください。';
+      const decisionLogText = '議論を終了し、処刑決断に入ります。処刑対象を選択するか、処刑を見送ってください。';
       const speechMsg = `${getDaySpeechText(gameState.day)}…… ${decisionLogText}`;
 
       addLogItem('ナレーション', '', decisionLogText, 'narration', null, false);
@@ -4027,18 +4753,21 @@
       // ナレーション読み上げ完了（onend）を待機
       await playSpeechAsync(speechMsg);
 
-      // ナレーション読み上げ完了後に15秒カウントダウンを正式スタート
       if (gameState.subPhase === 'decision' && !gameState.executedToday && !gameState.gameOver) {
         stopAllTimers();
-        timerInterval = setInterval(() => {
-          if (gameState.timeLeftSeconds > 0) {
-            gameState.timeLeftSeconds--;
-            updateTimerDisplay();
-          } else {
-            stopAllTimers();
-            handleDecisionTimeUp();
-          }
-        }, 1000);
+        if (gameState.timeLeftSeconds > 0) {
+          timerInterval = setInterval(() => {
+            if (gameState.timeLeftSeconds > 0) {
+              gameState.timeLeftSeconds--;
+              updateTimerDisplay();
+            } else {
+              stopAllTimers();
+              handleDecisionTimeUp();
+            }
+          }, 1000);
+        } else {
+          updateTimerDisplay();
+        }
       }
     }
 
@@ -4134,9 +4863,13 @@
       if (gameState.subPhase === 'decision') {
         labelEl.textContent = '⏱️ 処刑決断:';
         el.className = 'timer-display decision';
-        const minutes = Math.floor(gameState.timeLeftSeconds / 60);
-        const seconds = gameState.timeLeftSeconds % 60;
-        el.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        if (gameState.timeLeftSeconds === -1) {
+          el.textContent = '無制限';
+        } else {
+          const minutes = Math.floor(gameState.timeLeftSeconds / 60);
+          const seconds = gameState.timeLeftSeconds % 60;
+          el.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
       } else {
         labelEl.textContent = '⏱️ 議論時間:';
         if (gameState.timeLeftSeconds === -1) {
@@ -4256,6 +4989,10 @@
         lastNightVictims: [],
         virtualVotes: {},
         virtualVoteHistory: [],
+        logMarkers: {},
+        logItemsList: [],
+        accusationHistory: [],
+        correlationLines: [],
         gameOver: false
       };
       // Set default info page to 村人一覧 (index 1)
@@ -4344,6 +5081,7 @@
       gameState.targetWolvesCount = targetWolves;
       gameState.charList = chars;
       gameState.mistakesLeft = maxMistakes;
+      gameState.initialMistakesLeft = maxMistakes;
       gameState.gameCategory = selectedGameCategory;
 
       // Role Assignment
@@ -6561,17 +7299,19 @@
       }
     }
 
-    // Add Log Entry
+    // Add Log Entry (機能A: ログID発行・マーカー対応)
     function addLogItem(title, question, answer, typeClass = '', charSeed = null, autoSpeak = false) {
       const timeline = document.getElementById('log-timeline');
       if (!timeline) return;
+
+      const logId = `log_${Date.now()}_${Math.floor(Math.random()*10000)}`;
       const item = document.createElement('div');
       item.className = `log-item ${typeClass}`;
+      item.setAttribute('data-log-id', logId);
 
       const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
       const isAIDiscussion = (typeClass === 'ai-discussion');
 
-      // AI議論時は日時プレフィックスを省略し「村人 X。発言内容」形式にする
       const speakMsg = isAIDiscussion
         ? `村人 ${charSeed || ''}。${answer}`
         : `${getDaySpeechText(gameState.day)}の${gameState.phase}…… ${question ? question + '。' : ''} ${answer}`;
@@ -6582,15 +7322,32 @@
       const displayQuestion = replaceNamePlaceholders(question);
       const displayAnswer = replaceNamePlaceholders(answer);
 
+      // 保存リストに記録
+      gameState.logItemsList.push({
+        id: logId,
+        dateText,
+        day: gameState.day,
+        phase: gameState.phase,
+        title: displayTitle,
+        question: displayQuestion,
+        answer: displayAnswer,
+        typeClass,
+        charSeed
+      });
+
       item.innerHTML = `
         <div class="log-header">
           <span>${displayTitle}</span>
-          <span>${dateText}</span>
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <span class="log-marker-badge" id="marker-badge-${logId}" style="display:none;" onclick="cycleLogMarker('${logId}', event)"></span>
+            <span>${dateText}</span>
+          </div>
         </div>
         ${displayQuestion ? `<div class="log-question">${displayQuestion}</div>` : ''}
         <div class="log-answer">
-          <div>${displayAnswer}</div>
+          <div style="flex:1;">${displayAnswer}</div>
           <div class="log-actions" style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0; margin-left:0.4rem;">
+            <button class="btn-tag-marker" onclick="cycleLogMarker('${logId}', event)" title="タップでマーカー（白/黒/矛盾/CO）を切り替え">📌 タグ</button>
             ${isAIDiscussion && charSeed ? `<button class="btn-pursue" onclick="pursueAIDiscussion('${charSeed}', '${safeAnswer}')" title="この発言を引用して追及質問を行う">🎯 追及する</button>` : ''}
             <button class="btn-speak" onclick="speakText('${speakMsg.replace(/'/g, "\\'")}', null, ${typeClass === 'narration'}, '${charSeed || 'A'}')">🔊</button>
           </div>
@@ -6600,49 +7357,506 @@
       timeline.appendChild(item);
       timeline.scrollTop = timeline.scrollHeight;
 
-      // AI議論の自動読み上げは非同期ループ側で制御するのでここではスキップ
       if (autoSpeak && !isAIDiscussion) {
         speakText(speakMsg, null, typeClass === 'narration', charSeed);
       }
     }
 
-    // Execute Selected Character
-    async function executeSelected() {
-      const char = gameState.selectedChar;
-      if (!char || gameState.status[char] !== 'alive' || gameState.executedToday || gameState.gameOver) return;
+    // ■ 機能A: マーカー（タグ付け）トグル処理
+    function cycleLogMarker(logId, e) {
+      if (e) {
+        try { e.preventDefault(); e.stopPropagation(); } catch(err) {}
+      }
+      const markerTypes = [null, 'white', 'black', 'contradiction', 'co'];
+      const current = gameState.logMarkers[logId] || null;
+      const nextIdx = (markerTypes.indexOf(current) + 1) % markerTypes.length;
+      const nextMarker = markerTypes[nextIdx];
 
+      if (nextMarker) {
+        gameState.logMarkers[logId] = nextMarker;
+      } else {
+        delete gameState.logMarkers[logId];
+      }
+
+      updateLogItemMarkerUI(logId);
+    }
+
+    function updateLogItemMarkerUI(logId) {
+      const itemEl = document.querySelector(`[data-log-id="${logId}"]`);
+      const marker = gameState.logMarkers[logId];
+
+      if (itemEl) {
+        itemEl.classList.remove('marked-white', 'marked-black', 'marked-contradiction', 'marked-co');
+        if (marker) {
+          itemEl.classList.add(`marked-${marker}`);
+        }
+      }
+
+      const badgeEl = document.getElementById(`marker-badge-${logId}`);
+      if (badgeEl) {
+        if (!marker) {
+          badgeEl.className = 'log-marker-badge';
+          badgeEl.style.display = 'none';
+          badgeEl.innerHTML = '';
+        } else {
+          badgeEl.style.display = 'inline-flex';
+          const labels = {
+            white: '🔵 白確定',
+            black: '🔴 黒・怪しい',
+            contradiction: '🟡 矛盾・ウソ',
+            co: '🟣 役職CO'
+          };
+          badgeEl.className = `log-marker-badge marker-${marker}`;
+          badgeEl.innerHTML = labels[marker] || '';
+        }
+      }
+    }
+
+    // ■ 機能A2: 思考整理ボード & 人物相関図
+    let currentSelectedCorrType = 'suspicion';
+    let corrSelectedFromNode = null;
+
+    function openMindBoardModal() {
+      renderMindBoardNodes();
+      renderCorrLinesList();
+      renderMarkedLogsList();
+      openModal('mind-board-modal');
+    }
+
+    function switchMindTab(tabKey) {
+      const btnCorr = document.getElementById('mind-tab-corr');
+      const btnMarkers = document.getElementById('mind-tab-markers');
+      const contentCorr = document.getElementById('mind-tab-content-corr');
+      const contentMarkers = document.getElementById('mind-tab-content-markers');
+
+      if (tabKey === 'corr') {
+        if (btnCorr) btnCorr.classList.add('active');
+        if (btnMarkers) btnMarkers.classList.remove('active');
+        if (contentCorr) contentCorr.style.display = 'block';
+        if (contentMarkers) contentMarkers.style.display = 'none';
+        renderMindBoardNodes();
+      } else {
+        if (btnCorr) btnCorr.classList.remove('active');
+        if (btnMarkers) btnMarkers.classList.add('active');
+        if (contentCorr) contentCorr.style.display = 'none';
+        if (contentMarkers) contentMarkers.style.display = 'block';
+        renderMarkedLogsList();
+      }
+    }
+
+    function selectCorrType(type, btnEl) {
+      currentSelectedCorrType = type;
+      document.querySelectorAll('.corr-type-btn').forEach(btn => btn.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    function handleCorrNodeClick(char) {
+      if (!corrSelectedFromNode) {
+        corrSelectedFromNode = char;
+        renderMindBoardNodes();
+      } else if (corrSelectedFromNode === char) {
+        corrSelectedFromNode = null;
+        renderMindBoardNodes();
+      } else {
+        const fromChar = corrSelectedFromNode;
+        const toChar = char;
+        corrSelectedFromNode = null;
+
+        const labels = {
+          suspicion: '疑い',
+          trust: '信頼',
+          conflict: '対立',
+          co_counter: '対抗CO'
+        };
+
+        const existingIdx = gameState.correlationLines.findIndex(l => (l.from === fromChar && l.to === toChar) || (l.from === toChar && l.to === fromChar));
+        if (existingIdx >= 0) {
+          gameState.correlationLines.splice(existingIdx, 1);
+        }
+
+        gameState.correlationLines.push({
+          id: `line_${Date.now()}`,
+          from: fromChar,
+          to: toChar,
+          labelType: currentSelectedCorrType,
+          labelText: labels[currentSelectedCorrType] || '関係'
+        });
+
+        renderMindBoardNodes();
+        renderCorrLinesList();
+      }
+    }
+
+    function clearAllCorrLines() {
+      gameState.correlationLines = [];
+      corrSelectedFromNode = null;
+      renderMindBoardNodes();
+      renderCorrLinesList();
+    }
+
+    function removeCorrLine(lineId) {
+      gameState.correlationLines = gameState.correlationLines.filter(l => l.id !== lineId);
+      renderMindBoardNodes();
+      renderCorrLinesList();
+    }
+
+    function renderMindBoardNodes() {
+      const container = document.getElementById('corr-nodes-grid');
+      const boardContainer = document.getElementById('corr-board-container');
+      if (!container || !boardContainer) return;
+      container.innerHTML = '';
+
+      const total = gameState.charList.length;
+      if (total === 0) return;
+
+      const w = boardContainer.clientWidth || 900;
+      const h = boardContainer.clientHeight || 480;
+      const cx = w / 2;
+      const cy = h / 2;
+
+      // 人数に応じたノード幅・高の調整（大所帯村でも重ならないようスケーリング）
+      const nodeWidth = total >= 12 ? 72 : (total >= 9 ? 76 : 82);
+      const nodeHeight = total >= 12 ? 50 : (total >= 9 ? 54 : 58);
+
+      // 人数・大画面に対応した半径計算
+      const rx = Math.max(140, (w - (nodeWidth + 60)) / 2);
+      const ry = Math.max(110, (h - (nodeHeight + 50)) / 2);
+
+      gameState.charList.forEach((char, idx) => {
+        const isDead = gameState.status[char] !== 'alive';
+        const isSelected = (corrSelectedFromNode === char);
+        const name = getCharDisplayName(char);
+
+        const angle = (2 * Math.PI * idx) / total - (Math.PI / 2);
+        const posX = cx + rx * Math.cos(angle) - nodeWidth / 2;
+        const posY = cy + ry * Math.sin(angle) - nodeHeight / 2;
+
+        const node = document.createElement('div');
+        node.className = `corr-node ${isDead ? 'is-dead' : ''} ${isSelected ? 'selected-from' : ''}`;
+        node.style.position = 'absolute';
+        node.style.left = `${posX}px`;
+        node.style.top = `${posY}px`;
+        node.style.width = `${nodeWidth}px`;
+        node.style.padding = '0.3rem 0.2rem';
+        node.style.boxSizing = 'border-box';
+        node.onclick = () => handleCorrNodeClick(char);
+
+        node.innerHTML = `
+          <div style="font-size: 1.25rem; line-height: 1;">👤</div>
+          <div style="font-size: 0.78rem; font-weight: bold; margin-top: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: ${nodeWidth - 8}px;">${name}</div>
+          <div style="font-size: 0.65rem; color: var(--text-muted);">${isDead ? '脱落' : (gameState.coRoles[char] || 'グレー')}</div>
+        `;
+
+        container.appendChild(node);
+      });
+
+      setTimeout(renderCorrSvgLines, 60);
+    }
+
+    function renderCorrSvgLines() {
+      const svg = document.getElementById('corr-svg-layer');
+      const container = document.getElementById('corr-board-container');
+      if (!svg || !container) return;
+
+      svg.innerHTML = '';
+      const rect = container.getBoundingClientRect();
+
+      // SVG内の矢印マーカー定義
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      const colors = {
+        suspicion: '#ef4444',
+        trust: '#3b82f6',
+        conflict: '#f59e0b',
+        co_counter: '#a855f7'
+      };
+
+      Object.keys(colors).forEach(type => {
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.setAttribute('id', `arrow-${type}`);
+        marker.setAttribute('viewBox', '0 0 10 10');
+        marker.setAttribute('refX', '18');
+        marker.setAttribute('refY', '5');
+        marker.setAttribute('markerWidth', '6');
+        marker.setAttribute('markerHeight', '6');
+        marker.setAttribute('orient', 'auto-start-reverse');
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+        path.setAttribute('fill', colors[type]);
+        marker.appendChild(path);
+        defs.appendChild(marker);
+      });
+      svg.appendChild(defs);
+
+      const nodeEls = container.querySelectorAll('.corr-node');
+      const nodePosMap = {};
+
+      gameState.charList.forEach((char, idx) => {
+        if (nodeEls[idx]) {
+          const r = nodeEls[idx].getBoundingClientRect();
+          nodePosMap[char] = {
+            x: r.left - rect.left + r.width / 2,
+            y: r.top - rect.top + r.height / 2
+          };
+        }
+      });
+
+      const boardCx = rect.width / 2;
+      const boardCy = rect.height / 2;
+
+      gameState.correlationLines.forEach((line) => {
+        const p1 = nodePosMap[line.from];
+        const p2 = nodePosMap[line.to];
+        if (!p1 || !p2) return;
+
+        const color = colors[line.labelType] || '#95A5A6';
+
+        // 制御点（ベジェ曲線用のカーブ計算）
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+
+        // ボード中心に向かって引き寄せ（人数が多い時でも重ならないよう調整）
+        const pullFactor = gameState.charList.length >= 10 ? 0.42 : 0.35;
+        const ctrlX = midX + (boardCx - midX) * pullFactor;
+        const ctrlY = midY + (boardCy - midY) * pullFactor;
+
+        // ベジェ曲線パスの作成
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${p1.x} ${p1.y} Q ${ctrlX} ${ctrlY} ${p2.x} ${p2.y}`);
+        path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('marker-end', `url(#arrow-${line.labelType})`);
+
+        if (line.labelType === 'suspicion' || line.labelType === 'co_counter') {
+          path.setAttribute('stroke-dasharray', '5,4');
+        }
+        svg.appendChild(path);
+
+        // ラベル（背景タグ付き）
+        const labelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        
+        const textPx = (p1.x + 2 * ctrlX + p2.x) / 4;
+        const textPy = (p1.y + 2 * ctrlY + p2.y) / 4;
+
+        const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('x', textPx - 22);
+        bgRect.setAttribute('y', textPy - 11);
+        bgRect.setAttribute('width', '44');
+        bgRect.setAttribute('height', '18');
+        bgRect.setAttribute('rx', '4');
+        bgRect.setAttribute('fill', 'rgba(10, 14, 25, 0.88)');
+        bgRect.setAttribute('stroke', color);
+        bgRect.setAttribute('stroke-width', '1');
+        labelGroup.appendChild(bgRect);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', textPx);
+        text.setAttribute('y', textPy + 2);
+        text.setAttribute('fill', color);
+        text.setAttribute('font-size', '10.5');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('text-anchor', 'middle');
+        text.textContent = line.labelText;
+        labelGroup.appendChild(text);
+
+        svg.appendChild(labelGroup);
+      });
+    }
+
+    function renderCorrLinesList() {
+      const listEl = document.getElementById('corr-lines-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (gameState.correlationLines.length === 0) {
+        listEl.innerHTML = '<div style="font-size:0.78rem; color:var(--text-muted);">まだ相関線はありません。アイコンを2つ選んで線を引きましょう。</div>';
+        return;
+      }
+
+      gameState.correlationLines.forEach(line => {
+        const nameA = getCharDisplayName(line.from);
+        const nameB = getCharDisplayName(line.to);
+        const item = document.createElement('div');
+        item.className = 'corr-line-item';
+        item.innerHTML = `
+          <span><strong>${nameA}</strong> ➔ [${line.labelText}] ➔ <strong>${nameB}</strong></span>
+          <button class="btn btn-secondary" style="padding:0.1rem 0.4rem; font-size:0.72rem;" onclick="removeCorrLine('${line.id}')">削除</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function renderMarkedLogsList() {
+      const container = document.getElementById('marked-logs-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const markedIds = Object.keys(gameState.logMarkers);
+      if (markedIds.length === 0) {
+        container.innerHTML = '<div style="font-size:0.8rem; color:var(--text-muted); padding:0.5rem;">まだマーカーを付けた発言はありません。<br>発言ログをタップしてマーカー（白確定/黒疑い/矛盾等）を付けてみましょう。</div>';
+        return;
+      }
+
+      markedIds.forEach(logId => {
+        const markerType = gameState.logMarkers[logId];
+        const logObj = gameState.logItemsList.find(l => l.id === logId);
+        if (!logObj) return;
+
+        const labels = {
+          white: '🔵 白確定',
+          black: '🔴 黒・怪しい',
+          contradiction: '🟡 矛盾・ウソ',
+          co: '🟣 役職CO'
+        };
+
+        const item = document.createElement('div');
+        item.className = `accuse-result-card marked-${markerType}`;
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+            <strong style="color:var(--accent-amber);">${logObj.title} (${logObj.dateText})</strong>
+            <span class="log-marker-badge marker-${markerType}">${labels[markerType]}</span>
+          </div>
+          <div>${logObj.answer}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // ■ 機能B & C: 「突きつけ」処刑シーケンス
+    let accuseTargetChar = null;
+
+    function openAccusationModal(targetChar) {
+      accuseTargetChar = targetChar || gameState.selectedChar;
+      if (!accuseTargetChar) {
+        showCustomAlertModal('処刑対象の村人を選択してください。');
+        return;
+      }
+
+      const targetNameEl = document.getElementById('accuse-target-name-display');
+      if (targetNameEl) targetNameEl.textContent = getCharDisplayName(accuseTargetChar);
+
+      renderAccuseEvidenceList();
+      openModal('accuse-modal');
+    }
+
+    function renderAccuseEvidenceList() {
+      const listContainer = document.getElementById('accuse-evidence-list');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+
+      const markedLogIds = Object.keys(gameState.logMarkers);
+      const relevantLogs = gameState.logItemsList.filter(l => l.charSeed === accuseTargetChar || markedLogIds.includes(l.id));
+
+      if (relevantLogs.length === 0) {
+        listContainer.innerHTML = '<div style="font-size:0.78rem; color:var(--text-muted); padding:0.4rem;">対象キャラクターに関連するログやマーカー発言がありません。</div>';
+        return;
+      }
+
+      relevantLogs.forEach(logObj => {
+        const marker = gameState.logMarkers[logObj.id];
+        const labels = { white: '🔵 白確定', black: '🔴 黒・怪しい', contradiction: '🟡 矛盾・ウソ', co: '🟣 役職CO' };
+
+        const card = document.createElement('label');
+        card.className = 'evidence-item-card';
+        card.innerHTML = `
+          <input type="checkbox" name="evidence-checkbox" value="${logObj.id}" style="margin-top: 0.2rem;">
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#e2e8f0;">${logObj.title}</strong>
+              ${marker ? `<span class="log-marker-badge marker-${marker}">${labels[marker]}</span>` : ''}
+            </div>
+            <div style="color:var(--text-muted); margin-top:0.2rem;">${logObj.answer}</div>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    async function confirmAccusationExecution() {
+      if (!accuseTargetChar) return;
+
+      const targetChar = accuseTargetChar;
+      const selectedReasonInput = document.querySelector('input[name="accuse-reason"]:checked');
+      const reasonKey = selectedReasonInput ? selectedReasonInput.value : 'intuition';
+      
+      const reasonLabels = {
+        contradiction: '発言の矛盾',
+        role_break: '役職の破綻',
+        stealth: '潜伏・不審動向',
+        intuition: '直感・その他'
+      };
+      const reasonLabel = reasonLabels[reasonKey] || '処刑理由';
+
+      const checkedEvidences = Array.from(document.querySelectorAll('input[name="evidence-checkbox"]:checked')).map(cb => cb.value);
+      const evidenceTexts = checkedEvidences.map(id => {
+        const l = gameState.logItemsList.find(item => item.id === id);
+        return l ? l.answer : '';
+      }).filter(Boolean);
+
+      closeModal('accuse-modal');
+
+      const targetRole = gameState.roles[targetChar] || 'villager';
+      const isWolf = (targetRole === 'wolf' || targetRole === 'fox');
+
+      gameState.accusationHistory.push({
+        day: gameState.day,
+        target: targetChar,
+        targetName: getCharDisplayName(targetChar),
+        reasonKey,
+        reasonLabel,
+        evidenceTexts,
+        targetRole,
+        isWolf
+      });
+
+      // 処刑確定処理（機能C: 成否の演出・音声は一切出さない）
+      executeAccusationSequence(targetChar, reasonKey, targetRole);
+    }
+
+    async function executeAccusationSequence(targetChar, reasonKey, targetRole) {
       stopAllTimers();
 
-      const realRole = gameState.roles[char];
-      gameState.status[char] = 'executed';
-      gameState.revealedRoles[char] = realRole;
+      gameState.status[targetChar] = 'executed';
       gameState.executedToday = true;
-      gameState.lastExecutedChar = char;
-      gameState.phase = '夕方';
+      gameState.lastExecutedChar = targetChar;
+      const targetDisplayName = getCharDisplayName(targetChar);
 
-      if (realRole === 'wolf') {
+      if (targetRole === 'wolf') {
         gameState.wolvesExecuted++;
       } else {
         gameState.mistakesLeft--;
       }
 
-      const charName = getCharDisplayName(char);
-      const logText = `【判決：処刑実行】${charName} の処刑を執り行いました。正体は明かされません。（翌朝の霊媒結果をお待ちください）`;
-      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const speakMsg = `${getDaySpeechText(gameState.day)}、 ${logText}`;
+      // 遺言退場コメント（退場時演出のみで、正否の正解発表は出さない）
+      let lastWords = '';
+      if (targetRole === 'wolf') {
+        lastWords = pickRandom([
+          `フフフ…私を追い詰めるとはね。だが、村の崩壊はもう止められないぞ…`,
+          `見事と言っておこう…だが私はただ1匹の人狼に過ぎん。`,
+          `まさか私の嘘を見破るとはな…静かに去るとしよう。`
+        ]);
+      } else if (targetRole === 'fox') {
+        lastWords = `クックック…化かし合いはここまでか。見事な見破りだったよ…`;
+      } else {
+        lastWords = pickRandom([
+          `私は本当に村人です！なぜ信じてくれないのですか…！`,
+          `私を処刑すれば村はさらに追い詰められます…どうか後悔しないでください。`,
+          `無実の人間を手にかけたこと、後でおわかりになるでしょう…`
+        ]);
+      }
 
-      addLogItem(
-        'ナレーション', 
-        '', 
-        logText,
-        'execution',
-        null,
-        false
-      );
+      addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', `「突きつけ」により ${targetDisplayName} の処刑が決定しました。`, 'execution', null, false);
+      addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', targetChar, false);
+
+      // 遺言の読み上げのみ行う（正解/不正解のエフェクト音は一切出さない）
+      await playSpeechAsync(`${targetDisplayName}の遺言…… ${lastWords}`, getCharVoiceProfileKey(targetChar));
+
+      await new Promise(r => setTimeout(r, 1000));
 
       // 🐾 猫又処刑時の道連れ処理
-      if (realRole === 'nekomata') {
-        const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
+      if (targetRole === 'nekomata') {
+        const aliveOthers = gameState.charList.filter(c => c !== targetChar && gameState.status[c] === 'alive');
         if (aliveOthers.length > 0) {
           const revengeChar = pickRandom(aliveOthers);
           const revengeName = getCharDisplayName(revengeChar);
@@ -6655,16 +7869,19 @@
         }
       }
 
-      selectCharacter(null);
-      renderStatus();
-      renderCharacters();
+      renderCharacterGrid();
+      checkGameEnd();
 
-      await playSpeechAsync(speakMsg);
-
-      const isEnd = checkGameEnd();
-      if (!isEnd) {
-        runEnhancedSeamlessSequence();
+      if (!gameState.gameOver) {
+        startNightPhase();
       }
+    }
+
+    // Execute Selected Character (突きつけモーダル呼出へ移行)
+    async function executeSelected() {
+      const char = gameState.selectedChar;
+      if (!char || gameState.status[char] !== 'alive' || gameState.executedToday || gameState.gameOver) return;
+      openAccusationModal(char);
     }
 
     // Skip Execution Handler
@@ -7022,6 +8239,244 @@
       } catch (e) {}
     }
 
+    // ■ リザルト評価算出エンジン
+    function calculateGameResult(result) {
+      const isVillageWon = (result === true);
+      const isFoxWin = (result === 'fox_win');
+
+      // 基本スコア
+      let baseScore = isVillageWon ? 1000 : 100;
+
+      // 早期解決ボーナス: (5 - 経過日数) × 200
+      const daysBonus = Math.max(0, (5 - gameState.day)) * 200;
+
+      // 生存者ボーナス: 生存している村人陣営の人数 × 150
+      const aliveVillagers = gameState.charList.filter(c =>
+        gameState.status[c] === 'alive' && gameState.roles[c] !== 'wolf' && gameState.roles[c] !== 'fox'
+      ).length;
+      const survivorBonus = aliveVillagers * 150;
+
+      // 誤処刑カウント
+      const initialMistakes = gameState.initialMistakesLeft || 2;
+      const mislynchCount = initialMistakes - gameState.mistakesLeft;
+
+      // ノーミス処刑ボーナス: 誤処刑0回なら +500
+      const noMissBonus = (mislynchCount === 0) ? 500 : 0;
+
+      // 誤処刑ペナルティ: 1人につき -300
+      const mislynchPenalty = mislynchCount * 300;
+
+      // 合計スコア (最低100pt保証)
+      let score = baseScore + daysBonus + survivorBonus + noMissBonus - mislynchPenalty;
+      score = Math.max(100, score);
+
+      // 推定IQ計算 (標準100ベース)
+      const estimatedIQ = Math.round(80 + (score / 35));
+
+      // ランク・称号決定
+      let rank = 'D';
+      let title = '迷走者';
+      if (score >= 2500) { rank = 'S'; title = '神域の探偵'; }
+      else if (score >= 1800) { rank = 'A'; title = '名探偵'; }
+      else if (score >= 1200) { rank = 'B'; title = '優秀な捜査官'; }
+      else if (score >= 800) { rank = 'C'; title = '一般村人'; }
+
+      return {
+        score,
+        estimatedIQ,
+        rank,
+        title,
+        isVillageWon,
+        isFoxWin,
+        details: {
+          baseScore,
+          daysBonus,
+          survivorBonus,
+          noMissBonus,
+          mislynchPenalty,
+          mislynchCount,
+          aliveVillagers,
+          day: gameState.day
+        }
+      };
+    }
+
+    // ■ プレイ成績＆ランク統計の自動更新
+    function updatePlayerRankStats(gameResult) {
+      loadPlayerData();
+      if (!playerData.rankStats) {
+        playerData.rankStats = {
+          highScore: 0,
+          totalScore: 0,
+          maxIQ: 0,
+          lastIQ: 0,
+          lastScore: 0,
+          lastRank: 'D',
+          lastTitle: '迷走者',
+          highestRank: 'D',
+          highestTitle: '迷走者',
+          totalGames: 0,
+          recentScores: []
+        };
+      }
+
+      const s = playerData.rankStats;
+      s.totalGames = (s.totalGames || 0) + 1;
+      s.totalScore = (s.totalScore || 0) + gameResult.score;
+      s.lastScore = gameResult.score;
+      s.lastIQ = gameResult.estimatedIQ;
+      s.lastRank = gameResult.rank;
+      s.lastTitle = gameResult.title;
+
+      if (gameResult.score > (s.highScore || 0)) {
+        s.highScore = gameResult.score;
+      }
+      if (gameResult.estimatedIQ > (s.maxIQ || 0)) {
+        s.maxIQ = gameResult.estimatedIQ;
+      }
+
+      const rankPriority = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
+      if ((rankPriority[gameResult.rank] || 0) >= (rankPriority[s.highestRank] || 0)) {
+        s.highestRank = gameResult.rank;
+        s.highestTitle = gameResult.title;
+      }
+
+      if (!s.recentScores) s.recentScores = [];
+      s.recentScores.push(gameResult.score);
+      if (s.recentScores.length > 5) s.recentScores.shift();
+
+      savePlayerData();
+    }
+
+    // ■ ランクモーダルの表示と描画
+    function openRankModal() {
+      renderRankModalContent();
+      openModal('rank-info-modal');
+    }
+
+    function renderRankModalContent() {
+      loadPlayerData();
+      const s = playerData.rankStats || {
+        highScore: 0,
+        totalScore: 0,
+        maxIQ: 0,
+        lastIQ: 0,
+        lastScore: 0,
+        lastRank: '-',
+        lastTitle: '未判定',
+        highestRank: 'C',
+        highestTitle: '一般村人',
+        totalGames: 0,
+        recentScores: []
+      };
+
+      // 暫定IQ（直近平均IQ、未プレイなら100）
+      let currentProvisionalIQ = 100;
+      if (s.recentScores && s.recentScores.length > 0) {
+        const avgScore = s.recentScores.reduce((a, b) => a + b, 0) / s.recentScores.length;
+        currentProvisionalIQ = Math.round(80 + (avgScore / 35));
+      } else if (s.lastIQ > 0) {
+        currentProvisionalIQ = s.lastIQ;
+      }
+
+      const rankColors = {
+        'S': '#FFD700', 'A': '#FF6B6B', 'B': '#4ECDC4', 'C': '#95A5A6', 'D': '#7F8C8D', '-': '#95A5A6'
+      };
+      const highestRankColor = rankColors[s.highestRank || 'C'] || '#95A5A6';
+
+      const bodyEl = document.getElementById('rank-modal-body');
+      if (!bodyEl) return;
+
+      bodyEl.innerHTML = `
+        <!-- サマリーカード -->
+        <div class="rank-summary-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.6rem; margin-bottom: 0.6rem;">
+            <div>
+              <span style="font-size: 0.8rem; color: #94a3b8;">最高到達ランク</span>
+              <div style="font-size: 1.5rem; font-weight: bold; color: ${highestRankColor}; margin-top: 0.1rem;">
+                ${s.highestRank || 'C'} <span style="font-size: 0.95rem; color: #e2e8f0; font-weight: normal;">(${s.highestTitle || '一般村人'})</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.8rem; color: #94a3b8;">現在の暫定IQ</span>
+              <div style="font-size: 1.7rem; font-weight: bold; color: #38bdf8; text-shadow: 0 0 10px rgba(56,189,248,0.4); margin-top: 0.1rem;">
+                ${currentProvisionalIQ} <span style="font-size: 0.8rem; color: #aaa; font-weight: normal;">IQ</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rank-stat-grid">
+            <div class="rank-stat-item">
+              <div class="rank-stat-label">🎯 ハイスコア</div>
+              <div class="rank-stat-val" style="color: #FFD700;">${s.highScore || 0} <span style="font-size: 0.75rem;">pt</span></div>
+            </div>
+            <div class="rank-stat-item">
+              <div class="rank-stat-label">🧠 最高推定IQ</div>
+              <div class="rank-stat-val" style="color: #4ECDC4;">${s.maxIQ || 100} <span style="font-size: 0.75rem;">IQ</span></div>
+            </div>
+            <div class="rank-stat-item">
+              <div class="rank-stat-label">📊 通算累計スコア</div>
+              <div class="rank-stat-val" style="color: #e2e8f0;">${s.totalScore || 0} <span style="font-size: 0.75rem;">pt</span></div>
+            </div>
+            <div class="rank-stat-item">
+              <div class="rank-stat-label">🎮 通算対戦数</div>
+              <div class="rank-stat-val" style="color: #a7f3d0;">${s.totalGames || 0} <span style="font-size: 0.75rem;">回</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ランク一覧・階級基準表 -->
+        <div style="font-weight: bold; font-size: 0.92rem; color: var(--accent-amber); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+          📋 ランク階級・IQ判定基準一覧
+        </div>
+        <table class="rank-guide-table">
+          <thead>
+            <tr>
+              <th>ランク</th>
+              <th>称号</th>
+              <th>必要スコア</th>
+              <th>推定IQ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="rank-badge-inline" style="background: rgba(255,215,0,0.2); color: #FFD700; border: 1px solid #FFD700;">S</span></td>
+              <td><strong style="color: #FFD700;">神域の探偵</strong></td>
+              <td>2,500 pt 〜</td>
+              <td>IQ 140 以上</td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge-inline" style="background: rgba(255,107,107,0.2); color: #FF6B6B; border: 1px solid #FF6B6B;">A</span></td>
+              <td><strong style="color: #FF6B6B;">名探偵</strong></td>
+              <td>1,800 〜 2,499 pt</td>
+              <td>IQ 125 〜 139</td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge-inline" style="background: rgba(78,205,196,0.2); color: #4ECDC4; border: 1px solid #4ECDC4;">B</span></td>
+              <td><strong style="color: #4ECDC4;">優秀な捜査官</strong></td>
+              <td>1,200 〜 1,799 pt</td>
+              <td>IQ 110 〜 124</td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge-inline" style="background: rgba(149,165,166,0.2); color: #95A5A6; border: 1px solid #95A5A6;">C</span></td>
+              <td><strong style="color: #95A5A6;">一般村人</strong></td>
+              <td>800 〜 1,199 pt</td>
+              <td>IQ 95 〜 109</td>
+            </tr>
+            <tr>
+              <td><span class="rank-badge-inline" style="background: rgba(127,140,141,0.2); color: #7F8C8D; border: 1px solid #7F8C8D;">D</span></td>
+              <td><strong style="color: #7F8C8D;">迷走者</strong></td>
+              <td>〜 799 pt</td>
+              <td>IQ 94 以下</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.6rem; line-height: 1.4;">
+          ※ スコアは勝利ボーナス、早期解決ボーナス、生き残った村人の数、誤吊りペナルティ等から算出されます。
+        </div>
+      `;
+    }
+
     // End Game Modal Display with Auto Narration Speech
     function endGame(result, message) {
       stopAllTimers();
@@ -7064,9 +8519,61 @@
 
       recordGameResult(gameState.villageSize, winningFaction);
 
+      // ■ リザルトカード描画
+      const gameResult = calculateGameResult(result);
+      updatePlayerRankStats(gameResult);
+      const resultCard = document.getElementById('modal-result-card');
+      if (resultCard) {
+        const rankColors = {
+          'S': '#FFD700', 'A': '#FF6B6B', 'B': '#4ECDC4', 'C': '#95A5A6', 'D': '#7F8C8D'
+        };
+        const rankColor = rankColors[gameResult.rank] || '#95A5A6';
+        const winLossLabel = gameResult.isVillageWon ? '🎉 勝利' : (gameResult.isFoxWin ? '🦊 妖狐勝利' : '💀 敗北');
+        const winLossClass = gameResult.isVillageWon ? 'win' : 'lose';
+
+        resultCard.innerHTML = `
+          <div class="result-rank-box">
+            <div class="rank-letter" style="color: ${rankColor}; text-shadow: 0 0 30px ${rankColor}80;">${gameResult.rank}</div>
+            <div style="font-size: 1.1rem; color: ${rankColor}; font-weight: bold; margin-top: 0.3rem;">${gameResult.title}</div>
+          </div>
+          <div class="result-iq-badge">
+            <span style="font-size: 0.85rem; color: #aaa;">推定IQ</span>
+            <span class="iq-score-val">${gameResult.estimatedIQ}</span>
+          </div>
+          <div class="result-score-detail">
+            <div class="score-row">
+              <span>${winLossLabel}ポイント</span>
+              <span class="${winLossClass}">+${gameResult.details.baseScore} pt</span>
+            </div>
+            <div class="score-row">
+              <span>🕐 早期クリアボーナス（${gameResult.details.day}日目）</span>
+              <span style="color: #4ECDC4;">+${gameResult.details.daysBonus} pt</span>
+            </div>
+            <div class="score-row">
+              <span>👥 村人生存ボーナス（${gameResult.details.aliveVillagers}人）</span>
+              <span style="color: #4ECDC4;">+${gameResult.details.survivorBonus} pt</span>
+            </div>
+            ${gameResult.details.noMissBonus > 0 ? `
+            <div class="score-row">
+              <span>✨ ノーミス処刑ボーナス</span>
+              <span style="color: #FFD700;">+${gameResult.details.noMissBonus} pt</span>
+            </div>` : ''}
+            ${gameResult.details.mislynchPenalty > 0 ? `
+            <div class="score-row">
+              <span>⚠️ 誤処刑ペナルティ（${gameResult.details.mislynchCount}回）</span>
+              <span style="color: #FF6B6B;">-${gameResult.details.mislynchPenalty} pt</span>
+            </div>` : ''}
+            <div class="score-row" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 0.5rem; margin-top: 0.3rem; font-weight: bold; font-size: 1.1rem;">
+              <span>📊 合計スコア</span>
+              <span style="color: ${rankColor};">${gameResult.score} pt</span>
+            </div>
+          </div>
+        `;
+      }
+
       body.textContent = message;
 
-      let revealHTML = '<strong>【全員の実際の役職と最終状態】</strong><br>';
+      let revealHTML = '<strong style="font-size: 1.15rem;">【全員の実際の役職と最終状態】</strong><div class="reveal-items-grid">';
       gameState.charList.forEach(char => {
         const role = gameState.roles[char];
         let tag = '🔵 市民';
@@ -7085,12 +8592,73 @@
         if (gameState.status[char] === 'executed') st = '処刑済';
 
         const charName = getCharDisplayName(char);
-        revealHTML += `${charName}: ${tag}（${st}）<br>`;
+        revealHTML += `<div>${charName}: ${tag}（${st}）</div>`;
       });
-      reveal.innerHTML = revealHTML;
+      revealHTML += '</div>';
+      const scoreSpeech = `あなたのランクは${gameResult.rank}、${gameResult.title}。推定IQ ${gameResult.estimatedIQ}、合計スコア ${gameResult.score}ポイントです。`;
+      const speechModalText = `${titleSpeechText}…… ${message}…… ${scoreSpeech}`;
 
-      const speechModalText = `${titleSpeechText}…… ${message}`;
+      // 機能D: 突きつけ履歴のプレイバック＆プロファイリング結果表示
+      const playbackHTML = renderAccusationPlaybackHtml();
+      reveal.innerHTML = revealHTML + playbackHTML;
+
       speakText(speechModalText, null, true, null);
+    }
+
+    // ■ 機能D: 突きつけ検証・答え合わせプレイバック生成
+    function renderAccusationPlaybackHtml() {
+      const history = gameState.accusationHistory || [];
+      if (history.length === 0) return '';
+
+      let html = '<div style="margin-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 0.8rem;">';
+      html += '<strong style="font-size: 1.15rem; color: var(--accent-amber);">🔍 「突きつけ」推理検証＆答え合わせ</strong>';
+
+      let ronpaCount = 0;
+      history.forEach((item) => {
+        const isRonpa = item.isWolf;
+        if (isRonpa) ronpaCount++;
+
+        const evalBadgeClass = isRonpa ? 'eval-ronpa' : 'eval-enzyai';
+        const evalBadgeText = isRonpa ? '【完全論破】🎉' : '【冤罪・誤送】💀';
+        const targetRoleText = getRoleLabelName(item.targetRole);
+
+        html += `
+          <div class="accuse-result-card" style="margin-top: 0.5rem; animation: customModalPop 0.3s ease-out;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.3rem; margin-bottom:0.4rem;">
+              <span><strong>${item.day}日目: ${item.targetName}</strong> 処刑 ── 罪状: <strong>『${item.reasonLabel}』</strong></span>
+              <span class="accuse-eval-badge ${evalBadgeClass}">${evalBadgeText}</span>
+            </div>
+            <div style="font-size: 0.85rem; color: #cbd5e1;">
+              実際の正体: <strong>${targetRoleText}</strong>
+              ${item.evidenceTexts && item.evidenceTexts.length > 0 ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">提示した証拠: 「${item.evidenceTexts.slice(0,1).join(' / ')}」</div>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      const total = history.length;
+      const pct = Math.round((ronpaCount / total) * 100);
+      let profilerTitle = '見習い分析官';
+      if (pct >= 80 && ronpaCount >= 2) profilerTitle = '👁️ 神眼の観測者';
+      else if (pct >= 60) profilerTitle = '🔍 鋭敏なプロファイラー';
+      else if (pct >= 40) profilerTitle = '🕵️ 審査分析官';
+
+      html += `
+        <div style="background: rgba(15,20,35,0.8); border: 1px solid var(--accent-amber); padding: 0.6rem 0.8rem; border-radius: 8px; margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+          <span>観測者プロファイリング精度: <strong>${pct}%</strong> (${ronpaCount}/${total} 追放成功)</span>
+          <span style="font-size: 1rem; font-weight: bold; color: var(--accent-amber);">${profilerTitle}</span>
+        </div>
+      </div>`;
+
+      return html;
+    }
+
+    function getRoleLabelName(role) {
+      const roleMap = {
+        wolf: '🔴 人狼', seer: '🔮 占い師', medium: '👻 霊媒師', knight: '🛡️ 騎士',
+        madman: '💗 狂人', baker: '🍞 パン屋', freemason: '🤝 共有者', fox: '🦊 妖狐', villager: '🔵 市民'
+      };
+      return roleMap[role] || role;
     }
 
     // =====================================================
