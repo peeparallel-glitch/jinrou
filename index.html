@@ -4856,7 +4856,44 @@
       }
     }
 
-    // Complete Game State & UI Reset Function
+    // =====================================================
+    // 🎭 20種類のAI性格・人物プロファイルデータベースシステム
+    // =====================================================
+    // 🎭 20種類のAI性格・人物プロファイルデータベースシステム
+    // =====================================================
+    const AI_PROFILES = [
+      { id: 1,  archetype: "理論派探偵",    logicLevel: 0.95, aggression: 0.55, stubbornness: 0.35, coPreference: 0.60, speechStyle: "論理的で冷静な口調", quotePrefix: "過去ログと投票ラインを分析した結果ですが、", quoteSuffix: "客観的ログの整合性を最優先に検証すべきです。" },
+      { id: 2,  archetype: "直感直情型",    logicLevel: 0.30, aggression: 0.90, stubbornness: 0.85, coPreference: 0.70, speechStyle: "感情的で直感的な強気口調", quotePrefix: "ハッキリ言って怪しすぎるよ！", quoteSuffix: "直感だけど絶対に黒だと睨んでるよ！" },
+      { id: 3,  archetype: "日和見村人",    logicLevel: 0.45, aggression: 0.20, stubbornness: 0.20, coPreference: 0.30, speechStyle: "控えめで大勢に同調する口調", quotePrefix: "みんなの意見に同調しますけど、", quoteSuffix: "村の大多数の流れに合わせて慎重にいきたいです。" },
+      { id: 4,  archetype: "超攻撃的過激派", logicLevel: 0.65, aggression: 0.95, stubbornness: 0.75, coPreference: 0.90, speechStyle: "相手の矛盾を猛烈に突く強烈な口調", quotePrefix: "言い逃れはさせないよ！", quoteSuffix: "矛盾を突かれて焦ってるのが丸分かりだよ！" },
+      { id: 5,  archetype: "慎重潜伏型",    logicLevel: 0.70, aggression: 0.25, stubbornness: 0.30, coPreference: 0.15, speechStyle: "目立たず慎重に様子を見る口調", quotePrefix: "慎重に盤面を見守りたいですが、", quoteSuffix: "軽率な処刑で村をリスクに晒したくありません。" },
+      { id: 6,  archetype: "ポンコツ直感型", logicLevel: 0.20, aggression: 0.60, stubbornness: 0.65, coPreference: 0.50, speechStyle: "うっかりや勘違いの多い口調", quotePrefix: "勘違いだったらゴメンだけど、", quoteSuffix: "なんか不自然な気がして気になっちゃうんだよね。" },
+      { id: 7,  archetype: "冷徹な軍略家",  logicLevel: 0.90, aggression: 0.80, stubbornness: 0.50, coPreference: 0.85, speechStyle: "理詰めで逃げ場をなくす軍師風口調", quotePrefix: "戦術的観点から言わせてもらうと、", quoteSuffix: "この矛盾を放置するのは勝利確率を下げるだけだ。" },
+      { id: 8,  archetype: "平和主義同調型", logicLevel: 0.40, aggression: 0.15, stubbornness: 0.25, coPreference: 0.20, speechStyle: "争いを避け穏やかに諭す口調", quotePrefix: "みんな喧嘩しないで落ち着こうよ、", quoteSuffix: "誤処刑を防ぐために穏やかに話し合いたいな。" },
+      { id: 9,  archetype: "疑心暗鬼オオカミ", logicLevel: 0.55, aggression: 0.85, stubbornness: 0.80, coPreference: 0.75, speechStyle: "誰彼構わず怪しむピリピリした口調", quotePrefix: "全員の裏の顔が怪しく見えてきたよ！", quoteSuffix: "誰も信用できない！白黒を突きつけよう！" },
+      { id: 10, archetype: "セオリー信奉者", logicLevel: 0.85, aggression: 0.45, stubbornness: 0.70, coPreference: 0.65, speechStyle: "人狼ゲームのセオリーを説く口調", quotePrefix: "人狼ゲームの定石通りに進めるべきだよ、", quoteSuffix: "定石から外れた不自然な行動は悪手でしかない。" },
+      { id: 11, archetype: "揺さぶり巧者",  logicLevel: 0.75, aggression: 0.75, stubbornness: 0.40, coPreference: 0.80, speechStyle: "相手に揺さぶりをかける挑発的口調", quotePrefix: "フフッ、面白い主張をしてくれるね、", quoteSuffix: "その必死な弁明が真実かどうか試させてもらうよ。" },
+      { id: 12, archetype: "頑固一徹型",    logicLevel: 0.35, aggression: 0.70, stubbornness: 0.95, coPreference: 0.40, speechStyle: "一度決めた疑いを曲げない意固地口調", quotePrefix: "一度疑ったら私はブレないよ！", quoteSuffix: "どんなに言い訳されても私の疑いは変わらない！" },
+      { id: 13, archetype: "無口な観察者",  logicLevel: 0.80, aggression: 0.30, stubbornness: 0.45, coPreference: 0.25, speechStyle: "短文で鋭い指摘をする物静かな口調", quotePrefix: "……静かにログを精査していたが、", quoteSuffix: "……この一点の食い違いだけは看過できない。" },
+      { id: 14, archetype: "熱血正義漢",    logicLevel: 0.50, aggression: 0.85, stubbornness: 0.60, coPreference: 0.75, speechStyle: "村のために熱く叫ぶ正義派口調", quotePrefix: "村人を守るために全力で発言するぞ！", quoteSuffix: "村の勝利のために堂々と真実を語ろう！" },
+      { id: 15, archetype: "狡猾な策士",    logicLevel: 0.85, aggression: 0.65, stubbornness: 0.35, coPreference: 0.90, speechStyle: "裏で誘導をかける策士風口調", quotePrefix: "盤面の裏ラインを計算してみたんだけど、", quoteSuffix: "導き出される結論に従うのが一番賢明だよ。" },
+      { id: 16, archetype: "能天気フワフワ型", logicLevel: 0.25, aggression: 0.25, stubbornness: 0.30, coPreference: 0.35, speechStyle: "マイペースでフワッとした口調", quotePrefix: "え〜っとね、フワッと感じたことだけど、", quoteSuffix: "なんとなく怪しい気がするんだよね〜。" },
+      { id: 17, archetype: "分析系データ派", logicLevel: 0.95, aggression: 0.40, stubbornness: 0.50, coPreference: 0.50, speechStyle: "確率は数字で語るデータ主義口調", quotePrefix: "統計データと投票確率から算出すると、", quoteSuffix: "感情論抜きで数字の示す可能性に注目すべきです。" },
+      { id: 18, archetype: "命乞い防衛型",  logicLevel: 0.40, aggression: 0.65, stubbornness: 0.75, coPreference: 0.80, speechStyle: "自身への疑いに全力で反論する口調", quotePrefix: "私を疑うなんてあり得ないよ！", quoteSuffix: "身の潔白を証明するために絶対に引かないよ！" },
+      { id: 19, archetype: "皮肉屋観察官",  logicLevel: 0.80, aggression: 0.70, stubbornness: 0.55, coPreference: 0.45, speechStyle: "皮肉を交えて相手を突き刺す口調", quotePrefix: "また随分と苦しい言い訳を聞かされたね、", quoteSuffix: "矛盾を誤魔化す手口としては少々お粗末じゃない？" },
+      { id: 20, archetype: "柔軟な推理作家", logicLevel: 0.80, aggression: 0.50, stubbornness: 0.15, coPreference: 0.55, speechStyle: "多様な仮説を組み立てる柔軟な口調", quotePrefix: "いくつかの可能性を物語として仮説立てると、", quoteSuffix: "柔軟に新しい視点を取り入れて推理を更新したいね。" }
+    ];
+
+    // プロファイルのシャッフル割り当て
+    function assignProfilesToPlayers(chars) {
+      if (!gameState.charProfiles) gameState.charProfiles = {};
+      const shuffled = [...AI_PROFILES].sort(() => 0.5 - Math.random());
+      chars.forEach((c, idx) => {
+        gameState.charProfiles[c] = shuffled[idx % shuffled.length];
+      });
+    }
+
+    // Reset game state helper update
     function resetGameState() {
       stopAllTimers();
       cancelSpeech();
@@ -4908,6 +4945,7 @@
         memoRoles: {},
         claimedRoleTypes: {},
         isStealthing: {},
+        charProfiles: {},
         seerHistory: {},
         mediumHistory: {},
         alibis: {},
@@ -5016,6 +5054,9 @@
       gameState.mistakesLeft = maxMistakes;
       gameState.initialMistakesLeft = maxMistakes;
       gameState.gameCategory = selectedGameCategory;
+
+      // AI性格プロファイルの割り当て
+      assignProfilesToPlayers(chars);
 
       // Role Assignment
       const shuffledChars = [...chars].sort(() => 0.5 - Math.random());
@@ -5746,8 +5787,10 @@
         return { type: 'defensive-co', role: realRole, text: coMsg };
       }
 
-      // --- 2. 人狼・狂人の緊急偽CO（真に追い詰められた時のみ約30%の確率でブラフ） ---
-      if ((coRole === 'grey' || coRole === 'villager') && (realRole === 'wolf' || realRole === 'madman') && Math.random() < 0.30) {
+      // --- 2. 人狼・狂人の緊急偽CO（coPreferenceプロファイルパラメータに基づいて偽CO判断） ---
+      const prof = (gameState.charProfiles && gameState.charProfiles[speaker]) || null;
+      const fakeCoProb = prof ? (prof.coPreference * 0.5 + 0.1) : 0.30; // coPrefが高いと最大60%, 低いと10%で偽CO
+      if ((coRole === 'grey' || coRole === 'villager') && (realRole === 'wolf' || realRole === 'madman') && Math.random() < fakeCoProb) {
         // 騙る役職の戦略的選定（占いCO・霊媒CO・騎士CO）
         const existingCOs = Object.values(gameState.coRoles);
         let fakeRole = 'seer';
@@ -6225,6 +6268,33 @@
         }
       }
 
+      // ★ プロファイル性格トーンの適用（口調・語尾・前置きの差別化）
+      if (msg && !defensiveCO) {
+        const prof = (gameState.charProfiles && gameState.charProfiles[speaker]) || null;
+        if (prof) {
+          // 攻撃性に基づく語気変換
+          if (prof.aggression >= 0.8) {
+            msg = msg.replace(/だと思うよ/g, 'に決まってるよ！');
+            msg = msg.replace(/だよね/g, 'だろ！');
+            msg = msg.replace(/したいな/g, 'しないとダメだよ！');
+            msg = msg.replace(/かな？/g, 'でしょ！？');
+          } else if (prof.aggression <= 0.3) {
+            msg = msg.replace(/怪しい/g, '少し気になる');
+            msg = msg.replace(/危険/g, '心配');
+            msg = msg.replace(/絶対に/g, 'できれば');
+            msg = msg.replace(/すべき/g, 'した方がいいかも');
+          }
+          // 論理性が低い場合、直感・感情的フレーズを追加
+          if (prof.logicLevel <= 0.35 && Math.random() < 0.5) {
+            msg = msg.replace(/^「/, '「なんとなくだけど、');
+          }
+          // 頑固さが高い場合、語尾に断言を追加
+          if (prof.stubbornness >= 0.8 && Math.random() < 0.4) {
+            msg = msg.replace(/」$/, '……何を言われても私はこの考えを変えないよ！」');
+          }
+        }
+      }
+
       // ★ ③ 重複・無意味な発言のフィルタリング（スキップ）
       if (!defensiveCO && isDuplicateOrMeaningless(msg, recentHistory)) {
         console.log(`[AI議論] 重複・類似発言をスキップしました: (${speaker}: ${msg})`);
@@ -6577,6 +6647,25 @@
             }
           }
 
+          // ★ プロファイル性格パラメータによるスコア補正
+          const voterProf = (gameState.charProfiles && gameState.charProfiles[voter]) || null;
+          if (voterProf) {
+            // 攻撃的な性格はスコアを底上げ（より積極的に疑う）
+            if (voterProf.aggression >= 0.7) {
+              score += Math.floor((voterProf.aggression - 0.5) * 15);
+            }
+            // 頑固な性格は前回と同じターゲットにロックオン（スコア加算）
+            const prevVote = gameState.virtualVotes[voter];
+            if (voterProf.stubbornness >= 0.6 && prevVote && prevVote.target === target) {
+              score += Math.floor(voterProf.stubbornness * 12);
+              reason = '前回から継続して疑念を持続中';
+            }
+            // 論理性が低いとスコアに大きなブレ（直感に左右される）
+            if (voterProf.logicLevel <= 0.4) {
+              score += Math.floor(Math.random() * 18) - 9; // ±9の大幅ブレ
+            }
+          }
+
           // ★ 表示疑心度へのランダムノイズ（±3%）の付加（人間的な思考ゆらぎ）
           const noise = Math.floor(Math.random() * 7) - 3;
           score = Math.max(10, Math.min(95, Math.round(score + noise)));
@@ -6817,12 +6906,13 @@
         }
 
         const memoRole = gameState.memoRoles[char] || 'none';
-
         const displayName = getCharDisplayName(char);
+        const profile = (gameState.charProfiles && gameState.charProfiles[char]) || AI_PROFILES[0];
 
         card.innerHTML = `
           <div class="char-avatar">${char}</div>
           <div class="char-name">${displayName}</div>
+          <div class="char-archetype-badge" style="font-size:0.68rem; color:#fbbf24; background:rgba(245,158,11,0.15); padding:0.1rem 0.3rem; border-radius:4px; margin-bottom:0.2rem; border:1px solid rgba(245,158,11,0.3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">🎭 ${profile.archetype}</div>
           <div class="char-co-badge ${coBadgeClass}">${coBadgeText}</div>
           <div class="char-status ${statusClass}">${statusText}</div>
           <select class="memo-select memo-${memoRole}" onclick="event.stopPropagation()" onchange="updateMemoRole('${char}', this.value, event)">
@@ -6904,7 +6994,8 @@
         if (gameState.coRoles[gameState.selectedChar] === 'medium') coText = '（霊媒CO）';
         if (gameState.coRoles[gameState.selectedChar] === 'freemason') coText = '（共有CO）';
 
-        targetInfo.textContent = `選択中: ${getCharDisplayName(gameState.selectedChar)} ${coText}`;
+        const profile = (gameState.charProfiles && gameState.charProfiles[gameState.selectedChar]) || AI_PROFILES[0];
+        targetInfo.textContent = `選択中: ${getCharDisplayName(gameState.selectedChar)} 【${profile.archetype}】 ${coText}`;
       } else {
         targetInfo.textContent = '尋問・処刑する人物を選択してください';
       }
@@ -7051,7 +7142,21 @@
       }
 
       // 汎用回答
-      return `『${questionText}』についての見解ですが、誤処刑を防ぐために客観的なログ事実を最優先して判断します。根拠のない決めつけはしません。`;
+      let answer = `『${questionText}』についての見解ですが、誤処刑を防ぐために客観的なログ事実を最優先して判断します。根拠のない決めつけはしません。`;
+
+      // ★ プロファイル性格による口調・文末変換（最終調整）
+      const prof = (gameState.charProfiles && gameState.charProfiles[char]) || null;
+      if (prof) {
+        if (prof.aggression >= 0.8) {
+          answer = answer.replace(/と思います/g, 'に決まってるよ！').replace(/判断します/g, '決定でしょ！');
+        } else if (prof.aggression <= 0.3) {
+          answer = answer.replace(/怪しい/g, '少し気になっている').replace(/断定/g, '決めつけ');
+        }
+        if (prof.stubbornness >= 0.7) {
+          answer += ' 自分のこの意見は曲げないよ。';
+        }
+      }
+      return answer;
     }
 
     // Helper filter to strip unnecessary time/context prefaces from player input
