@@ -2720,7 +2720,6 @@
     <header>
       <h1>ひとり人狼 <span>-人狼推理-</span></h1>
       <div class="header-buttons">
-        <button class="btn-header-icon" onclick="openMindBoardModal()" title="思考整理">🧠 思考整理</button>
         <button class="btn-header-icon" onclick="openModal('how-to-play-modal')" title="遊び方">📖 遊び方</button>
         <button class="btn-header-icon" onclick="openRankModal()" title="ランク">🏆 ランク</button>
         <button class="btn-header-icon" onclick="openModal('settings-modal')" title="設定">⚙ 設定</button>
@@ -2771,6 +2770,10 @@
           </div>
 
           <div class="interrogation-panel">
+            <div id="interrogation-response-box" style="display:none; background:rgba(30, 41, 59, 0.95); border:1.5px solid var(--accent-amber); border-radius:10px; padding:0.65rem 0.85rem; margin-bottom:0.4rem; box-shadow:0 4px 15px rgba(0,0,0,0.5); backdrop-filter:blur(6px);">
+              <div id="interrogation-response-speaker" style="font-weight:bold; color:var(--accent-amber); font-size:0.85rem; margin-bottom:0.25rem;"></div>
+              <div id="interrogation-response-text" style="color:#f8fafc; font-size:0.88rem; line-height:1.45;"></div>
+            </div>
             <div id="target-info" class="target-info">尋問・処刑する人物を選択してください</div>
             
             <div class="question-scroll-container">
@@ -3263,78 +3266,7 @@
     </div>
   </div>
 
-  <!-- ⚖️ 「突きつけ」処刑モーダル -->
-  <div id="accuse-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 650px; width: 95%;">
-      <div class="modal-header">
-        <h2>⚖ 罪状の突きつけと処刑実行</h2>
-        <button class="modal-close-btn" onclick="closeModal('accuse-modal')">✕</button>
-      </div>
 
-      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
-        <!-- Step 1: 対象確認 -->
-        <div class="accuse-section">
-          <div class="accuse-step-title">【1. 処刑対象の確認】</div>
-          <div class="accuse-target-card">
-            処刑対象: <strong id="accuse-target-name-display" style="color: var(--accent-red); font-size: 1.2rem;">-</strong>
-          </div>
-        </div>
-
-        <!-- Step 2: 罪状（理由）の選択 -->
-        <div class="accuse-section">
-          <div class="accuse-step-title">【2. 処刑理由（罪状）を選択】</div>
-          <div class="accuse-reason-options">
-            <label class="reason-radio-item">
-              <input type="radio" name="accuse-reason" value="contradiction" checked>
-              <div class="reason-text-group">
-                <span class="reason-title">A. 発言の矛盾</span>
-                <span class="reason-desc">（過去の発言と今日の主張・投票行動が食い違っている）</span>
-              </div>
-            </label>
-            <label class="reason-radio-item">
-              <input type="radio" name="accuse-reason" value="role_break">
-              <div class="reason-text-group">
-                <span class="reason-title">B. 役職の破綻</span>
-                <span class="reason-desc">（占い・霊媒結果やCO情報の整合性が取れていない）</span>
-              </div>
-            </label>
-            <label class="reason-radio-item">
-              <input type="radio" name="accuse-reason" value="stealth">
-              <div class="reason-text-group">
-                <span class="reason-title">C. 潜伏・不審な動向</span>
-                <span class="reason-desc">（議論を誘導せず発言を濁す、不自然な黒塗り）</span>
-              </div>
-            </label>
-            <label class="reason-radio-item">
-              <input type="radio" name="accuse-reason" value="intuition">
-              <div class="reason-text-group">
-                <span class="reason-title">D. 直感・その他の理由</span>
-                <span class="reason-desc">（疑念度の高さやその他の直感）</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Step 3: 証拠発言の選択 (1~2件) -->
-        <div class="accuse-section">
-          <div class="accuse-step-title">【3. 根拠となる証拠発言を選択（最大2件）】</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem;">
-            📌 マーカーを付けた発言（優先）およびログから突きつける証拠を選択してください。
-          </div>
-          <div id="accuse-evidence-list" class="accuse-evidence-list">
-            <!-- Dynamic evidence items -->
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer" style="justify-content: space-between;">
-        <button class="btn btn-secondary" onclick="closeModal('accuse-modal')">キャンセル</button>
-        <button class="btn btn-danger" style="padding: 0.65rem 1.4rem; font-weight: bold; font-size: 1rem;" onclick="confirmAccusationExecution()">
-          ⚡ 証拠を突きつけて処刑実行
-        </button>
-      </div>
-    </div>
-  </div>
 
 
 
@@ -4659,6 +4591,7 @@
     // Timer Management
     let aiDiscussionActive = false;
     let isDiscussionPaused = false;
+    let isInterrogatingActive = false;
 
     function toggleDiscussionPause() {
       isDiscussionPaused = !isDiscussionPaused;
@@ -4688,8 +4621,8 @@
 
       // 非同期ループ：読み上げ完了を待ってから次の発言を生成
       while (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
-        // 一時停止状態の場合は解除されるまで待機
-        while (isDiscussionPaused && aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+        // 一時停止状態またはプレイヤー尋問（質問回答）中の場合は完了するまで待機
+        while ((isDiscussionPaused || isInterrogatingActive) && aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
           await new Promise(r => setTimeout(r, 500));
         }
         if (!aiDiscussionActive || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) break;
@@ -6051,14 +5984,22 @@
       
       // 1. 対抗占い師COが2人以上いる場合（ローラー/対抗精査）
       const seerCOs = aliveChars.filter(c => gameState.coRoles[c] === 'seer');
-      if (seerCOs.length >= 2) {
+      if (seerCOs.length >= 2 && seerCOs.includes(speakerChar)) {
+        const otherSeers = seerCOs.filter(c => c !== speakerChar);
+        const otherSeerNames = otherSeers.map(c => getCharDisplayName(c)).join('さんや');
+        return `私以外にも${otherSeerNames}さんが占い師COしていて真偽が絞れません。今日は確実に人狼を減らすためにも、セオリー通り【対抗の占い師から処刑】してラインを特定しませんか？`;
+      } else if (seerCOs.length >= 2) {
         const seerNames = seerCOs.map(c => getCharDisplayName(c)).join('さんと');
         return `占い師が${seerNames}さん2人以上出ていて真偽が絞れません。今日は確実に人狼を減らすためにも、セオリー通り【対抗の占い師から処刑】してラインを特定しませんか？`;
       }
 
       // 2. 霊媒COが2人以上いる場合
       const mediumCOs = aliveChars.filter(c => gameState.coRoles[c] === 'medium');
-      if (mediumCOs.length >= 2) {
+      if (mediumCOs.length >= 2 && mediumCOs.includes(speakerChar)) {
+        const otherMeds = mediumCOs.filter(c => c !== speakerChar);
+        const otherMedNames = otherMeds.map(c => getCharDisplayName(c)).join('さんや');
+        return `私以外にも${otherMedNames}さんが霊媒師COして対抗で並んでいます。偽霊媒による情報攪乱を防ぐため、今日は霊媒対抗枠から精査・処刑することを提案します。`;
+      } else if (mediumCOs.length >= 2) {
         const medNames = mediumCOs.map(c => getCharDisplayName(c)).join('さんと');
         return `霊媒師が${medNames}さん対抗で並んでいます。偽霊媒による情報攪乱を防ぐため、今日は霊媒対抗枠から精査・処刑することを提案します。`;
       }
@@ -6969,7 +6910,7 @@
       }
     }
 
-    // Interrogation Answers (Includes Self-Preservation CO Trigger)
+    // Interrogation Answers Entrypoint
     function getAnswer(char, questionId) {
       if (questionId === 1) {
         return getCustomAnswer(char, '朝の発言の理由について詳しく教えて');
@@ -6980,321 +6921,238 @@
       }
       return getCustomAnswer(char, '質問');
     }
+
     // Personality Tone Map for Characters
     function getCharPersonality(char) {
-      const code = char.charCodeAt(0) % 4;
+      const code = (char || 'A').charCodeAt(0) % 4;
       if (code === 0) return 'aggressive';   // 攻撃的・強気
       if (code === 1) return 'logical';      // 論理的・考察系
       if (code === 2) return 'cautious';     // 慎重・防衛的
       return 'intuitive';                    // 直感的・揺さぶり系
     }
 
-    // Response Validation & Anti-Template / Misalignment Filter
-    function validateAndFilterResponse(response, char, questionText) {
-      const genericPhrases = [
-        "様子を見ます", "私は市民です", "ノーコメント",
-        "わかりかねます", "なんとも言えません", "別にありません"
-      ];
-
-      const isGeneric = genericPhrases.some(phrase => response.trim() === phrase || response.includes("私のアクションに嘘はありませんよ"));
-      
-      // 質問に含まれる名前の抽出
-      const mentionedChars = [];
-      gameState.charList.forEach(c => {
-        const name = getCharDisplayName(c);
-        if (questionText.includes(name) || questionText.includes(`村人 ${c}`) || questionText.includes(`村人${c}`)) {
-          mentionedChars.push(c);
-        }
-      });
-
-      // 特定人物について尋ねられたが回答にその名前も「わからない」も含まれていない場合
-      if (mentionedChars.length > 0) {
-        const hasMentionedName = mentionedChars.some(c => response.includes(getCharDisplayName(c)));
-        const hasUnknown = /わからない|分から|判断できない|判断できません|情報が不足|決定打がない/.test(response);
-        
-        if (!hasMentionedName && !hasUnknown) {
-          const targetName = getCharDisplayName(mentionedChars[0]);
-          return `『${questionText}』についてですね。${targetName}さんに関しては現時点のログや開示情報だけでは判断ができません。ただ、発言のタイミングには引き続き注視しています。`;
-        }
-      }
-
-      if (isGeneric || response.length < 20) {
-        const personality = getCharPersonality(char);
-        const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
-        const target = aliveOthers.length > 0 ? pickRandom(aliveOthers) : '対抗者';
-        const targetName = getCharDisplayName(target);
-
-        if (personality === 'aggressive') {
-          return `『${questionText}』についてお答えします。現時点の根拠だけでは断定できませんが、自分を隠して周りに同調している ${targetName} さんの動きが最も気になっています。`;
-        } else if (personality === 'logical') {
-          return `『${questionText}』についての見解ですが、明確な確定根拠がないため軽率な断定は避けます。ログと投票ラインを客観的に再整理して精査すべきです。`;
-        } else if (personality === 'cautious') {
-          return `『${questionText}』ですね。まだ情報が少なくてはっきりとは分かりません。冤罪を防ぐためにも、明日の判定結果を待って判断したいです。`;
-        } else {
-          return `『${questionText}』ですか。現段階ではまだ判断がつかないのが本音ですね。ログ全体の矛盾から白黒を炙り出していきましょう。`;
-        }
-      }
-      return response;
-    }
-
-    // Dynamic Multi-Angle & Mind-Game AI Interrogation Answer Generator
+    // Dynamic AI Interrogation Answer Generator (Cleaned & Rebuilt)
     function getCustomAnswer(char, questionText) {
-      const coRole = gameState.coRoles[char];
-      const realRole = gameState.roles[char];
-      const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
+      const coRole = (gameState.coRoles && gameState.coRoles[char]) || 'grey';
+      const realRole = (gameState.roles && gameState.roles[char]) || 'villager';
+      const aliveOthers = (gameState.charList || []).filter(c => c !== char && gameState.status && gameState.status[c] === 'alive');
       const q = (questionText || '').toLowerCase();
       const personality = getCharPersonality(char);
 
-      // 質問インテント解析（厳密分類）
-      const isPursue = /追及|言っていた|言ってた|発言|さっき|言った件|矛盾/.test(q);
-      const isRoleInquiry = /役職|CO|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職/.test(q);
-      const isWhy = /なぜ|理由|どうして|選んだ|意図|根拠|きっかけ|なんで/.test(q);
-      const isTiming = /いつ|タイミング|遅い|初日|今|昨日|段階|遅れ/.test(q);
-      const isDoubt = /対抗|怪し|矛盾|本物|偽物|嘘|信じ|吊|処刑|疑|怪しい/.test(q);
-      const isLine = /一緒|協力|かば|繋がり|ライン|仲間|結託/.test(q);
+      // 質問意図の簡易・確定判定
+      const isKnightGuardQ = /守っ|護衛|プロテクト|守り|誰を守|守った人|守った対象|ガード/.test(q);
+      const isMediumQ = /霊媒|霊能|昨日の処刑|死んだ人|霊視|霊媒結果/.test(q);
+      const isSeerQ = /占|鑑定|結果|白|黒|占った|占った理由|占った対象/.test(q);
+      const isRoleInquiry = /役職|CO|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職|役割/.test(q);
       const isAlibi = /アリバイ|場所|行動|どこ|昨夜|夜|何してた|居場所/.test(q);
-      const isSeerQ = /占|鑑定|結果|白|黒/.test(q);
-      const isTargetQ = /誰|ターゲット|目標|狙い|処刑候補|おすすめ|おすすめは|怪しい人/.test(q);
-      const isWhyMe = /なぜ私|なんで私|私を|自分を|僕を|俺を|私の|質問|お前/.test(q);
-      const isUnknownNotice = /わかる|分から|判断|予想|確信/.test(q);
+      const isTargetQ = /誰|ターゲット|目標|狙い|処刑候補|おすすめ|おすすめは|怪しい人|吊るべき/.test(q);
+      const isWhyMe = /なぜ私|なんで私|私を|自分を|僕を|俺を|私の/.test(q);
 
-      // 質問文に含まれる他プレイヤー名の特定
+      // 質問に含まれる名前の抽出
       let askedTargetChar = null;
-      for (let c of gameState.charList) {
-        if (c === char) continue;
-        const name = getCharDisplayName(c);
-        if (q.includes(name.toLowerCase()) || q.includes(`村人 ${c.toLowerCase()}`) || q.includes(`村人${c.toLowerCase()}`)) {
-          askedTargetChar = c;
-          break;
+      if (gameState.charList) {
+        for (let c of gameState.charList) {
+          if (c === char) continue;
+          const name = getCharDisplayName(c);
+          const cleanName = name.replace(/^村人\s*/, '');
+          if (
+            q.includes(name.toLowerCase()) ||
+            (cleanName && q.includes(cleanName.toLowerCase())) ||
+            q.includes(`村人 ${c.toLowerCase()}`) ||
+            q.includes(`村人${c.toLowerCase()}`)
+          ) {
+            askedTargetChar = c;
+            break;
+          }
         }
       }
 
-      const rivalCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === coRole && coRole !== 'grey' && gameState.status[c] === 'alive');
-      const rivalName = rivalCOs.length > 0 ? getCharDisplayName(rivalCOs[0]) : (aliveOthers[0] ? getCharDisplayName(aliveOthers[0]) : '対抗者');
+      // 1. 騎士への護衛質問
+      if (isKnightGuardQ) {
+        if (coRole === 'knight' || realRole === 'knight' || realRole === 'bodyguard') {
+          const guardedTarget = gameState.lastKnightGuardTarget;
+          if (guardedTarget) {
+            return `昨夜の護衛対象ですね。騎士として昨夜は【${getCharDisplayName(guardedTarget)}さん】を重点護衛しました。真役職者を守るための判断です。`;
+          }
+          return `騎士として昨夜はCO済みの重要役職者を重点的に護衛しました。狼の噛み誘導を防ぐため特定の護衛先詳細は控えますが、村のキーパーソンを確実に守っています。`;
+        }
+        return `私は騎士ではありませんので護衛能力はありません。真の騎士が重要人物を守ってくれていると信じています。`;
+      }
 
-      // グレー村人の抽出
-      const greyAlive = aliveOthers.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'grey' || gameState.coRoles[c] === 'villager');
-      const suspicionTargetChar = greyAlive.length > 0 ? pickRandom(greyAlive) : (aliveOthers[0] || 'A');
-      const suspicionTargetName = getCharDisplayName(suspicionTargetChar);
+      // 2. 霊媒への質問
+      if (isMediumQ) {
+        if (coRole === 'medium') {
+          const medReport = gameState.dailyMediumReports ? gameState.dailyMediumReports[char] : null;
+          if (medReport) {
+            return `霊媒師として報告します。昨日処刑された【${getCharDisplayName(medReport.target)}さん】の判定は【${medReport.result}】でした。`;
+          }
+          return `私は霊媒師です。処刑された人物の正体を明かして村に真実を伝える役割を果たします。`;
+        }
+        return `私は霊媒師ではありません。真の霊媒師の判定報告を元に議論を進める立場です。`;
+      }
 
-      const report = gameState.dailySeerReports[char];
-      const seerTargetName = report ? getCharDisplayName(report.target) : (aliveOthers[0] ? getCharDisplayName(aliveOthers[0]) : 'A');
-      const seerResult = report ? report.result : '人間';
-      const place = gameState.alibis[char] || '村の広場';
-
-      let rawResponse = '';
-
-      // --- 【ケースA: 特定の人物について問われた場合 (askedTargetChar)】 ---
+      // 3. 他プレイヤー指名質問
       if (askedTargetChar) {
         const tName = getCharDisplayName(askedTargetChar);
-        const tCo = gameState.coRoles[askedTargetChar];
-        const hasSeerResult = Object.values(gameState.seerHistory || {}).flat().find(r => r.target === askedTargetChar);
-
-        if (hasSeerResult) {
-          rawResponse = `${tName}さんについてですね。占い結果として【${hasSeerResult.result}】が出ているので、私はその判定を前提として発言を精査しています。`;
-        } else if (tCo && tCo !== 'grey' && tCo !== 'villager') {
+        const tCo = gameState.coRoles ? gameState.coRoles[askedTargetChar] : 'grey';
+        if (coRole === 'seer' && gameState.seerHistory && gameState.seerHistory[char]) {
+          const myReport = gameState.seerHistory[char].find(r => r.target === askedTargetChar);
+          if (myReport) {
+            return `${tName}さんについてですね。私が占い師として占った結果は【${myReport.result}】でした！`;
+          }
+        }
+        if (tCo && tCo !== 'grey' && tCo !== 'villager') {
           const roleMap = { seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者' };
-          rawResponse = `${tName}さんは【${roleMap[tCo] || tCo}】としてCOされています。対抗の有無や結果の整合性から真偽を見極める段階です。`;
-        } else {
-          // 根拠がないため正直に「わからない」と回答＋客観的観察を記述
-          rawResponse = `${tName}さんに関しては現段階では明確な根拠がなく、白か黒かまだ分かりません。適当に決めつけるのは危険なので、今後の投票先とログを注意深く観察します。`;
+          return `${tName}さんは【${roleMap[tCo] || tCo}】としてCOされています。その真偽をログから精査している最中です。`;
         }
-        return validateAndFilterResponse(rawResponse, char, questionText);
+        return `${tName}さんに関しては現時点では明確な判定根拠がありません。安易な決めつけは避け、発言と投票の矛盾を観察していきます。`;
       }
 
-      // --- 【-1. AI自身の直前発言への追及 (isPursue)】 ---
-      const pastStatement = gameState.aiStatements ? gameState.aiStatements[char] : null;
-      if (isPursue && pastStatement) {
-        if (realRole === 'wolf') {
-          rawResponse = pickRandom([
-            `『${pastStatement}』と発言したのは事実ですが、それは村の議論を前進させるための投げかけです。言葉足を捉えて攻撃されるのは納得がいきません。`,
-            `揚げ足を取らないでください。あの発言はログの不整合を指摘しただけで、人狼としての誘導ではありません。`
-          ]);
-        } else if (realRole === 'madman') {
-          rawResponse = `『${pastStatement}』の真意が気になるようですね。盤面を動かすための視点提示ですので、ログと照らし合わせて検証してください。`;
-        } else {
-          rawResponse = pickRandom([
-            `先ほど『${pastStatement}』と発言した件ですね。当時の投票傾向とCO状況を踏まえた客観的な考察です。`,
-            `その発言ですね。誤解を恐れずに言えば、村人陣営として誤処刑を防ぐために率直な違和感を口にしたまでです。`
-          ]);
-        }
-        return validateAndFilterResponse(rawResponse, char, questionText);
-      }
-
-      // --- 【0. 役職質問・直接CO強制質問 (isRoleInquiry)】 ---
+      // 4. 役職質問
       if (isRoleInquiry) {
-        if (coRole !== 'grey') {
-          let roleName = '能力者';
-          if (coRole === 'seer') roleName = '占い師';
-          if (coRole === 'medium') roleName = '霊媒師';
-          if (coRole === 'freemason') roleName = '共有者';
-          rawResponse = `私は朝の宣言通り【${roleName}】です。個別の尋問で偽る理由はありませんし、自らの役割に全力を尽くしています。`;
-        } else {
-          rawResponse = pickRandom([
-            `現段階では潜伏一村人です。安易な役職開示は人狼に襲撃目標を与えるため、ログの整合性で白さを判断してください。`,
-            `役職COは村全体にメリットがあるタイミングで行います。個人的な尋問で軽々に口にするつもりはありません。`
-          ]);
+        if (coRole && coRole !== 'grey') {
+          const roleMap = { seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者' };
+          return `私は宣言通り【${roleMap[coRole] || coRole}】です。村のために能力を行使しています。`;
         }
-      }
-      // --- 【1. 誰が怪しいか・処刑ターゲット質問 (isTargetQ)】 ---
-      else if (isTargetQ) {
-        if (realRole === 'wolf') {
-          rawResponse = `${suspicionTargetName}さんを最も疑っています。投票先が浮いていて言動が防衛的なため、今日の処刑筆頭候補と考えています。`;
-        } else if (realRole === 'madman') {
-          rawResponse = `${suspicionTargetName}さんですね。発言が二転三転していて非常に怪しいので、処刑して盤面を検証すべきです。`;
-        } else {
-          rawResponse = `${suspicionTargetName}さんの言動に不自然さを感じています。発言ログの矛盾が一番大きいため、精査対象として推します。`;
-        }
-      }
-      // --- 【2. なぜ私を疑うのか質問 (isWhyMe)】 ---
-      else if (isWhyMe) {
-        rawResponse = `あなたを完全に黒と決めているわけではありません。ただ、質問のタイミングや防衛的な姿勢に少し違和感があったため身の潔白を確認したいのです。`;
-      }
-      // --- 【3. アリバイ・昨夜の行動質問 (isAlibi)】 ---
-      else if (isAlibi) {
-        rawResponse = `昨夜は『${place}』にいました。襲撃を警戒しながら一人で盤面ログを整理しており、やましい点は一切ありません。`;
-      }
-      // --- 【4. 占い・鑑定に関する質問 (isSeerQ)】 ---
-      else if (isSeerQ || (coRole === 'seer' && (isWhy || isTiming || isDoubt))) {
-        if (coRole === 'seer') {
-          rawResponse = `占い師として${seerTargetName}さんを占った結果は【${seerResult}】でした。私こそが真の占い師であり、対抗の${rivalName}さん側の判定こそ検証すべきです。`;
-        } else {
-          rawResponse = `私は占い師ではありません。対立している占いCO者たちの判定と投票ラインの不整合を厳しく精査している立場です。`;
-        }
-      }
-      // --- 【5. ライン・繋がりに関する質問 (isLine)】 ---
-      else if (isLine) {
-        if (aliveOthers.length >= 2) {
-          const t1 = getCharDisplayName(aliveOthers[0]);
-          const t2 = getCharDisplayName(aliveOthers[1]);
-          rawResponse = `${t1}さんと${t2}さんの間でかばい合いを感じます。投票先が重複しているなら黒ラインを疑うのがセオリーです。`;
-        } else {
-          rawResponse = `私に他者との結託ラインはありません。一村人として単独でログの不整合を洗っています。`;
-        }
-      }
-      // --- 【6. 理由・動機（WHY）や追及・汎用質問】 ---
-      else {
-        rawResponse = `『${questionText}』についてのお答えですが、現時点では判断材料が少なく明確な確信は持てていません。ですが、客観的なログ事実を元に誤処刑を防ぐ行動を徹底します。`;
+        return `現段階では村人（能力なし）です。役職COは村にとって最適なタイミングで行います。`;
       }
 
-      // テンプレート排除＆バリデーションフィルターを通して最終出力
-      return validateAndFilterResponse(rawResponse, char, questionText);
+      // 5. 怪しい人・処刑候補質問
+      if (isTargetQ) {
+        const target = aliveOthers.length > 0 ? pickRandom(aliveOthers) : '対抗者';
+        const targetName = getCharDisplayName(target);
+        if (personality === 'aggressive') {
+          return `${targetName}さんの言動が非常に怪しいと感じています。周囲に調和しつつ発言を濁しているため、本日の処刑筆頭候補です。`;
+        }
+        return `${targetName}さんの発言に不自然な点を感じます。ログの矛盾を洗うべき優先対象だと考えています。`;
+      }
+
+      // 6. なぜ私を疑うのか
+      if (isWhyMe) {
+        return `あなたを完全に黒と断定しているわけではありません。ただ、質問のタイミングや言動の防衛的な姿勢について真意を確認したいのです。`;
+      }
+
+      // 7. アリバイ
+      if (isAlibi) {
+        const place = (gameState.alibis && gameState.alibis[char]) || '村の広場';
+        return `昨夜は『${place}』で盤面ログを整理していました。後ろ暗い行動は一切ありません。`;
+      }
+
+      // 8. 占いに関する質問
+      if (isSeerQ) {
+        if (coRole === 'seer') {
+          const report = gameState.dailySeerReports ? gameState.dailySeerReports[char] : null;
+          if (report) {
+            return `占い師として${getCharDisplayName(report.target)}さんを占った結果は【${report.result}】でした。私こそが真の占い師です。`;
+          }
+          return `私は真の占い師です。毎夜の鑑定結果を村に提示して貢献します。`;
+        }
+        return `私は占い師ではありません。占いCO者の判定結果と不整合を慎重に見極める立場です。`;
+      }
+
+      // 汎用回答
+      return `『${questionText}』についての見解ですが、誤処刑を防ぐために客観的なログ事実を最優先して判断します。根拠のない決めつけはしません。`;
     }
 
     // Helper filter to strip unnecessary time/context prefaces from player input
     function cleanPlayerQuestionText(rawText) {
       if (!rawText) return '';
-      let cleaned = rawText.replace(/^(.*日目|朝|夜|現在|時間|今).*?(ですが|です|において|に関して|について|だけど|だけどさ)[、,\s]*/, '');
-      if (!cleaned) cleaned = rawText;
-      return cleaned.trim();
+      let cleaned = rawText.replace(/^(1日目|2日目|3日目|4日目|5日目|6日目|7日目|初日|今朝|昨夜)[、,\s]*/, '');
+      return cleaned.trim() || rawText.trim();
     }
 
-    // Ask Custom Question Handler with Visual Active Highlight & Auto Reset
+    function showInterrogationAnswerUI(speakerName, formattedAnswer) {
+      const box = document.getElementById('interrogation-response-box');
+      const speakerEl = document.getElementById('interrogation-response-speaker');
+      const textEl = document.getElementById('interrogation-response-text');
+      if (box && speakerEl && textEl) {
+        speakerEl.textContent = `💬 ${speakerName}からの回答`;
+        textEl.textContent = formattedAnswer;
+        box.style.display = 'block';
+      }
+    }
+
+    // Clean, Safe Interrogation Helper (Player Priority & TTS Completion Wait)
+    async function executeInterrogation(questionText, questionId = null) {
+      // 生存中の対象が選択されていない場合は自動選択
+      if (!gameState.selectedChar || (gameState.status && gameState.status[gameState.selectedChar] !== 'alive')) {
+        const aliveList = (gameState.charList || []).filter(c => gameState.status && gameState.status[c] === 'alive');
+        if (aliveList.length > 0) {
+          gameState.selectedChar = aliveList[0];
+        } else {
+          alert('尋問できる生存人物がいません。');
+          return;
+        }
+      }
+
+      const char = gameState.selectedChar;
+      const targetDisplayName = getCharDisplayName(char);
+
+      // 回答テキストの生成
+      let answerText = '';
+      if (questionId) {
+        answerText = getAnswer(char, questionId);
+      } else {
+        answerText = getCustomAnswer(char, questionText);
+      }
+      const formattedAnswer = formatSpeechMessage(char, answerText);
+
+      // 1. 進行中の音声・AI議論を最優先で一時停止
+      isInterrogatingActive = true;
+      cancelSpeech();
+
+      // 2. Page 1の回答カード表示
+      showInterrogationAnswerUI(targetDisplayName, formattedAnswer);
+
+      // 3. ログタイムライン（Page 2）へ記録
+      addLogItem(`審判員 ➡️ ${targetDisplayName}`, questionText, answerText, '', char, false);
+
+      // 4. 仮想投票再計算
+      if (typeof calculateVirtualVotes === 'function') calculateVirtualVotes();
+      if (typeof recordVirtualVoteHistory === 'function') recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (${targetDisplayName})`);
+      if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
+
+      // 5. プレイヤーの質問回答の読み上げ完了を完全に待機（読み上げ完了後に議論再開）
+      try {
+        await playSpeechAsync(`${targetDisplayName}。${formattedAnswer}`, getCharVoiceProfileKey(char));
+      } catch(e) {
+        console.warn('Speech execution warn:', e);
+      } finally {
+        // 読み上げ完了後に尋問フラグを解除してAI議論を再開させる
+        isInterrogatingActive = false;
+      }
+    }
+
+    // Ask Custom Question Handler
     async function askCustomQuestion() {
-      if (!gameState.selectedChar || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
-
       const inputEl = document.getElementById('custom-question-input');
-      const btnCustom = document.getElementById('btn-custom-q');
-      const q1Btn = document.getElementById('btn-q1');
-      const q2Btn = document.getElementById('btn-q2');
-      const q3Btn = document.getElementById('btn-q3');
-
       if (!inputEl) return;
-      const rawText = inputEl.value.trim();
-      if (!rawText) return; // Prevent empty submission
 
-      // 前処理フィルタ（不要な時間・状況前置きを自動除去）
+      const rawText = inputEl.value.trim();
+      if (!rawText) return;
+
       const cleanedQuestionText = cleanPlayerQuestionText(rawText);
 
-      // 1. 全質問ボタンを一時無効化 & 実行中ボタンをハイライト
-      const allBtns = [q1Btn, q2Btn, q3Btn, btnCustom, inputEl].filter(Boolean);
-      allBtns.forEach(b => b.disabled = true);
-      if (btnCustom) btnCustom.classList.add('is-active');
-
       try {
-        // ★ ③ AI自動議論・音声進行を即座に一時停止（割り込み）
-        cancelSpeech();
-
-        const char = gameState.selectedChar;
-        const targetDisplayName = getCharDisplayName(char);
-
-        // ★ プレイヤーの質問を最優先で音声読み上げ
-        const playerSpeechText = `プレイヤーから${targetDisplayName}へ質問。「${cleanedQuestionText}」`;
-        await playSpeechAsync(playerSpeechText, 'YOUNG_MALE');
-
-        const answerText = getCustomAnswer(char, cleanedQuestionText);
-
-        addLogItem(`審判員 ➡️ ${targetDisplayName}`, `「${cleanedQuestionText}」`, answerText, '', char, false);
-
-        // ★ 回答するAIの返答音声の優先読み上げ
-        const formattedAnswer = formatSpeechMessage(char, answerText);
-        await playSpeechAsync(formattedAnswer, getCharVoiceProfileKey(char));
-
-        // 尋問による盤面変化を受けた仮想投票再計算＆履歴更新
-        calculateVirtualVotes();
-        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (${targetDisplayName})`);
-        renderVoteHistoryPage();
-
-        inputEl.value = ''; // Clear input
-        renderStatus();
-
+        await executeInterrogation(cleanedQuestionText);
+        inputEl.value = '';
       } catch (err) {
         console.error('自由質問処理エラー:', err);
       } finally {
-        // 2. 回答完了後にハイライト解除 & 操作可能状態に復帰
-        if (btnCustom) btnCustom.classList.remove('is-active');
         selectCharacter(gameState.selectedChar);
       }
     }
 
-    // Ask Question Handler with Visual Active Highlight & Auto Reset
+    // Ask Standard Question Handler
     async function askQuestion(questionId) {
-      if (!gameState.selectedChar || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
-
       const selectedBtn = document.getElementById(`btn-q${questionId}`);
-      const q1Btn = document.getElementById('btn-q1');
-      const q2Btn = document.getElementById('btn-q2');
-      const q3Btn = document.getElementById('btn-q3');
-      const btnCustom = document.getElementById('btn-custom-q');
-      const inputEl = document.getElementById('custom-question-input');
-
-      // 1. 全質問ボタンを一時無効化 & 選択された定型ボタンをハイライト
-      const allBtns = [q1Btn, q2Btn, q3Btn, btnCustom, inputEl].filter(Boolean);
-      allBtns.forEach(b => b.disabled = true);
-      if (selectedBtn) selectedBtn.classList.add('is-active');
+      const questionText = selectedBtn ? selectedBtn.textContent.trim() : `質問${questionId}`;
 
       try {
-        // ★ ③ AI自動議論・音声進行を即座に一時停止（割り込み）
-        cancelSpeech();
-
-        const char = gameState.selectedChar;
-        const targetDisplayName = getCharDisplayName(char);
-        const questionText = selectedBtn ? selectedBtn.textContent.trim() : '';
-
-        // ★ プレイヤーの質問を最優先で音声読み上げ
-        const playerSpeechText = `プレイヤーから${targetDisplayName}へ質問。「${questionText}」`;
-        await playSpeechAsync(playerSpeechText, 'YOUNG_MALE');
-
-        const answerText = getAnswer(char, questionId);
-
-        addLogItem(`審判員 ➡️ ${targetDisplayName}`, questionText, answerText, '', char, false);
-
-        // ★ 回答するAIの返答音声の優先読み上げ
-        const formattedAnswer = formatSpeechMessage(char, answerText);
-        await playSpeechAsync(formattedAnswer, getCharVoiceProfileKey(char));
-
-        // 尋問による盤面変化を受けた仮想投票再計算＆履歴更新
-        calculateVirtualVotes();
-        recordVirtualVoteHistory(`${formatDay(gameState.day)} 尋問後 (${targetDisplayName})`);
-        renderVoteHistoryPage();
-
-        renderStatus();
-
+        await executeInterrogation(questionText, questionId);
       } catch (err) {
         console.error('定型質問処理エラー:', err);
       } finally {
-        // 2. 回答完了後にハイライト解除 & 操作可能状態に復帰
-        if (selectedBtn) selectedBtn.classList.remove('is-active');
         selectCharacter(gameState.selectedChar);
       }
     }
@@ -7723,105 +7581,21 @@
       });
     }
 
-    // ■ 機能B & C: 「突きつけ」処刑シーケンス
-    let accuseTargetChar = null;
+    // Execute Selected Character (直接処刑実行・思考停止バグ修正済)
+    async function executeSelected() {
+      const char = gameState.selectedChar;
+      if (!char || gameState.status[char] !== 'alive' || gameState.executedToday || gameState.gameOver) return;
 
-    function openAccusationModal(targetChar) {
-      accuseTargetChar = targetChar || gameState.selectedChar;
-      if (!accuseTargetChar) {
-        showCustomAlertModal('処刑対象の村人を選択してください。');
-        return;
-      }
-
-      const targetNameEl = document.getElementById('accuse-target-name-display');
-      if (targetNameEl) targetNameEl.textContent = getCharDisplayName(accuseTargetChar);
-
-      renderAccuseEvidenceList();
-      openModal('accuse-modal');
-    }
-
-    function renderAccuseEvidenceList() {
-      const listContainer = document.getElementById('accuse-evidence-list');
-      if (!listContainer) return;
-      listContainer.innerHTML = '';
-
-      const markedLogIds = Object.keys(gameState.logMarkers);
-      const relevantLogs = gameState.logItemsList.filter(l => l.charSeed === accuseTargetChar || markedLogIds.includes(l.id));
-
-      if (relevantLogs.length === 0) {
-        listContainer.innerHTML = '<div style="font-size:0.78rem; color:var(--text-muted); padding:0.4rem;">対象キャラクターに関連するログやマーカー発言がありません。</div>';
-        return;
-      }
-
-      relevantLogs.forEach(logObj => {
-        const marker = gameState.logMarkers[logObj.id];
-        const labels = { white: '🔵 白確定', black: '🔴 黒・怪しい', contradiction: '🟡 矛盾・ウソ', co: '🟣 役職CO' };
-
-        const card = document.createElement('label');
-        card.className = 'evidence-item-card';
-        card.innerHTML = `
-          <input type="checkbox" name="evidence-checkbox" value="${logObj.id}" style="margin-top: 0.2rem;">
-          <div style="flex:1;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <strong style="color:#e2e8f0;">${logObj.title}</strong>
-              ${marker ? `<span class="log-marker-badge marker-${marker}">${labels[marker]}</span>` : ''}
-            </div>
-            <div style="color:var(--text-muted); margin-top:0.2rem;">${logObj.answer}</div>
-          </div>
-        `;
-        listContainer.appendChild(card);
-      });
-    }
-
-    async function confirmAccusationExecution() {
-      if (!accuseTargetChar) return;
-
-      const targetChar = accuseTargetChar;
-      const selectedReasonInput = document.querySelector('input[name="accuse-reason"]:checked');
-      const reasonKey = selectedReasonInput ? selectedReasonInput.value : 'intuition';
-      
-      const reasonLabels = {
-        contradiction: '発言の矛盾',
-        role_break: '役職の破綻',
-        stealth: '潜伏・不審動向',
-        intuition: '直感・その他'
-      };
-      const reasonLabel = reasonLabels[reasonKey] || '処刑理由';
-
-      const checkedEvidences = Array.from(document.querySelectorAll('input[name="evidence-checkbox"]:checked')).map(cb => cb.value);
-      const evidenceTexts = checkedEvidences.map(id => {
-        const l = gameState.logItemsList.find(item => item.id === id);
-        return l ? l.answer : '';
-      }).filter(Boolean);
-
-      closeModal('accuse-modal');
-
-      const targetRole = gameState.roles[targetChar] || 'villager';
-      const isWolf = (targetRole === 'wolf' || targetRole === 'fox');
-
-      gameState.accusationHistory.push({
-        day: gameState.day,
-        target: targetChar,
-        targetName: getCharDisplayName(targetChar),
-        reasonKey,
-        reasonLabel,
-        evidenceTexts,
-        targetRole,
-        isWolf
-      });
-
-      // 処刑確定処理（機能C: 成否の演出・音声は一切出さない）
-      await executeAccusationSequence(targetChar, reasonKey, targetRole);
-    }
-
-    async function executeAccusationSequence(targetChar, reasonKey, targetRole) {
       stopAllTimers();
 
-      gameState.status[targetChar] = 'executed';
+      const targetRole = gameState.roles[char] || 'villager';
+      const targetDisplayName = getCharDisplayName(char);
+
+      gameState.status[char] = 'executed';
       gameState.executedToday = true;
-      gameState.lastExecutedChar = targetChar;
+      gameState.lastExecutedChar = char;
       gameState.phase = '夕方';
-      const targetDisplayName = getCharDisplayName(targetChar);
+      gameState.subPhase = 'execution';
 
       if (targetRole === 'wolf') {
         gameState.wolvesExecuted++;
@@ -7829,39 +7603,75 @@
         gameState.mistakesLeft--;
       }
 
-      // 遺言退場コメント（退場時演出のみで、正否の正解発表は出さない）
-      let lastWords = '';
-      if (targetRole === 'wolf') {
-        lastWords = pickRandom([
-          `フフフ…私を追い詰めるとはね。だが、村の崩壊はもう止められないぞ…`,
-          `見事と言っておこう…だが私はただ1匹の人狼に過ぎん。`,
-          `まさか私の嘘を見破るとはな…静かに去るとしよう。`
-        ]);
-      } else if (targetRole === 'fox') {
-        lastWords = `クックック…化かし合いはここまでか。見事な見破りだったよ…`;
-      } else {
-        lastWords = pickRandom([
-          `私は本当に村人です！なぜ信じてくれないのですか…！`,
-          `私を処刑すれば村はさらに追い詰められます…どうか後悔しないでください。`,
-          `無実の人間を手にかけたこと、後でおわかりになるでしょう…`
-        ]);
-      }
+      // 画面を発言ログ画面（Page 2）へ切り替え
+      switchView(2);
 
-      addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', `「突きつけ」により ${targetDisplayName} の処刑が決定しました。`, 'execution', null, false);
-      addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', targetChar, false);
+      // 遺言退場コメント（※全役職で正体がバレないよう、意図的に曖昧な台詞にする）
+      const personality = getCharPersonality(char);
+      const lastWordsPool = {
+        aggressive: [
+          `ここで処刑？冗談じゃない…本物の人狼はまだこの中にいるぞ！`,
+          `俺を疑うのか？いいだろう…だが明日の朝、後悔するのはお前たちだ。`,
+          `こんな判断で村が守れると思っているのか？甘いな…`,
+          `勝手にしろ。だがこの村は確実に間違った方向へ進んでいる。`,
+          `笑えるな…最も疑うべき人間を見逃しておいて、俺を吊るのか。`,
+          `俺の言葉を信じなかったこと、必ず悔やむことになる。`,
+          `この処刑が正しかったかどうか…明日の朝にわかるだろうさ。`,
+          `好きにしろ。だが忠告しておく…真犯人はまだ笑っているぞ。`
+        ],
+        logical: [
+          `この処刑は論理的に正しいのですか？ログを読み返してください…`,
+          `私の主張は一貫していたはず。矛盾があるなら具体的に示してほしかった。`,
+          `冤罪であれ正解であれ、残された人たちの判断に委ねるしかありません。`,
+          `私を処刑する根拠は十分でしたか？…冷静に振り返ってください。`,
+          `感情ではなく、論理で判断してほしかった…それだけが心残りです。`,
+          `投票ラインを精査すれば真実が見えるはずです。どうかそれを忘れないで。`,
+          `この結果が村のためになることを祈っています…さようなら。`,
+          `残った情報をよく整理してください。答えはログの中にあるはずです。`
+        ],
+        cautious: [
+          `私は…本当に何も悪いことはしていません…信じてください…`,
+          `どうか落ち着いて考え直してほしかった…もう遅いけれど…`,
+          `こんな形で終わるなんて…みなさん、どうかお元気で…`,
+          `私の無実はいつか証明されるはずです…それだけを信じています。`,
+          `せめて残された人たちが正しい判断をしてくれることを願います…`,
+          `最後まで言いたかったことがあるのに…もう時間がないようです。`,
+          `怖い…でも、村のためならこの運命を受け入れます…`,
+          `私を信じてくれた人、ありがとう…どうか最後まで戦ってください。`
+        ],
+        intuitive: [
+          `ふふ…面白い展開になってきたじゃないか。さて、真実はどこにある？`,
+          `この処刑、吉と出るか凶と出るか…見届けられないのが残念だよ。`,
+          `まあいいさ。答え合わせは最後のお楽しみってね…`,
+          `俺が消えた後の盤面をよく見ておけよ？真相が見えてくるはずだ。`,
+          `意外な結末だったな…いや、これもまた一つの運命か。`,
+          `最後に一つだけ言っておく…見えているものが全てとは限らないぞ。`,
+          `処刑されるのは構わないが…本当にこれでよかったのかい？`,
+          `さて、この村の結末はどうなるかな…見届けたかったよ。`
+        ]
+      };
+      const pool = lastWordsPool[personality] || lastWordsPool.cautious;
+      let lastWords = pickRandom(pool);
 
-      // 遺言の読み上げ（安全制御付き）
+      addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', `審判員の決断により ${targetDisplayName} の処刑が決定しました。`, 'execution', null, false);
+      addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', char, false);
+
+      selectCharacter(null);
+      renderStatus();
+      renderCharacters();
+
+      // 遺言読み上げ（読み上げ完了まで待機。スキップボタンで手動スキップ可能）
       try {
-        await playSpeechAsync(`${targetDisplayName}の遺言…… ${lastWords}`, getCharVoiceProfileKey(targetChar));
+        await playSpeechAsync(`${targetDisplayName}の遺言…… ${lastWords}`, getCharVoiceProfileKey(char));
       } catch(err) {
-        console.log('Speech error in accusation sequence:', err);
+        console.log('Speech error in execution sequence:', err);
       }
 
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 500));
 
       // 🐾 猫又処刑時の道連れ処理
       if (targetRole === 'nekomata') {
-        const aliveOthers = gameState.charList.filter(c => c !== targetChar && gameState.status[c] === 'alive');
+        const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
         if (aliveOthers.length > 0) {
           const revengeChar = pickRandom(aliveOthers);
           const revengeName = getCharDisplayName(revengeChar);
@@ -7874,21 +7684,12 @@
         }
       }
 
-      selectCharacter(null);
-      renderStatus();
-      renderCharacterGrid();
-
+      renderCharacters();
       const isEnd = checkGameEnd();
+
       if (!isEnd && !gameState.gameOver) {
         runEnhancedSeamlessSequence();
       }
-    }
-
-    // Execute Selected Character (突きつけモーダル呼出へ移行)
-    async function executeSelected() {
-      const char = gameState.selectedChar;
-      if (!char || gameState.status[char] !== 'alive' || gameState.executedToday || gameState.gameOver) return;
-      openAccusationModal(char);
     }
 
     // Skip Execution Handler
@@ -7991,11 +7792,13 @@
         const nightSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${nightLogText}`;
         addLogItem('ナレーション', '', nightLogText, 'narration', null, false);
 
-        // ★ ナレーション読み上げ完了を待機
-        await playSpeechAsync(nightSpeakMsg);
+        // ★ ナレーション読み上げ完了を待機（スキップボタンで手動スキップ可能）
+        try {
+          await playSpeechAsync(nightSpeakMsg);
+        } catch(e) {}
 
         // ★ 読み上げ完了後、一呼吸おいて画面をフェードアウト（暗転）
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 600));
 
         // --- Night Actions Calculation (Strategic Psychological Mind-Game Logic) ---
         const nightVictims = [];
@@ -8164,11 +7967,12 @@
         // ★ フェードイン開始と「全く同じタイミング」でナレーション読み上げを開始（待機なし）
         if (phaseOverlay) phaseOverlay.classList.remove('is-fading');
 
-        // ナレーション再生（読み上げ完了を待機）
-        await playSpeechAsync(dawnSpeechMsg);
+        // ナレーション再生（読み上げ完了まで待機。スキップボタンで手動スキップ可能）
+        try {
+          await playSpeechAsync(dawnSpeechMsg);
+        } catch(e) {}
 
-        // ナレーションが最後まで読み終わり次第、一呼吸おいて朝の報告へ移行
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 600));
 
         // ★ フェードアウト（完全暗転中）に背景画像とUIを先行切り替え ➔ フェードインと同時に鶏の鳴き声SEを再生
         await transitionWithFade(() => {
@@ -8605,59 +8409,9 @@
       const scoreSpeech = `あなたのランクは${gameResult.rank}、${gameResult.title}。推定IQ ${gameResult.estimatedIQ}、合計スコア ${gameResult.score}ポイントです。`;
       const speechModalText = `${titleSpeechText}…… ${message}…… ${scoreSpeech}`;
 
-      // 機能D: 突きつけ履歴のプレイバック＆プロファイリング結果表示
-      const playbackHTML = renderAccusationPlaybackHtml();
-      reveal.innerHTML = revealHTML + playbackHTML;
+      reveal.innerHTML = revealHTML;
 
       speakText(speechModalText, null, true, null);
-    }
-
-    // ■ 機能D: 突きつけ検証・答え合わせプレイバック生成
-    function renderAccusationPlaybackHtml() {
-      const history = gameState.accusationHistory || [];
-      if (history.length === 0) return '';
-
-      let html = '<div style="margin-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 0.8rem;">';
-      html += '<strong style="font-size: 1.15rem; color: var(--accent-amber);">🔍 「突きつけ」推理検証＆答え合わせ</strong>';
-
-      let ronpaCount = 0;
-      history.forEach((item) => {
-        const isRonpa = item.isWolf;
-        if (isRonpa) ronpaCount++;
-
-        const evalBadgeClass = isRonpa ? 'eval-ronpa' : 'eval-enzyai';
-        const evalBadgeText = isRonpa ? '【完全論破】🎉' : '【冤罪・誤送】💀';
-        const targetRoleText = getRoleLabelName(item.targetRole);
-
-        html += `
-          <div class="accuse-result-card" style="margin-top: 0.5rem; animation: customModalPop 0.3s ease-out;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.3rem; margin-bottom:0.4rem;">
-              <span><strong>${item.day}日目: ${item.targetName}</strong> 処刑 ── 罪状: <strong>『${item.reasonLabel}』</strong></span>
-              <span class="accuse-eval-badge ${evalBadgeClass}">${evalBadgeText}</span>
-            </div>
-            <div style="font-size: 0.85rem; color: #cbd5e1;">
-              実際の正体: <strong>${targetRoleText}</strong>
-              ${item.evidenceTexts && item.evidenceTexts.length > 0 ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">提示した証拠: 「${item.evidenceTexts.slice(0,1).join(' / ')}」</div>` : ''}
-            </div>
-          </div>
-        `;
-      });
-
-      const total = history.length;
-      const pct = Math.round((ronpaCount / total) * 100);
-      let profilerTitle = '見習い分析官';
-      if (pct >= 80 && ronpaCount >= 2) profilerTitle = '👁️ 神眼の観測者';
-      else if (pct >= 60) profilerTitle = '🔍 鋭敏なプロファイラー';
-      else if (pct >= 40) profilerTitle = '🕵️ 審査分析官';
-
-      html += `
-        <div style="background: rgba(15,20,35,0.8); border: 1px solid var(--accent-amber); padding: 0.6rem 0.8rem; border-radius: 8px; margin-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-          <span>観測者プロファイリング精度: <strong>${pct}%</strong> (${ronpaCount}/${total} 追放成功)</span>
-          <span style="font-size: 1rem; font-weight: bold; color: var(--accent-amber);">${profilerTitle}</span>
-        </div>
-      </div>`;
-
-      return html;
     }
 
     function getRoleLabelName(role) {
