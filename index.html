@@ -7811,7 +7811,7 @@
       });
 
       // 処刑確定処理（機能C: 成否の演出・音声は一切出さない）
-      executeAccusationSequence(targetChar, reasonKey, targetRole);
+      await executeAccusationSequence(targetChar, reasonKey, targetRole);
     }
 
     async function executeAccusationSequence(targetChar, reasonKey, targetRole) {
@@ -7820,6 +7820,7 @@
       gameState.status[targetChar] = 'executed';
       gameState.executedToday = true;
       gameState.lastExecutedChar = targetChar;
+      gameState.phase = '夕方';
       const targetDisplayName = getCharDisplayName(targetChar);
 
       if (targetRole === 'wolf') {
@@ -7849,10 +7850,14 @@
       addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', `「突きつけ」により ${targetDisplayName} の処刑が決定しました。`, 'execution', null, false);
       addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', targetChar, false);
 
-      // 遺言の読み上げのみ行う（正解/不正解のエフェクト音は一切出さない）
-      await playSpeechAsync(`${targetDisplayName}の遺言…… ${lastWords}`, getCharVoiceProfileKey(targetChar));
+      // 遺言の読み上げ（安全制御付き）
+      try {
+        await playSpeechAsync(`${targetDisplayName}の遺言…… ${lastWords}`, getCharVoiceProfileKey(targetChar));
+      } catch(err) {
+        console.log('Speech error in accusation sequence:', err);
+      }
 
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 800));
 
       // 🐾 猫又処刑時の道連れ処理
       if (targetRole === 'nekomata') {
@@ -7869,11 +7874,13 @@
         }
       }
 
+      selectCharacter(null);
+      renderStatus();
       renderCharacterGrid();
-      checkGameEnd();
 
-      if (!gameState.gameOver) {
-        startNightPhase();
+      const isEnd = checkGameEnd();
+      if (!isEnd && !gameState.gameOver) {
+        runEnhancedSeamlessSequence();
       }
     }
 
