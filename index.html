@@ -569,6 +569,54 @@
       position: relative;
     }
 
+    /* 左右ナビゲーション矢印ボタン */
+    .screen-nav-arrow {
+      position: absolute;
+      top: 48%;
+      transform: translateY(-50%);
+      z-index: 99;
+      width: 44px;
+      height: 60px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 1.6rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    .screen-nav-arrow.left {
+      left: 6px;
+      border-radius: 0 16px 16px 0;
+      border-left: none;
+    }
+    .screen-nav-arrow.right {
+      right: 6px;
+      border-radius: 16px 0 0 16px;
+      border-right: none;
+    }
+    .screen-nav-arrow:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+    }
+    .screen-nav-arrow:active {
+      transform: translateY(-50%) scale(0.92);
+    }
+    .screen-nav-arrow.hidden-arrow {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-50%) scale(0.8);
+    }
+
     .carousel-container {
       display: flex;
       width: 300vw;
@@ -2749,6 +2797,10 @@
 
     <!-- Viewport Area -->
     <div class="viewport-area" id="viewport-area">
+      <!-- 画面中央 左右ナビゲーション矢印ボタン -->
+      <button class="screen-nav-arrow left" id="nav-arrow-left" onclick="switchView(currentViewIndex - 1)" title="前の画面へ">❮</button>
+      <button class="screen-nav-arrow right" id="nav-arrow-right" onclick="switchView(currentViewIndex + 1)" title="次の画面へ">❯</button>
+
       <div class="carousel-container" id="carousel-container">
         
         <!-- PAGE 0: Virtual Vote & Suspicion History -->
@@ -4074,6 +4126,28 @@
         if (idx === index) btn.classList.add('active');
         else btn.classList.remove('active');
       });
+
+      // 左右矢印表示の動的更新
+      updateNavArrows();
+    }
+
+    function updateNavArrows() {
+      const leftArrow = document.getElementById('nav-arrow-left');
+      const rightArrow = document.getElementById('nav-arrow-right');
+      if (leftArrow) {
+        if (currentViewIndex === 0) {
+          leftArrow.classList.add('hidden-arrow');
+        } else {
+          leftArrow.classList.remove('hidden-arrow');
+        }
+      }
+      if (rightArrow) {
+        if (currentViewIndex === 2) {
+          rightArrow.classList.add('hidden-arrow');
+        } else {
+          rightArrow.classList.remove('hidden-arrow');
+        }
+      }
     }
 
     // Touch Swipe Controls
@@ -7380,10 +7454,15 @@
     let corrSelectedFromNode = null;
 
     function openMindBoardModal() {
-      renderMindBoardNodes();
+      openModal('mind-board-modal');
       renderCorrLinesList();
       renderMarkedLogsList();
-      openModal('mind-board-modal');
+      // モーダルのDOM表示およびレイアウト計算確定後に正確なサイズで描画
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          renderMindBoardNodes();
+        }, 50);
+      });
     }
 
     function switchMindTab(tabKey) {
@@ -7472,8 +7551,8 @@
       const total = gameState.charList.length;
       if (total === 0) return;
 
-      const w = boardContainer.clientWidth || 900;
-      const h = boardContainer.clientHeight || 480;
+      const w = boardContainer.getBoundingClientRect().width || boardContainer.clientWidth || 900;
+      const h = boardContainer.getBoundingClientRect().height || boardContainer.clientHeight || 480;
       const cx = w / 2;
       const cy = h / 2;
 
