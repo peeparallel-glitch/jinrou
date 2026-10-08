@@ -8,7 +8,7 @@
   <!-- iOS Safari 用フルスクリーン・Web App設定 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ひとり人狼">
+  <meta name="apple-mobile-web-app-title" content="審判の勇者">
 
   <!-- Android / Chrome 用設定 -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -17,7 +17,7 @@
   <!-- Web App Manifest 連携 -->
   <link rel="manifest" href="./manifest.json">
 
-  <title>ひとり人狼 -人狼推理-</title>
+  <title>ひとり人狼 〜審判の勇者〜</title>
   <style>
     :root {
       --bg-color: #0c0e17;
@@ -130,7 +130,7 @@
       }
     }
 
-    /* --- 処刑決断フェーズ（15秒タイマー） --- */
+    /* --- 処刑決断フェーズ（30秒タイマー） --- */
     #game-screen[data-phase="execution"] {
       background-image: linear-gradient(rgba(15, 8, 12, 0.55), rgba(15, 8, 12, 0.65)), url('./IMG/syokei1.jpg');
     }
@@ -2652,6 +2652,132 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Save / Load Slot Modal Styles */
+    .save-slot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    .save-slot-card {
+      background: rgba(15, 20, 30, 0.7);
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    .save-slot-card.active-slot {
+      border-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .save-slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.4rem;
+    }
+    .save-slot-title {
+      font-weight: bold;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+    .save-slot-title.empty {
+      color: var(--text-muted);
+    }
+    .save-slot-detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .save-slot-actions {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: flex-end;
+      margin-top: 0.2rem;
+    }
+    .btn-slot-action {
+      font-size: 0.78rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-slot-save {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    .btn-slot-load {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+    .btn-slot-delete {
+      background: rgba(225, 29, 72, 0.2);
+      color: #f43f5e;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+    }
+    .btn-slot-delete:hover {
+      background: rgba(225, 29, 72, 0.4);
+    }
+
+    /* Title Save Slot Selector Styles */
+    .slot-select-container {
+      margin-bottom: 0.8rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 0.6rem 0.8rem;
+    }
+    .slot-select-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .slot-select-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .btn-slot-select {
+      flex: 1;
+      padding: 0.45rem 0.4rem;
+      font-size: 0.78rem;
+      font-weight: bold;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1.5px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.1rem;
+    }
+    .btn-slot-select:hover {
+      border-color: var(--accent-amber);
+      color: var(--text-main);
+    }
+    .btn-slot-select.active {
+      border-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+    .btn-slot-select .slot-subtext {
+      font-size: 0.68rem;
+      font-weight: normal;
+      opacity: 0.85;
+    }
   </style>
 </head>
 <body>
@@ -2681,114 +2807,180 @@
     </div>
   </div>
 
+  <!-- 📜 オープニング物語モーダル（新規プレイ・初回表示） -->
+  <div id="opening-story-modal" class="modal-overlay hidden" style="z-index: 99990; background: rgba(5, 7, 12, 0.95); backdrop-filter: blur(8px);">
+    <div class="modal-content" style="max-width: 580px; width: 92%; background: linear-gradient(135deg, rgba(20, 24, 38, 0.98), rgba(12, 15, 26, 0.99)); border: 2px solid var(--accent-amber); box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); padding: 1.5rem; text-align: left;">
+      <div style="font-family: serif; font-size: 1.25rem; font-weight: bold; color: var(--accent-amber); border-bottom: 1px solid rgba(245, 158, 11, 0.4); padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <span>📜 序章 〜災いに見舞われし地〜</span>
+        <button class="btn btn-secondary" onclick="finishOpeningStory()" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; border-radius: 12px;">⏩ スキップ</button>
+      </div>
+      <div style="font-size: 0.92rem; line-height: 1.85; color: #f1f5f9; font-family: serif; white-space: pre-wrap; background: rgba(0, 0, 0, 0.3); padding: 1.2rem; border-radius: 8px; border-left: 3px solid var(--accent-amber); margin-bottom: 1.2rem; max-height: 55vh; overflow-y: auto;">
+かつて平和を誇った「レムの王国」。
+いま、その辺境の村々には、恐ろしい災いが忍び寄っていた。
+
+人間に完璧に化け、夜闇に乗じて住民を喰らう悪魔――「擬態モンスター」。
+姿形も声も、昨日まで共に過ごした家族や友人そのもの。
+誰が人間で、誰が皮を被った化け物なのか……村人たちは互いを疑い、狂気に呑まれつつあった。
+
+そこへ現れたのが、絶対の審判権を持つ「勇者（あなた）」。
+
+「これより審判会議を執り行う。
+言葉の裏に潜む偽りを見抜き、私に潜伏する魔物を示せ。
+私の剣が、災いに引導を渡す――」
+
+暗雲立ち込める村の門を叩き、勇者の審判が今、始まる。
+      </div>
+      <div style="text-align: center;">
+        <button class="btn-start-game" onclick="finishOpeningStory()" style="width: 100%; max-width: 320px; font-size: 1.05rem; padding: 0.75rem; margin-top: 0;">
+          ⚔️ 災いの村へ足を踏み入れる
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TITLE SCREEN -->
   <div id="title-screen" class="screen">
     <div class="title-box">
-      <h1 class="main-title">ひとり人狼<br><span class="sub-title">-人狼推理-</span></h1>
-      <div class="title-subtitle">1人用 推理裁判パズル（対人セオリー＆心理戦AI搭載版）</div>
+      <h1 class="main-title">ひとり人狼<br><span class="sub-title">〜審判の勇者〜</span></h1>
+      <div class="title-subtitle">1人用 ファンタジーRPG（勇者の裁き＆心理戦AI搭載版）</div>
 
-      <!-- Sub Header Buttons (遊び方・ランク・設定) -->
+      <!-- Sub Header Buttons (遊び方・ランク・冒険の書・設定) -->
       <div class="title-sub-buttons" style="margin-bottom: 0.8rem;">
         <button class="btn-title-sub" onclick="openModal('how-to-play-modal')">📖 遊び方</button>
-        <button class="btn-title-sub" onclick="openRankModal()">🏆 ランク</button>
+        <button class="btn-title-sub" onclick="openRankModal()">🏆 勇者ランク</button>
         <button class="btn-title-sub" onclick="openModal('settings-modal')">⚙ 設定</button>
       </div>
 
-      <!-- Mode Category Selection Tabs -->
-      <div class="mode-category-tabs">
-        <button class="category-tab active" id="tab-cat-normal" onclick="selectGameCategory('normal')">通常モード</button>
-        <button class="category-tab" id="tab-cat-daily" onclick="selectGameCategory('daily')">📅 デイリー村</button>
-        <button class="category-tab" id="tab-cat-custom" onclick="selectGameCategory('custom')">🛠️ カスタマイズ村</button>
+      <!-- Title Screen Main Action Buttons -->
+      <div class="title-main-menu-buttons" style="display: flex; gap: 0.8rem; margin: 1rem 0; width: 100%; max-width: 480px;">
+        <button class="btn-start-game" style="flex: 1; margin-top:0; font-size: 1.05rem;" onclick="onStartNewGameClick()">
+          ⚔️ はじめから<br><span style="font-size:0.75rem; font-weight:normal; opacity:0.9;">(新たな旅立ち)</span>
+        </button>
+        <button class="btn-start-game" style="flex: 1; margin-top:0; font-size: 1.05rem; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="openSaveModal()">
+          📜 冒険の書を開く<br><span style="font-size:0.75rem; font-weight:normal; opacity:0.9;">(続きから)</span>
+        </button>
       </div>
 
-      <!-- NORMAL MODE CONTAINER -->
-      <div id="category-container-normal">
-        <div class="mode-select-title">村の規模を選択してください</div>
-        <div class="mode-buttons">
-          <div class="mode-btn selected" id="mode-6" onclick="selectVillageMode(6)">
-            <div class="mode-header">
-              <span>【6人村】 Beginner</span>
-            </div>
-            <div class="mode-desc">配役: 人狼1 / 占い1 / 霊媒1 / 市民3</div>
-            <div class="village-stats-container">
-              <span class="stat-badge villager-win">👨 村人: <strong id="stats-6-villager">0</strong>勝</span>
-              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-6-wolf">0</strong>勝</span>
-              <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 1 P</span>
-            </div>
-          </div>
+      <!-- フリーモード用 村選択セクション (モード選択でフリーモードを選んだ際のみ表示) -->
+      <div id="free-mode-selection-section" style="display: none; margin-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 1rem;">
+        <!-- Mode Category Selection Tabs -->
+        <div class="mode-category-tabs">
+          <button class="category-tab active" id="tab-cat-normal" onclick="selectGameCategory('normal')">通常試練</button>
+          <button class="category-tab" id="tab-cat-daily" onclick="selectGameCategory('daily')">📅 デイリー村</button>
+          <button class="category-tab" id="tab-cat-custom" onclick="selectGameCategory('custom')">🛠️ カスタマイズ村</button>
+        </div>
 
-          <div class="mode-btn" id="mode-8" onclick="selectVillageMode(8)">
-            <div class="mode-header">
-              <span>【8人村】 Standard</span>
+        <!-- NORMAL MODE CONTAINER -->
+        <div id="category-container-normal">
+          <div class="mode-select-title">村の規模を選択してください</div>
+          <div class="mode-buttons">
+            <div class="mode-btn selected" id="mode-6" onclick="selectVillageMode(6)">
+              <div class="mode-header">
+                <span>🏰 始まりの村（6名 / 初級）</span>
+              </div>
+              <div class="mode-desc">配役: 擬態モンスター1 / 賢者1 / 聖職者1 / 村人3</div>
+              <div class="village-stats-container">
+                <span class="stat-badge villager-win">👨 村人: <strong id="stats-6-villager">0</strong>勝</span>
+                <span class="stat-badge wolf-win">🐺 魔物: <strong id="stats-6-wolf">0</strong>勝</span>
+                <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 1 P</span>
+              </div>
             </div>
-            <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / 市民2</div>
-            <div class="village-stats-container">
-              <span class="stat-badge villager-win">👨 村人: <strong id="stats-8-villager">0</strong>勝</span>
-              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-8-wolf">0</strong>勝</span>
-              <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 2 P</span>
-            </div>
-          </div>
 
-          <div class="mode-btn" id="mode-10" onclick="selectVillageMode(10)">
-            <div class="mode-header">
-              <span>【10人村】 Expert</span>
+            <div class="mode-btn" id="mode-8" onclick="selectVillageMode(8)">
+              <div class="mode-header">
+                <span>🌆 黄昏の村（8名 / 中級）</span>
+              </div>
+              <div class="mode-desc">配役: 擬態モンスター2 / 賢者1 / 聖職者1 / 聖騎士1 / 魔教徒1 / 村人2</div>
+              <div class="village-stats-container">
+                <span class="stat-badge villager-win">👨 村人: <strong id="stats-8-villager">0</strong>勝</span>
+                <span class="stat-badge wolf-win">🐺 魔物: <strong id="stats-8-wolf">0</strong>勝</span>
+                <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 2 P</span>
+              </div>
             </div>
-            <div class="mode-desc">配役: 人狼2 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 市民3</div>
-            <div class="village-stats-container">
-              <span class="stat-badge villager-win">👨 村人: <strong id="stats-10-villager">0</strong>勝</span>
-              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-10-wolf">0</strong>勝</span>
-              <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 3 P</span>
-            </div>
-          </div>
 
-          <div class="mode-btn" id="mode-15" onclick="selectVillageMode(15)">
-            <div class="mode-header">
-              <span>【15人村】 Ultimate (超上級)</span>
+            <div class="mode-btn" id="mode-10" onclick="selectVillageMode(10)">
+              <div class="mode-header">
+                <span>🏚️ 終焉の村（10名 / 上級）</span>
+              </div>
+              <div class="mode-desc">配役: 擬態モンスター2 / 賢者1 / 聖職者1 / 聖騎士1 / 魔教徒1 / パン屋1 / 村人3</div>
+              <div class="village-stats-container">
+                <span class="stat-badge villager-win">👨 村人: <strong id="stats-10-villager">0</strong>勝</span>
+                <span class="stat-badge wolf-win">🐺 魔物: <strong id="stats-10-wolf">0</strong>勝</span>
+                <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 3 P</span>
+              </div>
             </div>
-            <div class="mode-desc">配役: 人狼3 / 占い1 / 霊媒1 / 騎士1 / 狂人1 / パン1 / 共有2 / 妖狐1 / 市民4</div>
-            <div class="village-stats-container">
-              <span class="stat-badge villager-win">👨 村人: <strong id="stats-15-villager">0</strong>勝</span>
-              <span class="stat-badge wolf-win">🐺 人狼: <strong id="stats-15-wolf">0</strong>勝</span>
-              <span class="stat-badge fox-win">🦊 妖狐: <strong id="stats-15-fox">0</strong>勝</span>
-              <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 6 P</span>
+
+            <div class="mode-btn" id="mode-15" onclick="selectVillageMode(15)">
+              <div class="mode-header">
+                <span>💀 絶望の村（15名 / 超上級）</span>
+              </div>
+              <div class="mode-desc">配役: 擬態モンスター3 / 賢者1 / 聖職者1 / 聖騎士1 / 魔教徒1 / パン屋1 / 共有2 / 妖狐1 / 村人4</div>
+              <div class="village-stats-container">
+                <span class="stat-badge villager-win">👨 村人: <strong id="stats-15-villager">0</strong>勝</span>
+                <span class="stat-badge wolf-win">🐺 魔物: <strong id="stats-15-wolf">0</strong>勝</span>
+                <span class="stat-badge fox-win">🦊 妖狐: <strong id="stats-15-fox">0</strong>勝</span>
+                <span class="stat-badge point-reward" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4);">🏆 獲得: 6 P</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- DAILY MODE CONTAINER -->
-      <div id="category-container-daily" style="display: none;">
-        <div class="daily-village-card">
-          <div class="daily-card-header">
-            <span id="daily-date-title">📅 本日のデイリーお題村</span>
-            <span id="daily-clear-badge" style="display:none;" class="daily-cleared-badge">CLEAR!</span>
-          </div>
-          <div class="daily-card-rule" id="daily-rule-desc">
-            読み込み中...
-          </div>
-          <div class="daily-card-stats" id="daily-stats-info">
-            ハイスコア: <strong id="daily-highscore">-</strong> | クリア済: <strong id="daily-cleared-count">0</strong>回
+        <!-- DAILY MODE CONTAINER -->
+        <div id="category-container-daily" style="display: none;">
+          <div class="daily-village-card">
+            <div class="daily-card-header">
+              <span id="daily-date-title">📅 本日の試練お題村</span>
+              <span id="daily-clear-badge" style="display:none;" class="daily-cleared-badge">CLEAR!</span>
+            </div>
+            <div class="daily-card-rule" id="daily-rule-desc">
+              読み込み中...
+            </div>
+            <div class="daily-card-stats" id="daily-stats-info">
+              ハイスコア: <strong id="daily-highscore">-</strong> | クリア済: <strong id="daily-cleared-count">0</strong>回
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- CUSTOM MODE CONTAINER -->
-      <div id="category-container-custom" style="display: none;">
-        <div class="daily-village-card" style="border-color: var(--accent-blue);">
-          <div class="daily-card-header" style="color: var(--accent-blue); border-bottom-color: rgba(59,130,246,0.3);">
-            <span>🛠️ カスタマイズ村の設定</span>
+        <!-- CUSTOM MODE CONTAINER -->
+        <div id="category-container-custom" style="display: none;">
+          <div class="daily-village-card" style="border-color: var(--accent-blue);">
+            <div class="daily-card-header" style="color: var(--accent-blue); border-bottom-color: rgba(59,130,246,0.3);">
+              <span>🛠️ カスタマイズ村の設定</span>
+            </div>
+            <div class="daily-card-rule" id="custom-summary-desc">
+              参加人数・配役・審判時間を自由に変更できます。
+            </div>
+            <button class="btn btn-primary" onclick="openCustomModal()" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; font-weight: bold;">
+              ⚙ 配役とルールを設定する
+            </button>
           </div>
-          <div class="daily-card-rule" id="custom-summary-desc">
-            参加人数・配役・議論時間を自由に変更できます。
-          </div>
-          <button class="btn btn-primary" onclick="openCustomModal()" style="width: 100%; margin-top: 0.5rem; padding: 0.6rem; font-weight: bold;">
-            ⚙ 配役とルールを設定する
-          </button>
         </div>
-      </div>
 
-      <div class="title-action-buttons">
-        <button class="btn-start-game" onclick="startGame()">裁判を開始する</button>
+        <!-- Title Save Slot Selector Bar -->
+        <div class="slot-select-container">
+          <div class="slot-select-title">
+            <span>📜 冒険の書（記録先）の選択 (オートセーブ対象):</span>
+            <span style="font-size: 0.72rem; color: #fbbf24;" id="active-slot-label">冒険の書 第一巻 選択中</span>
+          </div>
+          <div class="slot-select-buttons" id="title-slot-buttons">
+            <button class="btn-slot-select active" id="title-slot-btn-1" onclick="selectActiveSaveSlot(1)">
+              <span>第一巻</span>
+              <span class="slot-subtext" id="title-slot-sub-1">白紙の書</span>
+            </button>
+            <button class="btn-slot-select" id="title-slot-btn-2" onclick="selectActiveSaveSlot(2)">
+              <span>第二巻</span>
+              <span class="slot-subtext" id="title-slot-sub-2">白紙の書</span>
+            </button>
+            <button class="btn-slot-select" id="title-slot-btn-3" onclick="selectActiveSaveSlot(3)">
+              <span>第三巻</span>
+              <span class="slot-subtext" id="title-slot-sub-3">白紙の書</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="title-action-buttons">
+          <button class="btn-start-game" id="btn-start-game-main" onclick="startGame()">模擬戦（フリーモード）を出撃する</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2797,10 +2989,11 @@
   <div id="game-screen" class="screen hidden">
     <!-- Header -->
     <header>
-      <h1>ひとり人狼 <span>-人狼推理-</span></h1>
+      <h1>ひとり人狼 <span>〜審判の勇者〜</span></h1>
       <div class="header-buttons">
         <button class="btn-header-icon" onclick="openModal('how-to-play-modal')" title="遊び方">📖 遊び方</button>
         <button class="btn-header-icon" onclick="openRankModal()" title="ランク">🏆 ランク</button>
+        <button class="btn-header-icon" onclick="openSaveModal()" title="冒険の書">📜 冒険の書</button>
         <button class="btn-header-icon" onclick="openModal('settings-modal')" title="設定">⚙ 設定</button>
         <button class="btn-title-mini" onclick="showTitleScreen()">タイトルへ</button>
       </div>
@@ -2810,7 +3003,7 @@
     <div class="status-bar">
       <div class="status-item">規模: <span id="village-size-display">6人村</span></div>
       <div class="status-item">日数: <span id="day-display">1日目</span></div>
-      <div class="status-item"><span id="timer-label">⏱️ 議論時間:</span> <span id="timer-display" class="timer-display normal">03:00</span></div>
+      <div class="status-item"><span id="timer-label">⏱️ 審判時間:</span> <span id="timer-display" class="timer-display normal">03:00</span></div>
     </div>
 
     <!-- Navigation Bar / View Switcher -->
@@ -2847,7 +3040,7 @@
 
         <!-- PAGE 1: Character List & Interrogation -->
         <div class="view-page">
-          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">村人一覧 (尋問・処刑対象を選択)</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">村人一覧 (尋問・勇者の裁き対象を選択)</div>
           <div class="character-grid" id="character-grid">
             <!-- Characters inserted dynamically -->
           </div>
@@ -2857,7 +3050,7 @@
               <div id="interrogation-response-speaker" style="font-weight:bold; color:var(--accent-amber); font-size:0.85rem; margin-bottom:0.25rem;"></div>
               <div id="interrogation-response-text" style="color:#f8fafc; font-size:0.88rem; line-height:1.45;"></div>
             </div>
-            <div id="target-info" class="target-info">尋問・処刑する人物を選択してください</div>
+            <div id="target-info" class="target-info">尋問・追放する人物を選択してください</div>
             
             <div class="question-scroll-container">
               <div class="question-buttons">
@@ -2868,34 +3061,34 @@
                   2. 「昨夜のアリバイや行動は？」
                 </button>
                 <button class="btn btn-question" id="btn-q3" onclick="askQuestion(3)" disabled>
-                  3. 「今日誰を処刑すべきだと思う？」
+                  3. 「今日誰を浄化すべきだと思う？」
                 </button>
               </div>
 
               <div class="custom-question-box">
-                <input type="text" id="custom-question-input" class="custom-question-input" placeholder="自由質問（例: 昨日〇〇さんを占った理由は？）" disabled onkeydown="if(event.key==='Enter') askCustomQuestion()">
-                <button class="btn btn-custom-question" id="btn-custom-q" onclick="askCustomQuestion()" disabled>質問する</button>
+                <input type="text" id="custom-question-input" class="custom-question-input" placeholder="自由尋問（例: 昨日〇〇さんを占った理由は？）" disabled onkeydown="if(event.key==='Enter') askCustomQuestion()">
+                <button class="btn btn-custom-question" id="btn-custom-q" onclick="askCustomQuestion()" disabled>尋問する</button>
               </div>
 
               <!-- 質問入力欄のすぐ直下に配置 -->
               <div class="execution-transition-container">
                 <button class="btn btn-goto-decision" id="btn-goto-decision" onclick="startDecisionTimer()" disabled>
-                  ⚖ 処刑決断へ進む（議論終了）
+                  ⚖ 勇者の裁きへ進む（審判終了）
                 </button>
 
                 <div class="execute-action-row" id="execute-action-row" style="display: none;">
                   <button class="btn btn-execute" id="btn-execute" onclick="executeSelected()" disabled>
-                    選択者を処刑
+                    選択者を処刑（浄化）
                   </button>
                   <button class="btn btn-skip-execute" id="btn-skip-execute" onclick="skipExecution()" disabled>
-                    誰も処刑しない
+                    誰も処分しない
                   </button>
                 </div>
               </div>
             </div>
             
             <div id="action-warning" class="warning-box" style="display: none;">
-              ⚠️ 議論時間が終了しました。処刑対象を選択するか、処刑を見送ってください。
+              ⚠️ 審判時間が終了しました。勇者の裁き対象を選択するか、処刑を見送ってください。
             </div>
           </div>
         </div>
@@ -2936,8 +3129,11 @@
               <button id="btn-open-mind-board" onclick="openMindBoardModal()" style="font-size:0.85rem; font-weight:bold; padding:0.45rem 0.9rem; background:linear-gradient(135deg, #ec4899, #be185d); border:1.5px solid #f472b6; color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 10px rgba(236,72,153,0.35); transition:all 0.2s ease;">
                 <span>🧠 思考整理</span>
               </button>
+              <button id="btn-restart-discussion" onclick="restartAIDiscussion()" style="font-size:0.85rem; font-weight:bold; padding:0.45rem 0.9rem; background:linear-gradient(135deg, #2563eb, #1d4ed8); border:1.5px solid #60a5fa; color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 8px rgba(37,99,235,0.4); transition:all 0.2s ease;" title="議論が停止した際にAI同士の対話を強制再起動します">
+                <span>🔄 議論を再開</span>
+              </button>
               <button id="btn-toggle-discussion-pause" onclick="toggleDiscussionPause()" style="font-size:0.85rem; font-weight:bold; padding:0.45rem 0.9rem; background:linear-gradient(135deg, #3a3f58, #2a2d42); border:1.5px solid var(--accent-amber); color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition:all 0.2s ease;">
-                <span>⏸️ 議論を一時停止</span>
+                <span>⏸️ 審判を一時停止</span>
               </button>
             </div>
           </div>
@@ -2960,8 +3156,8 @@
       <div class="wolf-eye"></div>
       <div class="wolf-eye"></div>
     </div>
-    <div class="seamless-title" id="seamless-title">🌕 夜の暗躍 🌕</div>
-    <div class="seamless-desc" id="seamless-desc">― 夜が訪れました ―<br>人狼たちが暗闇の中で目を光らせ、暗躍しています…</div>
+    <div class="seamless-title" id="seamless-title">🌕 魔物の夜襲 🌕</div>
+    <div class="seamless-desc" id="seamless-desc">― 夜が訪れました ―<br>魔物たちが暗闇の中で目を光らせ、村人を狙っています…</div>
   </div>
 
   <!-- Modal Result Screen -->
@@ -3010,7 +3206,7 @@
         <div style="font-size: 0.8rem; color: var(--text-muted); margin: 0.8rem 0 0.2rem 0; font-weight: bold;">【基本配役】</div>
 
         <div class="custom-setting-row">
-          <span>🐺 人狼:</span>
+          <span>🐺 擬態モンスター:</span>
           <div class="custom-counter">
             <button class="counter-btn" onclick="changeCustomRole('wolf', -1)">-</button>
             <span class="counter-val" id="custom-role-wolf">2</span>
@@ -3019,7 +3215,7 @@
         </div>
 
         <div class="custom-setting-row">
-          <span>🔮 占い師:</span>
+          <span>🔮 賢者:</span>
           <div class="custom-counter">
             <button class="counter-btn" onclick="changeCustomRole('seer', -1)">-</button>
             <span class="counter-val" id="custom-role-seer">1</span>
@@ -3028,7 +3224,7 @@
         </div>
 
         <div class="custom-setting-row">
-          <span>👻 霊媒師:</span>
+          <span>👻 聖職者:</span>
           <div class="custom-counter">
             <button class="counter-btn" onclick="changeCustomRole('medium', -1)">-</button>
             <span class="counter-val" id="custom-role-medium">1</span>
@@ -3037,7 +3233,7 @@
         </div>
 
         <div class="custom-setting-row">
-          <span>🛡️ 騎士 (狩人):</span>
+          <span>🛡️ 聖騎士:</span>
           <div class="custom-counter">
             <button class="counter-btn" onclick="changeCustomRole('knight', -1)">-</button>
             <span class="counter-val" id="custom-role-knight">1</span>
@@ -3046,7 +3242,7 @@
         </div>
 
         <div class="custom-setting-row">
-          <span>🤪 狂人:</span>
+          <span>💗 魔教徒:</span>
           <div class="custom-counter">
             <button class="counter-btn" onclick="changeCustomRole('madman', -1)">-</button>
             <span class="counter-val" id="custom-role-madman">1</span>
@@ -3102,7 +3298,7 @@
         </div>
 
         <div class="custom-setting-row">
-          <span>👨‍🌾 市民 (自動調整):</span>
+          <span>👨‍🌾 村人 (自動調整):</span>
           <span class="counter-val" id="custom-role-citizen" style="color: var(--accent-blue);">2</span>
         </div>
 
@@ -3138,8 +3334,8 @@
             <label for="discussion-time-setting">💬 昼の議論時間</label>
           </div>
           <select id="discussion-time-setting" class="setting-select" onchange="updateDiscussionTimeSetting(this.value)">
-            <option value="180">3分（デフォルト）</option>
-            <option value="300">5分</option>
+            <option value="300" selected>5分（デフォルト）</option>
+            <option value="180">3分</option>
             <option value="600">10分</option>
             <option value="-1">無制限</option>
           </select>
@@ -3214,21 +3410,21 @@
       <div class="modal-body rule-explanation">
         <div class="rule-section">
           <h3>【操作方法】</h3>
-          <p>昼の議論は左中右の３画面を切り替え、スワイプで推理して人狼を見つけるヒントを活用してください。</p>
+          <p>昼の審判会議は左中右の３画面を切り替え、スワイプで推理して擬態モンスター（魔物）を見つけるヒントを活用してください。</p>
         </div>
 
         <div class="rule-section">
           <h3>【ゲームの目的】</h3>
-          <p>村の中に人間に化けて潜んでいる「人狼」を会話と推理で見つけ出し、処刑して村に平和を取り戻しましょう！</p>
+          <p>村の中に人間に化けて潜んでいる「擬態モンスター（魔物）」を尋問と推理で見つけ出し、勇者の裁きで浄化して村に平和を取り戻しましょう！</p>
         </div>
 
         <div class="rule-section">
           <h3>【基本の流れ】</h3>
           <ul>
-            <li><strong>☀️ 朝のフェーズ:</strong> 夜の犠牲者や各種役職のCO（カミングアウト）報告を確認します。</li>
-            <li><strong>💬 昼の議論 (3分):</strong> 生存する村人・AIたちの発言を観察し、定型質問や自由質問を使って疑わしい点を探ります。メモ機能で役職予想を整理できます。</li>
-            <li><strong>⚖️ 処刑決断 (無制限):</strong> 昼の最後に最も怪しいと思う人物を1人選んで処刑（または見送り）します。じっくり思考整理をして処刑対象を選択できます。</li>
-            <li><strong>🌕 夜の暗躍:</strong> 人狼が村人を襲撃し、占い師や霊媒師は能力で正体を鑑定します。</li>
+            <li><strong>☀️ 朝のフェーズ:</strong> 夜の犠牲者（魔物の夜襲被害）や各種役職のCO（カミングアウト）報告を確認します。</li>
+            <li><strong>💬 昼の審判会議 (3分):</strong> 生存する村人たちの発言を観察し、定型尋問や自由尋問を使って疑わしい点を探ります。思考整理機能で役職予想を整理できます。</li>
+            <li><strong>⚖️ 勇者の裁き (無制限):</strong> 昼の最後に最も怪しいと思う人物を1人選んで処刑（浄化）または見送りを選択します。</li>
+            <li><strong>🌕 魔物の夜襲:</strong> 擬態モンスターが村人を襲撃し、賢者や聖職者は能力で正体を鑑定・霊視します。</li>
           </ul>
         </div>
 
@@ -3236,21 +3432,21 @@
           <h3>【主要役職紹介】</h3>
           <div class="role-grid">
             <div class="role-item"><span class="role-badge role-villager">村人</span> 特別な能力を持たない市民。観察と推理で村を導きます。</div>
-            <div class="role-item"><span class="role-badge role-seer">占い師</span> 毎夜1人を占い、人狼か人間かを知ることができます。</div>
-            <div class="role-item"><span class="role-badge role-medium">霊媒師</span> 毎夜、前日に処刑された人物の正体を知ることができます。</div>
-            <div class="role-item"><span class="role-badge role-knight">騎士</span> 毎夜1人を人狼の襲撃から守ることができます。</div>
-            <div class="role-item"><span class="role-badge role-wolf">人狼</span> 村人に化けた邪悪な存在。毎夜村人1人を襲撃します。</div>
-            <div class="role-item"><span class="role-badge role-madman">狂人</span> 人狼陣営の人間。人狼の勝利を目指します。</div>
+            <div class="role-item"><span class="role-badge role-seer">賢者</span> 毎夜1人を鑑定し、魔物か人間かを知ることができます。</div>
+            <div class="role-item"><span class="role-badge role-medium">聖職者</span> 毎夜、前日に処刑（浄化）された人物の正体を霊視できます。</div>
+            <div class="role-item"><span class="role-badge role-knight">聖騎士</span> 毎夜1人を魔物の夜襲から守ることができます。</div>
+            <div class="role-item"><span class="role-badge role-wolf">擬態モンスター</span> 人間に化けた邪悪な存在。毎夜村人1人を襲撃します。</div>
+            <div class="role-item"><span class="role-badge role-madman">魔教徒</span> 魔物陣営の人間。魔物の勝利を目指します。</div>
             <div class="role-item"><span class="role-badge role-baker">パン屋</span> 生きていれば毎朝村においしいパンを届けます。</div>
             <div class="role-item"><span class="role-badge role-freemason">共有者</span> お互いが人間であることを知っている2人組です。</div>
-            <div class="role-item"><span class="role-badge role-fox">妖狐</span> 占われると呪殺されますが、襲撃に耐えます。</div>
+            <div class="role-item"><span class="role-badge role-fox">妖狐</span> 鑑定されると呪殺されますが、夜襲に耐えます。</div>
           </div>
         </div>
 
         <div class="rule-section">
           <h3>【勝敗条件】</h3>
-          <p><strong>🔵 村人陣営の勝利:</strong> 全ての人狼を処刑する</p>
-          <p><strong>🔴 人狼陣営の勝利:</strong> 人狼の数が生存村人の数と同数以上になる</p>
+          <p><strong>🔵 勇者・村人陣営の勝利:</strong> 全ての擬態モンスター（魔物）を浄化する</p>
+          <p><strong>🔴 擬態モンスター（魔物）陣営の勝利:</strong> 魔物の数が生存村人の数と同数以上になる</p>
           <p><strong>🦊 妖狐の勝利:</strong> ゲーム終了時に妖狐が生存している（単独勝利）</p>
         </div>
       </div>
@@ -3276,7 +3472,124 @@
     </div>
   </div>
 
-  <!-- 🧠 思考整理ボード＆相関図モーダル -->
+  <!-- 📜 冒険の書（全3巻）モーダル -->
+  <div id="save-slot-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('save-slot-modal')">
+    <div class="modal-content" style="max-width: 520px; width: 94%;">
+      <div class="modal-header">
+        <h2>📜 冒険の書（全3巻）</h2>
+        <button class="modal-close-btn" onclick="closeModal('save-slot-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+          試練の旅路の記憶（あらすじ）を『冒険の書 第一巻〜第三巻』に書き記し、いつでも復元・消去できます。
+        </div>
+        <div id="save-slot-list-container" class="save-slot-list">
+          <!-- Dynamically generated save slots overview -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('save-slot-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODE SELECT MODAL -->
+  <div id="mode-select-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('mode-select-modal')">
+    <div class="modal-content" style="max-width: 520px; text-align: center;">
+      <div class="modal-header">
+        <h2>⚔️ 遠征モードの選択</h2>
+        <button class="modal-close-btn" onclick="closeModal('mode-select-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.2rem 0.5rem;">
+        <div style="font-size: 0.85rem; color: #fde68a; margin-bottom: 1.2rem;">
+          冒険の書に刻む試練の形式を選択してください。
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- STORY MODE BUTTON -->
+          <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(180, 83, 9, 0.3)); border: 2px solid #fbbf24; border-radius: 12px; padding: 1rem; cursor: pointer; text-align: left; transition: transform 0.2s, box-shadow 0.2s;" 
+               onclick="selectPlayMode('story')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="font-size: 1.15rem; font-weight: bold; color: #fbbf24; display: flex; align-items: center; justify-content: space-between;">
+              <span>📜 ストーリーモード <span style="font-size: 0.8rem; font-weight: normal; color: #fef08a;">(勇者の遠征記)</span></span>
+              <span style="font-size: 0.8rem; background: #d97706; color: #fff; padding: 0.15rem 0.5rem; border-radius: 10px;">全5章構造</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 0.4rem; line-height: 1.4;">
+              物語に沿って第1章「始まりの村(5人)」から最終決戦 第5章「絶望の村(20人)」まで順に試練を攻略します。専用IQ・戦績が冒険の書へ永久記録されます。
+            </div>
+          </div>
+
+          <!-- FREE MODE BUTTON -->
+          <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.3)); border: 2px solid #60a5fa; border-radius: 12px; padding: 1rem; cursor: pointer; text-align: left; transition: transform 0.2s, box-shadow 0.2s;" 
+               onclick="selectPlayMode('free')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="font-size: 1.15rem; font-weight: bold; color: #60a5fa; display: flex; align-items: center; justify-content: space-between;">
+              <span>🛡️ フリーモード <span style="font-size: 0.8rem; font-weight: normal; color: #93c5fd;">(審判の模擬戦)</span></span>
+              <span style="font-size: 0.8rem; background: #2563eb; color: #fff; padding: 0.15rem 0.5rem; border-radius: 10px;">単発・カスタム</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 0.4rem; line-height: 1.4;">
+              好きな難易度の村（6人〜15人）やデイリー・カスタム設定を自由に選んで単発で模擬戦を行います。お試しや腕試しに最適です。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('mode-select-modal'); openSaveModal();">戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY CHAPTER MODAL -->
+  <div id="story-chapter-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('story-chapter-modal')">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>📜 勇者の遠征記 - 章選択</h2>
+        <button class="modal-close-btn" onclick="closeModal('story-chapter-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <div id="story-book-status-header" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 1rem; font-size: 0.85rem; color: #fef08a; display: flex; justify-content: space-between; align-items: center;">
+          <!-- Dynamically populated story mode status -->
+        </div>
+
+        <div id="story-chapters-list-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <!-- Dynamically generated 5 chapters -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('story-chapter-modal')">戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAND ENDING MODAL -->
+  <div id="grand-ending-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 650px; background: linear-gradient(145deg, #1c1917, #292524); border: 3px solid #fbbf24; box-shadow: 0 0 35px rgba(251, 191, 36, 0.4); text-align: center; padding: 1.5rem;">
+      <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">✨🏆✨</div>
+      <h2 style="font-size: 1.4rem; color: #fbbf24; font-family: 'Georgia', serif; text-shadow: 0 2px 8px rgba(0,0,0,0.8); margin-bottom: 1rem; border-bottom: 2px dashed rgba(251, 191, 36, 0.4); padding-bottom: 0.6rem;">
+        【絶望の村を越えて ―― グランドエンディング】
+      </h2>
+
+      <div style="font-size: 0.88rem; color: #fef3c7; line-height: 1.7; text-align: left; background: rgba(0,0,0,0.5); padding: 1rem 1.2rem; border-radius: 8px; border-left: 4px solid #fbbf24; margin-bottom: 1.2rem; max-height: 45vh; overflow-y: auto;">
+        20人の疑心暗鬼が渦巻く「絶望の村」。<br>
+        化け狐の欺瞞と、夜闇に潜む4体の魔物の脅威を退け、勇者はついに最後の魔物に審判の剣を振るった。<br><br>
+        静寂が訪れる。<br>
+        人間に化け、世界を喰らい尽くそうとしていたすべての魔物は駆逐された。<br><br>
+        王国全土に朝の光が降り注ぐ。<br>
+        讃えよ、審判の勇者を。その眼差しは偽りを見抜き、世界に永遠の平和をもたらしたのだ。<br><br>
+        <div style="text-align: center; font-weight: bold; color: #fbbf24; font-size: 1.05rem; margin-top: 0.8rem;">
+          ―― 『ひとり人狼 〜審判の勇者〜』 完結 ――
+        </div>
+      </div>
+
+      <div id="grand-ending-stats" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1.2rem; font-size: 0.95rem; color: #fff; display: flex; flex-direction: column; gap: 0.4rem;">
+        <!-- Dynamically rendered end stats -->
+      </div>
+
+      <div>
+        <button class="btn-start-game" style="width: 100%; max-width: 340px; font-size: 1.05rem; margin: 0 auto;" onclick="returnToTitleFromGrandEnding()">
+          📜 冒険の書に栄光を刻み、タイトルへ
+        </button>
+      </div>
+    </div>
+  </div>
   <div id="mind-board-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('mind-board-modal')">
     <div class="modal-content" style="max-width: 96vw; width: 96vw; max-height: 94vh; padding: 1rem;">
       <div class="modal-header">
@@ -3419,14 +3732,12 @@
      */
     function getLocalFallbackResponse(promptText, agentProfile) {
       const role = agentProfile?.role || "村人";
-      const name = agentProfile?.name || "AI";
-      const tone = agentProfile?.personality || "冷静";
 
       const discussionTemplates = [
         `私は${role}の視点から怪しい発言を探しています。今のところ目立った矛盾は見えませんね。`,
-        `静観していましたが、議論が少し偏っていませんか？もう少し慎重に投票先を選びたいです。`,
-        `発言が少なめの人の中に人狼が潜んでいる気がします。皆さんはどう思いますか？`,
-        `情報がまだ少ないですね。各自の投票理由をしっかり聞きたいところです。`
+        `静観していましたが、議論が少し偏っていませんか？勇者様の裁きに向けて慎重に見極めたいです。`,
+        `発言が少なめの人の中に擬態モンスターが潜んでいる気がします。皆さんはどう思いますか？`,
+        `情報がまだ少ないですね。各自の意見をしっかり聞いて、真の魔物を見つけ出しましょう。`
       ];
 
       const randomIndex = Math.floor(Math.random() * discussionTemplates.length);
@@ -3517,7 +3828,7 @@
       aliveList.forEach(c => {
         const co = gameState.coRoles ? gameState.coRoles[c] : null;
         if (co && co !== 'grey' && co !== 'villager') {
-          const roleMap = { seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者' };
+          const roleMap = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
           coEntries.push(`${getCharDisplayName(c)}→${roleMap[co] || co}CO`);
         }
       });
@@ -3580,7 +3891,7 @@
       const prof = (gameState.charProfiles && gameState.charProfiles[speakerChar]) || AI_PROFILES[0];
       const realRole = (gameState.roles && gameState.roles[speakerChar]) || 'villager';
       const coRole = (gameState.coRoles && gameState.coRoles[speakerChar]) || 'grey';
-      const roleMap = { villager: '村人', wolf: '人狼', seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者', fox: '妖狐', madman: '狂人' };
+      const roleMap = { villager: '村人', wolf: '擬態モンスター', seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者', fox: '妖狐', madman: '魔教徒' };
 
       const gameContext = buildGameContextText();
 
@@ -3598,23 +3909,29 @@
         voteInfo = `あなたの現在の処刑候補: ${getCharDisplayName(myVote.target)} (理由: ${myVote.reason || '不明'})\n`;
       }
 
-      return `あなたは人狼ゲームの参加者「${speakerName}」です。
-あなたの本当の役職は【${roleMap[realRole] || realRole}】ですが、${coRole !== 'grey' && coRole !== 'villager' ? `【${roleMap[coRole] || coRole}】としてCOしています。` : 'まだCOしていません。'}
+      return `あなたたちは中世ファンタジー風の村「レムの村」の住民です。
+村の中には「人間に化けた擬態モンスター（魔物）」が潜伏しています。
+目の前には村を救うために訪れた「勇者（プレイヤー）」がおり、勇者の裁きによって本日追放される者が決まります。
+
+あなたはレムの村の住民「${speakerName}」です。
+あなたの本当の役職は【${roleMap[realRole] || realRole}】ですが、${coRole !== 'grey' && coRole !== 'villager' ? `すでに【${roleMap[coRole] || coRole}】としてCOを完了しています。` : 'まだ役職COしていません。'}
 性格タイプ: ${prof.archetype || '標準'} (攻撃性:${prof.aggression}, 論理性:${prof.logicLevel}, 頑固さ:${prof.stubbornness})
 口調: ${prof.speechStyle || '丁寧語'}
 
 ${gameContext}
 ${seerInfo}${voteInfo}
 
-【絶対ルール】
-1. 1文目は必ず「${speakerName}です。（質問に対する直接の結論）」の形式で答えてください
-2. ゲーム内に存在しない架空の占い結果や投票行動を捏造しないでください
-3. 判断材料がない場合は「現時点では情報不足で判断保留」と正直に答えてください
-4. 回答は2〜3文の簡潔なものにしてください（長文禁止）
-5. ${realRole === 'wolf' ? '人狼として疑われないよう自然に振る舞ってください。本当の役職を絶対に明かさないでください。' : '村人陣営として論理的に推理してください。'}
-6. 結論の後の理由部分には、あなたの性格（${prof.archetype || '標準'}）に合った口調で述べてください
+【会話・絶対ルール】
+1. 自分の役職（村人/賢者/聖職者/聖騎士/魔教徒/擬態モンスター等）になりきって発言してください。
+2. 「人狼」「占い師」「霊媒師」「狂人」「騎士」などの現代用語は使わず、「魔物」「賢者」「聖職者」「魔教徒」「聖騎士」と表現してください。
+3. 勇者（プレイヤー）に対して敬意を払うか、生き残るために必死に自己主張してください。
+4. 1文目は必ず「${speakerName}です。（質問に対する直接の結論）」の形式で答えてください。
+5. ${coRole !== 'grey' && coRole !== 'villager' ? `あなたはすでに【${roleMap[coRole] || coRole}】としてCO済みです。絶対に他の役職（聖騎士や聖職者など）を後から名乗ったり撤回したりしないでください。` : (realRole !== 'wolf' && realRole !== 'madman' && realRole !== 'villager' ? `あなたは【${roleMap[realRole] || realRole}】です。COする場合は【${roleMap[realRole] || realRole}】のみを名乗ってください。` : '真村人は嘘の役職（賢者・聖騎士など）をCOすることは禁止です。')}
+6. ゲーム内に存在しない架空の鑑定結果や投票行動を捏造しないでください。
+7. 判断材料がない場合は「現時点では情報不足で判断保留」と正直に答えてください。
+8. 回答は2〜3文の簡潔なものにしてください（長文禁止）。
 
-プレイヤーからの質問: 「${playerQuestion}」
+勇者（プレイヤー）からの質問: 「${playerQuestion}」
 
 上記の盤面情報とルールに基づいて、${speakerName}として回答してください:`;
     }
@@ -3631,7 +3948,7 @@ ${seerInfo}${voteInfo}
       const prof = (gameState.charProfiles && gameState.charProfiles[speakerChar]) || AI_PROFILES[0];
       const realRole = (gameState.roles && gameState.roles[speakerChar]) || 'villager';
       const coRole = (gameState.coRoles && gameState.coRoles[speakerChar]) || 'grey';
-      const roleMap = { villager: '村人', wolf: '人狼', seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者', fox: '妖狐', madman: '狂人' };
+      const roleMap = { villager: '村人', wolf: '擬態モンスター', seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者', fox: '妖狐', madman: '魔教徒' };
 
       const gameContext = buildGameContextText();
 
@@ -3658,24 +3975,27 @@ ${seerInfo}${voteInfo}
         lastSpeakerSection = `直前の発言（${getCharDisplayName(lastSpeakerChar)}）: 「${lastSpeakerText.substring(0, 120)}」\n`;
       }
 
-      return `あなたは人狼ゲームの参加者「${speakerName}」です。議論フェーズの発言を生成してください。
-あなたの本当の役職は【${roleMap[realRole] || realRole}】です。${coRole !== 'grey' && coRole !== 'villager' ? `【${roleMap[coRole] || coRole}】としてCOしています。` : ''}
+      return `あなたたちは中世ファンタジー風の村「レムの村」の住民です。
+村の中には「人間に化けた擬態モンスター（魔物）」が潜伏しています。
+目の前には村を救うために訪れた「勇者（プレイヤー）」がおり、勇者の裁きによって本日追放される者が決まります。
+
+あなたは「${speakerName}」です。審判会議（昼の議論）での発言を生成してください。
+あなたの本当の役職は【${roleMap[realRole] || realRole}】です。${coRole !== 'grey' && coRole !== 'villager' ? `すでに【${roleMap[coRole] || coRole}】としてCO完了しています。` : ''}
 性格タイプ: ${prof.archetype || '標準'} (攻撃性:${prof.aggression}, 論理性:${prof.logicLevel}, 頑固さ:${prof.stubbornness})
 口調: ${prof.speechStyle || '丁寧語'}
 
 ${gameContext}
 ${deductionInfo}${contradictionInfo}${lastSpeakerSection}
 
-【絶対ルール】
-1. 1〜2文の簡潔な議論発言を生成してください（長文禁止）
-2. ゲーム内に存在しない架空の占い結果や投票行動を捏造しないでください
-3. ${realRole === 'wolf' ? '人狼として疑われないよう自然に振る舞い、他の村人に疑いを向けてください。本当の役職は絶対に明かさないでください。' : '村人陣営として論理的に推理し、人狼を見つける方向で発言してください。'}
-4. 直前の発言がある場合はそれに対するリアクション・反論・同意などを含めてください
-5. あなたの性格（${prof.archetype || '標準'}）に合った口調で話してください
-6. 「${speakerName}です。」などの自己紹介は不要です。議論の中身だけを出力してください
-7. 盤面に存在する確定情報（占い結果・CO状況・矛盾）を活用して論理的に話してください
+【会話・絶対ルール】
+1. 1〜2文の簡潔な議論発言を生成してください（長文禁止）。
+2. 「人狼」「占い師」「霊媒師」「狂人」「騎士」などの現代用語は使わず、「魔物」「賢者」「聖職者」「魔教徒」「聖騎士」と表現してください。
+3. ${realRole === 'wolf' ? '自分が擬態モンスター（魔物）の場合は、人間になりすまして他の人物に疑いを向けてください。' : '村人陣営として論理的に推理し、魔物を見つける方向で発言してください。'}
+4. ${coRole !== 'grey' && coRole !== 'villager' ? `あなたはすでに【${roleMap[coRole] || coRole}】としてCO済みです。発言中で別の役職を名乗ったりCO撤回したりすることは厳禁です。` : (realRole !== 'wolf' && realRole !== 'madman' && realRole !== 'villager' ? `あなたは【${roleMap[realRole] || realRole}】です。COする場合は【${roleMap[realRole] || realRole}】のみを名乗ってください。` : '真村人が嘘の役職をCOすることは禁止です。')}
+5. ゲーム内に存在しない架空の鑑定結果や投票行動を捏造しないでください。
+6. 「${speakerName}です。」などの自己紹介は不要です。議論の中身だけを出力してください。
 
-${speakerName}としての議論発言:`;
+${speakerName}としての審判会議発言:`;
     }
 
     /**
@@ -3685,7 +4005,7 @@ ${speakerName}としての議論発言:`;
       console.log('[テスト開始] Cloudflare Worker プロキシ接続テスト...');
       console.log(`[テスト] エンドポイント: ${AI_PROXY_URL}`);
 
-      const testPrompt = 'あなたは人狼ゲームのAIプレイヤーです。「テスト接続成功」と答えてください。';
+      const testPrompt = 'あなたはファンタジーRPGのAIプレイヤーです。「テスト接続成功」と答えてください。';
 
       try {
         const startTime = Date.now();
@@ -3706,6 +4026,546 @@ ${speakerName}としての議論発言:`;
       }
     }
 
+    // =====================================================
+    // 📜 冒険の書（全3巻）マルチセーブ＆オートセーブ管理モジュール
+    // =====================================================
+    const BOOK_KEY_PREFIX = "hero_chronicle_book_";
+    const SAVE_KEY_PREFIX = BOOK_KEY_PREFIX; // 後方互換性エイリアス
+    let activeSaveSlot = 1; // デフォルトで第一巻を選択
+
+    const BOOK_NAMES = {
+      1: "冒険の書 第一巻",
+      2: "冒険の書 第二巻",
+      3: "冒険の書 第三巻"
+    };
+
+    /**
+     * 称号判定関数
+     */
+    function getRankTitle(iq, score) {
+      if (iq >= 160 && score >= 10000) return "伝説の神眼勇者";
+      if (iq >= 140) return "至高の審判官";
+      if (iq >= 120) return "名探偵勇者";
+      if (iq >= 90)  return "新米審判者";
+      return "迷走する勇者";
+    }
+
+    /**
+     * 冒険の書ごとの勇者IQ・評価計算ロジック
+     */
+    function calculateHeroEvaluation(bookId, gameResult) {
+      let data = loadGameData(bookId);
+      if (!data) return null;
+
+      let iqChange = 0;
+      let scoreGained = 0;
+
+      // 1. 審判（処刑）の正確さ判定
+      if (gameResult.type === 'execution') {
+        if (gameResult.executedIsMonster) {
+          iqChange += 15;        // 魔物・妖狐の処刑成功: IQ+15
+          scoreGained += 1000;
+          data.monstersDefeated = (data.monstersDefeated || 0) + 1;
+        } else {
+          iqChange -= 20;        // 無実の人間を処刑: IQ-20
+          scoreGained -= 500;
+          data.innocentVictims = (data.innocentVictims || 0) + 1;
+        }
+      }
+
+      // 2. ゲーム決着時のボーナス判定
+      if (gameResult.type === 'gameEnd') {
+        if (gameResult.isVictory) {
+          data.clearedVillages = (data.clearedVillages || 0) + 1;
+          const dayBonus = Math.max(0, (10 - (gameResult.totalDays || 1)) * 100);
+          scoreGained += 2000 + dayBonus;
+          iqChange += 10;
+
+          // ストーリーモード専用処理
+          if (currentPlayMode === 'story') {
+            if (!data.chapterRecords) data.chapterRecords = {};
+            const chKey = `ch${currentStoryChapter}`;
+            data.chapterRecords[chKey] = {
+              cleared: true,
+              iqGained: iqChange,
+              score: scoreGained
+            };
+
+            // 次の章をアンロック
+            const nextCh = Math.min(5, currentStoryChapter + 1);
+            data.currentChapter = Math.max(data.currentChapter || 1, nextCh);
+
+            // 第5章クリア時のグランドエンディング判定
+            if (currentStoryChapter === 5) {
+              data.isStoryCleared = true;
+              setTimeout(() => {
+                showGrandEndingModal(data.heroIQ + iqChange, data.totalScore + scoreGained, data.rankTitle);
+              }, 1200);
+            }
+          }
+        } else if (gameResult.isFoxWin) {
+          iqChange -= 30; // 妖狐に単独勝利（乗っ取り）された場合: IQ-30 (大敗北)
+        } else {
+          iqChange -= 15; // 通常の敗北
+        }
+      }
+
+      // IQ・スコアの上下限制御
+      const currentIQ = typeof data.heroIQ === 'number' ? data.heroIQ : 100;
+      const currentScore = typeof data.totalScore === 'number' ? data.totalScore : 0;
+
+      data.heroIQ = Math.min(200, Math.max(50, currentIQ + iqChange));
+      data.totalScore = Math.max(0, currentScore + scoreGained);
+      data.rankTitle = getRankTitle(data.heroIQ, data.totalScore);
+      data.updatedAt = new Date().toLocaleString("ja-JP");
+
+      // 最新の冒険の書データを保存
+      try {
+        localStorage.setItem(BOOK_KEY_PREFIX + bookId, JSON.stringify(data));
+        updateTitleSaveSlotUI();
+      } catch (e) {
+        console.error(`冒険の書 第${bookId}巻 評価更新保存エラー:`, e);
+      }
+
+      return data;
+    }
+
+    /**
+     * 冒険の書に保存するデータ構造を作成
+     */
+    function createChronicleData(bookId, gameStateData) {
+      const aliveCount = (gameStateData.charList || []).filter(c => gameStateData.status && gameStateData.status[c] === 'alive').length;
+      const totalCount = (gameStateData.charList || []).length;
+      const dayText = formatDay ? formatDay(gameStateData.day || 1) : `${gameStateData.day || 1}日目`;
+      const phaseTitle = gameStateData.phase === '夜' ? '魔物の夜襲' : (gameStateData.subPhase === 'decision' ? '勇者の裁き' : '審判の昼');
+
+      let storySummary = "";
+      if (gameStateData.lastExecutedChar || gameStateData.lastExecution) {
+        const victim = gameStateData.lastExecutedChar || gameStateData.lastExecution;
+        storySummary = `第${gameStateData.day || 1}章：勇者は [${victim}] に審判を下し、村に静寂が訪れた。`;
+      } else if (gameStateData.day > 1) {
+        storySummary = `第${gameStateData.day}章：凶悪な擬態モンスターの気配が潜むなか、試練の審判が続く。`;
+      } else {
+        storySummary = `序章：審判の勇者 [${gameStateData.heroName || "勇者"}] は村人たちを集め、偽りの姿を暴く冒険を開始した。`;
+      }
+
+      // 既存のセーブデータからスコア・戦績パラメータを引き継ぐ
+      const existingData = loadGameData(bookId) || {};
+      const heroIQ = typeof existingData.heroIQ === 'number' ? existingData.heroIQ : 100;
+      const totalScore = typeof existingData.totalScore === 'number' ? existingData.totalScore : 0;
+      const clearedVillages = existingData.clearedVillages || 0;
+      const monstersDefeated = existingData.monstersDefeated || 0;
+      const innocentVictims = existingData.innocentVictims || 0;
+      const rankTitle = existingData.rankTitle || getRankTitle(heroIQ, totalScore);
+
+      return {
+        bookId: bookId,
+        slotId: bookId,
+        bookTitle: BOOK_NAMES[bookId] || `冒険の書 第${bookId}巻`,
+        updatedAt: new Date().toLocaleString("ja-JP"),
+        heroName: gameStateData.heroName || "勇者",
+        heroIQ: heroIQ,
+        totalScore: totalScore,
+        clearedVillages: clearedVillages,
+        monstersDefeated: monstersDefeated,
+        innocentVictims: innocentVictims,
+        rankTitle: rankTitle,
+        currentChapter: `${dayText}：${phaseTitle}`,
+        currentDay: `${dayText} ${gameStateData.phase || "昼"} (${phaseTitle})`,
+        aliveCount: `${aliveCount}/${totalCount}`,
+        storySummary: storySummary,
+        gameState: gameStateData
+      };
+    }
+
+    /**
+     * タイトル画面等でアクティブな冒険の書を選択
+     */
+    function selectActiveSaveSlot(slotId) {
+      activeSaveSlot = slotId;
+      updateTitleSaveSlotUI();
+    }
+
+    /**
+     * タイトル画面の冒険の書選択UI表示を更新
+     */
+    function updateTitleSaveSlotUI() {
+      const labelEl = document.getElementById('active-slot-label');
+      if (labelEl) {
+        labelEl.textContent = `${BOOK_NAMES[activeSaveSlot] || '第' + activeSaveSlot + '巻'} 選択中`;
+      }
+
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`title-slot-btn-${i}`);
+        const subEl = document.getElementById(`title-slot-sub-${i}`);
+        if (btn) {
+          if (i === activeSaveSlot) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+        if (subEl) {
+          const data = loadGameData(i);
+          if (data) {
+            subEl.textContent = `${data.currentChapter || data.currentDay}`;
+            subEl.style.color = '#34d399';
+          } else {
+            subEl.textContent = '白紙の書';
+            subEl.style.color = 'var(--text-muted)';
+          }
+        }
+      }
+    }
+
+    /**
+     * オートセーブ実行関数（通知なしでアクティブ巻に上書き保存）
+     */
+    function autoSaveCurrentGame() {
+      if (!gameState || !gameState.charList || gameState.gameOver) return;
+      saveGameData(activeSaveSlot, gameState, true); // isAutoSave = true
+    }
+
+    /**
+     * 指定スロット（冒険の書）にデータを保存
+     */
+    function saveGameData(slotId, gameStateData, isAutoSave = false) {
+      if (!gameStateData || !gameStateData.charList) {
+        if (!isAutoSave) showCustomAlertModal("保存可能な進行中の物語がありません。");
+        return false;
+      }
+
+      const saveData = createChronicleData(slotId, gameStateData);
+      const bookName = BOOK_NAMES[slotId] || `冒険の書 第${slotId}巻`;
+
+      try {
+        localStorage.setItem(BOOK_KEY_PREFIX + slotId, JSON.stringify(saveData));
+        if (isAutoSave) {
+          console.log(`[AutoSave] ${bookName} に automatic save を記録しました。`);
+        } else {
+          showNotification(`📜 ${bookName} に旅の記憶を書き記しました。`);
+        }
+        updateTitleSaveSlotUI();
+        return true;
+      } catch (e) {
+        console.error("セーブ失敗:", e);
+        if (!isAutoSave) showCustomAlertModal(`お気の毒ですが ${bookName} は 消えてしまいました (ストレージ容量エラー)。`);
+        return false;
+      }
+    }
+
+    /**
+     * 指定スロットから冒険の書データを読み込み
+     */
+    function loadGameData(slotId) {
+      let dataStr = localStorage.getItem(BOOK_KEY_PREFIX + slotId);
+      // 古いキーからの自動以降ロジック
+      if (!dataStr) {
+        dataStr = localStorage.getItem("hero_judgement_save_slot_" + slotId);
+      }
+      if (!dataStr) return null;
+      try {
+        return JSON.parse(dataStr);
+      } catch (e) {
+        console.error(`冒険の書 第${slotId}巻 読込エラー:`, e);
+        return null;
+      }
+    }
+
+    /**
+     * 指定スロットの冒険の書データを削除
+     */
+    function deleteGameData(slotId) {
+      const bookName = BOOK_NAMES[slotId] || `冒険の書 第${slotId}巻`;
+      localStorage.removeItem(BOOK_KEY_PREFIX + slotId);
+      localStorage.removeItem("hero_judgement_save_slot_" + slotId);
+      showNotification(`📜 ${bookName} の記憶は消え去りました……`);
+      updateTitleSaveSlotUI();
+    }
+
+    /**
+     * 全スロットのあらすじ概要を取得（UI表示用）
+     */
+    function getAllSaveSlotsOverview() {
+      const slots = [];
+      for (let i = 1; i <= 3; i++) {
+        const data = loadGameData(i);
+        const bookName = BOOK_NAMES[i];
+        if (data) {
+          slots.push({
+            slotId: i,
+            isEmpty: false,
+            title: `『${bookName}』 ${data.currentChapter || data.currentDay}`,
+            detail: `勇者: ${data.heroName || "勇者"} | 生存: ${data.aliveCount} | 記録日時: ${data.updatedAt}`,
+            summary: data.storySummary || `勇者の苛烈な審判が繰り広げられた記録。`,
+            raw: data
+          });
+        } else {
+          slots.push({
+            slotId: i,
+            isEmpty: true,
+            title: `『${bookName}』 [白紙の冒険の書]`,
+            detail: "まだ旅の記録は書き記されていません",
+            summary: "まだ何も記されていない未知の羊皮紙です。",
+            raw: null
+          });
+        }
+      }
+      return slots;
+    }
+
+    /**
+     * 冒険の書（セーブ/ロード）モーダルを開く
+     */
+    function openSaveModal() {
+      renderSaveModalContent();
+      openModal('save-slot-modal');
+    }
+
+    /**
+     * モーダル内の冒険の書一覧UIを羊皮紙・魔導書スタイルでレンダリング
+     */
+    function renderSaveModalContent() {
+      const container = document.getElementById('save-slot-list-container');
+      if (!container) return;
+
+      const slots = getAllSaveSlotsOverview();
+      container.innerHTML = '';
+
+      const isGameInSession = gameState && gameState.charList && gameState.charList.length > 0 && !gameState.gameOver;
+
+      slots.forEach(slot => {
+        const card = document.createElement('div');
+        const isActive = (slot.slotId === activeSaveSlot);
+        card.className = `save-slot-card ${slot.isEmpty ? '' : 'active-slot'}`;
+        if (isActive) card.style.borderColor = 'var(--accent-amber)';
+
+        let actionBtns = '';
+        if (isGameInSession) {
+          actionBtns += `<button class="btn-slot-action btn-slot-save" onclick="executeSaveSlot(${slot.slotId})">✍️ 記憶を上書き</button>`;
+        }
+        actionBtns += `<button class="btn-slot-action btn-slot-save" style="background:linear-gradient(135deg,#d97706,#b45309); border-color:#fbbf24;" onclick="openModeSelectModal(${slot.slotId})">⚔️ 遠征を開始</button>`;
+        if (!slot.isEmpty) {
+          actionBtns += `<button class="btn-slot-action btn-slot-load" onclick="executeLoadSlot(${slot.slotId})">📖 旅を再開</button>`;
+          actionBtns += `<button class="btn-slot-action btn-slot-delete" onclick="executeDeleteSlot(${slot.slotId})">🔥 記録を消す</button>`;
+        }
+
+        const bookBadge = `<span class="book-vol-badge">第${slot.slotId}巻</span>`;
+
+        if (slot.isEmpty) {
+          card.innerHTML = `
+            <div class="save-slot-header">
+              <div class="save-slot-title empty">${bookBadge} ${slot.title} ${isActive ? '<span style="font-size:0.72rem; color:#fbbf24; margin-left:0.4rem; font-weight:normal;">(オートセーブ対象)</span>' : ''}</div>
+            </div>
+            <div class="save-slot-detail">${slot.detail}</div>
+            <div class="save-slot-summary" style="font-size:0.78rem; color:#fde68a; font-style:italic; background:rgba(0,0,0,0.3); padding:0.4rem 0.6rem; border-radius:6px; border-left:3px solid var(--accent-amber); margin:0.2rem 0;">
+              📜 ${slot.summary}
+            </div>
+            <div class="save-slot-actions">
+              ${actionBtns}
+            </div>
+          `;
+        } else {
+          const raw = slot.raw || {};
+          const heroIQ = typeof raw.heroIQ === 'number' ? raw.heroIQ : 100;
+          const score = typeof raw.totalScore === 'number' ? raw.totalScore.toLocaleString() : "0";
+          const rankTitle = raw.rankTitle || getRankTitle(heroIQ, raw.totalScore || 0);
+          const cleared = raw.clearedVillages || 0;
+          const defeated = raw.monstersDefeated || 0;
+          const victims = raw.innocentVictims || 0;
+
+          card.innerHTML = `
+            <div class="save-slot-header" style="border-bottom: 1px solid rgba(251, 191, 36, 0.2); padding-bottom: 0.4rem; margin-bottom: 0.4rem;">
+              <div class="save-slot-title">${bookBadge} ${slot.title} ${isActive ? '<span style="font-size:0.72rem; color:#fbbf24; margin-left:0.4rem; font-weight:normal;">(オートセーブ対象)</span>' : ''}</div>
+            </div>
+            
+            <div style="font-size:0.85rem; color:#fef08a; display:flex; flex-wrap:wrap; gap:0.6rem 1.2rem; margin-bottom:0.4rem; background:rgba(0,0,0,0.35); padding:0.5rem 0.7rem; border-radius:6px; border:1px solid rgba(251, 191, 36, 0.25);">
+              <div>勇者名: <strong>${raw.heroName || "勇者"}</strong></div>
+              <div>称号: <span style="color:#fbbf24; font-weight:bold; background:rgba(251, 191, 36, 0.15); padding:0.1rem 0.4rem; border-radius:4px; border:1px solid rgba(251, 191, 36, 0.3);">【 ${rankTitle} 】</span></div>
+              <div>勇者IQ: <strong style="color:#60a5fa; font-size:0.95rem;">${heroIQ}</strong></div>
+              <div>総合スコア: <strong style="color:#34d399; font-size:0.95rem;">${score} pt</strong></div>
+            </div>
+
+            <div style="font-size:0.78rem; color:#d1d5db; margin-bottom:0.4rem;">
+              🏆 <strong>実績:</strong> 救った村 <span style="color:#34d399; font-weight:bold;">${cleared}</span> / 倒した魔物 <span style="color:#f87171; font-weight:bold;">${defeated}体</span> / 誤審 <span style="color:#fbbf24; font-weight:bold;">${victims}回</span>
+            </div>
+
+            <div class="save-slot-detail" style="font-size:0.8rem; color:#9ca3af; margin-bottom:0.3rem;">
+              📍 進行: <strong>${raw.currentChapter || raw.currentDay}</strong> | 生存: ${raw.aliveCount} | 記録日時: ${raw.updatedAt}
+            </div>
+
+            <div class="save-slot-summary" style="font-size:0.78rem; color:#fde68a; font-style:italic; background:rgba(0,0,0,0.25); padding:0.35rem 0.6rem; border-radius:6px; border-left:3px solid var(--accent-amber); margin:0.2rem 0 0.5rem 0;">
+              📜 ${slot.summary}
+            </div>
+
+            <div class="save-slot-actions">
+              ${actionBtns}
+            </div>
+          `;
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    /**
+     * スロット保存実行
+     */
+    function executeSaveSlot(slotId) {
+      if (!gameState || !gameState.charList || gameState.gameOver) {
+        showCustomAlertModal("セーブできる進行中のゲームがありません。");
+        return;
+      }
+      activeSaveSlot = slotId; // アクティブスロットも更新
+      if (saveGameData(slotId, gameState)) {
+        renderSaveModalContent();
+      }
+    }
+
+    /**
+     * スロット復元（ロード）実行
+     */
+    function executeLoadSlot(slotId) {
+      const data = loadGameData(slotId);
+      if (!data || !data.gameState) {
+        if (typeof showCustomAlertModal === 'function') {
+          showCustomAlertModal("セーブデータの読み込みに失敗しました。");
+        } else {
+          alert("セーブデータの読み込みに失敗しました。");
+        }
+        return;
+      }
+
+      const bookName = BOOK_NAMES[slotId] || `冒険の书 第${slotId}巻`;
+      const confirmMsg = `『${bookName}』の記憶を紐解きますか？\n(${data.currentChapter || data.currentDay})`;
+
+      const doLoad = () => {
+        activeSaveSlot = slotId; // ロードしたスロットをアクティブに
+        updateTitleSaveSlotUI();
+        closeModal('save-slot-modal');
+        stopAllTimers();
+        cancelSpeech();
+
+        // gameStateの完全復元
+        gameState = data.gameState;
+        selectedVillageSize = gameState.villageSize || 6;
+
+        // BGMおよび背景・画面の再構築
+        const splash = document.getElementById('splash-screen');
+        if (splash) splash.style.display = 'none';
+        document.getElementById('title-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+
+        if (gameState.phase === '夜' || gameState.subPhase === 'execution') {
+          playBgm('syokei');
+          setGamePhaseBg('execution');
+        } else {
+          playBgm('hiru');
+          setGamePhaseBg('day-debate');
+        }
+
+        renderStatus();
+        renderCharacters();
+        renderBulletinBoard();
+        renderMorningCommentsBox();
+        renderVoteHistoryPage();
+        selectCharacter(gameState.selectedChar || null);
+
+        // ログタイムラインの再描画
+        const timeline = document.getElementById('log-timeline');
+        if (timeline && gameState.logHistory) {
+          timeline.innerHTML = '';
+          gameState.logHistory.forEach(item => {
+            addLogItem(item.speaker, item.badge, item.text, item.type, item.charKey, false);
+          });
+        }
+
+        // タイマー再開
+        if (gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+          startDiscussionTimer();
+        } else if (gameState.subPhase === 'decision' && !gameState.executedToday && !gameState.gameOver) {
+          startDecisionTimer();
+        }
+
+        showNotification(`📖 『${BOOK_NAMES[slotId] || '第' + slotId + '巻'}』の記憶を復元しました (${data.currentChapter || data.currentDay})`);
+      };
+
+      if (typeof showCustomConfirmModal === 'function') {
+        showCustomConfirmModal(confirmMsg, (confirmed) => {
+          if (confirmed) doLoad();
+        });
+      } else if (window.confirm(confirmMsg)) {
+        doLoad();
+      }
+    }
+
+    /**
+     * 冒険の書 削除実行
+     */
+    function executeDeleteSlot(slotId) {
+      const bookName = BOOK_NAMES[slotId] || `冒険の書 第${slotId}巻`;
+      const confirmMsg = `『${bookName}』の旅の記憶を消し去ってもよろしいですか？`;
+
+      const doDelete = () => {
+        deleteGameData(slotId);
+        renderSaveModalContent();
+      };
+
+      if (typeof showCustomConfirmModal === 'function') {
+        showCustomConfirmModal(confirmMsg, (confirmed) => {
+          if (confirmed) doDelete();
+        });
+      } else if (window.confirm(confirmMsg)) {
+        doDelete();
+      }
+    }
+
+    // グローバル公開
+    window.showCustomConfirmModal = showCustomConfirmModal;
+
+    // グローバル公開
+    /**
+     * 第5章「絶望の村」クリア時のグランドエンディング画面描画
+     */
+    function showGrandEndingModal(finalIQ, totalScore, rankTitle) {
+      const statsContainer = document.getElementById('grand-ending-stats');
+      if (statsContainer) {
+        statsContainer.innerHTML = `
+          <div style="font-size:0.88rem; color:#fde68a; font-weight:bold; margin-bottom:0.2rem;">【最終冒険録】</div>
+          <div>最終勇者IQ: <strong style="color:#60a5fa; font-size:1.15rem;">${finalIQ || 100}</strong> （評価: <span style="color:#fbbf24; font-weight:bold;">【${rankTitle || "伝説の神眼勇者"}】</span>）</div>
+          <div>総得点: <strong style="color:#34d399; font-size:1.15rem;">${(totalScore || 0).toLocaleString()} pt</strong></div>
+          <div style="color:#34d399; font-weight:bold; margin-top:0.3rem;">🎉 全5章完全クリア達成</div>
+        `;
+      }
+      openModal('grand-ending-modal');
+    }
+
+    function returnToTitleFromGrandEnding() {
+      closeModal('grand-ending-modal');
+      closeModal('modal-overlay');
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('title-screen').classList.remove('hidden');
+      updateTitleSaveSlotUI();
+    }
+
+    window.showGrandEndingModal = showGrandEndingModal;
+    window.returnToTitleFromGrandEnding = returnToTitleFromGrandEnding;
+    window.selectActiveSaveSlot = selectActiveSaveSlot;
+    window.updateTitleSaveSlotUI = updateTitleSaveSlotUI;
+    window.autoSaveCurrentGame = autoSaveCurrentGame;
+    window.saveGameData = saveGameData;
+    window.loadGameData = loadGameData;
+    window.deleteGameData = deleteGameData;
+    window.getAllSaveSlotsOverview = getAllSaveSlotsOverview;
+    window.openSaveModal = openSaveModal;
+    window.executeSaveSlot = executeSaveSlot;
+    window.executeLoadSlot = executeLoadSlot;
+    window.executeDeleteSlot = executeDeleteSlot;
+    window.getRankTitle = getRankTitle;
+    window.calculateHeroEvaluation = calculateHeroEvaluation;
+    window.toggleDiscussionPause = toggleDiscussionPause;
+    window.restartAIDiscussion = restartAIDiscussion;
+
     // グローバル公開（F12コンソールからアクセス可能に）
     window.testProxyConnection = testProxyConnection;
     window.callAIEngine = callAIEngine;
@@ -3719,7 +4579,7 @@ ${speakerName}としての議論発言:`;
     let bgmVolume = 80;
     let seVolume = 80;
     let voiceVolume = 80;
-    let discussionTimeSetting = 180; // 180 (3分), 300 (5分), 600 (10分), -1 (無制限)
+    let discussionTimeSetting = 300; // 300 (5分 - デフォルト), 180 (3分), 600 (10分), -1 (無制限)
 
     // --- デフォルト名とカスタム名の管理 ---
     const DEFAULT_CHAR_NAMES = {
@@ -4401,8 +5261,8 @@ ${speakerName}としての議論発言:`;
     // Config Constants
     const CHAR_NAMES_20 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
     const CHAR_NAMES_15 = CHAR_NAMES_20;
-    const MAX_DISCUSSION_TIME_SECONDS = 180;
-    const MAX_DECISION_TIME_SECONDS = -1; // -1 = 無制限
+    const MAX_DISCUSSION_TIME_SECONDS = 300; // デフォルト 5分 (300秒)
+    const MAX_DECISION_TIME_SECONDS = 30;   // 処刑時間 30秒
     const PLACES = ['時計塔', '広場', '教会', '井戸端', '西の森', '見張り台', '裏路地', '風車小屋', '廃校校舎', '裏山小屋'];
 
     let selectedVillageSize = 6;
@@ -4625,6 +5485,16 @@ ${speakerName}としての議論発言:`;
       if (overlay) overlay.style.display = 'none';
     }
 
+    /**
+     * カスタム確認ダイアログ（Confirm）表示関数
+     */
+    function showCustomConfirmModal(messageText, callback) {
+      setTimeout(() => {
+        const confirmed = window.confirm(messageText);
+        if (typeof callback === 'function') callback(confirmed);
+      }, 50);
+    }
+
     // Mode Category & Custom/Daily Settings Management
     let selectedGameCategory = 'normal'; // 'normal' | 'daily' | 'custom'
     let customSettings = {
@@ -4734,13 +5604,13 @@ ${speakerName}としての議論発言:`;
       if (titleEl) titleEl.textContent = `📅 本日のお題 (${todayStr}) 【${currentDailyConfig.size}人村】`;
       
       const rolesList = [];
-      if (currentDailyConfig.roles.wolf) rolesList.push(`人狼${currentDailyConfig.roles.wolf}`);
-      if (currentDailyConfig.roles.seer) rolesList.push(`占い${currentDailyConfig.roles.seer}`);
-      if (currentDailyConfig.roles.medium) rolesList.push(`霊媒${currentDailyConfig.roles.medium}`);
-      if (currentDailyConfig.roles.knight) rolesList.push(`騎士${currentDailyConfig.roles.knight}`);
-      if (currentDailyConfig.roles.madman) rolesList.push(`狂人${currentDailyConfig.roles.madman}`);
+      if (currentDailyConfig.roles.wolf) rolesList.push(`魔物${currentDailyConfig.roles.wolf}`);
+      if (currentDailyConfig.roles.seer) rolesList.push(`賢者${currentDailyConfig.roles.seer}`);
+      if (currentDailyConfig.roles.medium) rolesList.push(`聖職者${currentDailyConfig.roles.medium}`);
+      if (currentDailyConfig.roles.knight) rolesList.push(`聖騎士${currentDailyConfig.roles.knight}`);
+      if (currentDailyConfig.roles.madman) rolesList.push(`魔教徒${currentDailyConfig.roles.madman}`);
       if (currentDailyConfig.roles.baker) rolesList.push(`パン${currentDailyConfig.roles.baker}`);
-      if (currentDailyConfig.roles.citizen) rolesList.push(`市民${currentDailyConfig.roles.citizen}`);
+      if (currentDailyConfig.roles.citizen) rolesList.push(`村人${currentDailyConfig.roles.citizen}`);
 
       if (ruleEl) {
         ruleEl.innerHTML = `<strong>【配役】</strong> ${rolesList.join(' / ')}<br><strong>【ルール】</strong> ${currentDailyConfig.ruleText}`;
@@ -4938,7 +5808,7 @@ ${speakerName}としての議論発言:`;
 
       if ((customSettings.roles.wolf || 0) < 1) {
         if (statusEl) {
-          statusEl.textContent = '❌ 人狼は最低1人必要です';
+          statusEl.textContent = '❌ 擬態モンスターは最低1体必要です';
           statusEl.className = 'custom-total-box invalid';
         }
         if (startBtn) startBtn.disabled = true;
@@ -4967,11 +5837,11 @@ ${speakerName}としての議論発言:`;
       if (!summaryEl) return;
 
       const rolesList = [];
-      if (customSettings.roles.wolf) rolesList.push(`人狼${customSettings.roles.wolf}`);
-      if (customSettings.roles.seer) rolesList.push(`占い${customSettings.roles.seer}`);
-      if (customSettings.roles.medium) rolesList.push(`霊媒${customSettings.roles.medium}`);
-      if (customSettings.roles.knight) rolesList.push(`騎士${customSettings.roles.knight}`);
-      if (customSettings.roles.madman) rolesList.push(`狂人${customSettings.roles.madman}`);
+      if (customSettings.roles.wolf) rolesList.push(`魔物${customSettings.roles.wolf}`);
+      if (customSettings.roles.seer) rolesList.push(`賢者${customSettings.roles.seer}`);
+      if (customSettings.roles.medium) rolesList.push(`聖職者${customSettings.roles.medium}`);
+      if (customSettings.roles.knight) rolesList.push(`聖騎士${customSettings.roles.knight}`);
+      if (customSettings.roles.madman) rolesList.push(`魔教徒${customSettings.roles.madman}`);
       if (customSettings.roles.baker) rolesList.push(`パン${customSettings.roles.baker}`);
 
       const specialTotal = (customSettings.roles.wolf || 0)
@@ -4982,7 +5852,7 @@ ${speakerName}としての議論発言:`;
         + (customSettings.roles.baker || 0);
 
       const citizenCount = Math.max(0, customSettings.players - specialTotal);
-      if (citizenCount > 0) rolesList.push(`市民${citizenCount}`);
+      if (citizenCount > 0) rolesList.push(`村人${citizenCount}`);
 
       summaryEl.innerHTML = `<strong>【現在の設定 (${customSettings.players}人村)】</strong><br>配役: ${rolesList.join(' / ')}`;
     }
@@ -5008,6 +5878,8 @@ ${speakerName}としての議論発言:`;
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('modal-overlay').classList.add('hidden');
       document.getElementById('seamless-overlay').classList.remove('active');
+      const freeSection = document.getElementById('free-mode-selection-section');
+      if (freeSection) freeSection.style.display = 'none';
 
       // 最初のアトラクト・スタート待機画面 (#splash-screen) を復元表示
       const splash = document.getElementById('splash-screen');
@@ -5045,6 +5917,36 @@ ${speakerName}としての議論発言:`;
           btn.style.color = '#fff';
         }
       }
+    }
+
+    function restartAIDiscussion() {
+      // 議論フェーズでない場合は何もしない
+      if (gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) {
+        showNotification('⚠️ 現在は議論フェーズではありません');
+        return;
+      }
+      // 議論ループのフラグをすべてリセット
+      aiDiscussionActive = false;
+      isDiscussionPaused = false;
+      isInterrogatingActive = false;
+      // 直近の議論履歴をクリアして重複判定に引っかからないようにする
+      if (gameState.aiDiscussionHistory && gameState.aiDiscussionHistory.length > 3) {
+        // 直近3件だけ残して古い履歴を削除（完全な重複防止のため少し残す）
+        gameState.aiDiscussionHistory = gameState.aiDiscussionHistory.slice(-3);
+      }
+      // 一時停止ボタンのUIを元に戻す
+      const btn = document.getElementById('btn-toggle-discussion-pause');
+      if (btn) {
+        btn.innerHTML = '<span>⏸️ 議論を一時停止</span>';
+        btn.style.background = 'linear-gradient(135deg, #3a3f58, #2a2d42)';
+        btn.style.borderColor = 'var(--accent-amber)';
+        btn.style.color = '#fff';
+      }
+      // 前のループが完全停止するのを待ってから再起動
+      setTimeout(() => {
+        startAIDiscussionTimer();
+      }, 500);
+      showNotification('🔄 議論を強制再開しました！AIたちが新しい話題で議論を続けます。');
     }
 
     async function startAIDiscussionTimer() {
@@ -5259,7 +6161,7 @@ ${speakerName}としての議論発言:`;
       }
     }
 
-    // Auto Skip Handler when 15 Sec Decision Timer Expires
+    // Auto Skip Handler when 30 Sec Decision Timer Expires
     async function handleDecisionTimeUp() {
       if (gameState.executedToday || gameState.gameOver) return;
 
@@ -5307,7 +6209,7 @@ ${speakerName}としての議論発言:`;
       { id: 7,  archetype: "冷徹な軍略家",  logicLevel: 0.90, aggression: 0.80, stubbornness: 0.50, coPreference: 0.85, speechStyle: "理詰めで逃げ場をなくす軍師風口調", quotePrefix: "戦術的観点から言わせてもらうと、", quoteSuffix: "この矛盾を放置するのは勝利確率を下げるだけだ。" },
       { id: 8,  archetype: "平和主義同調型", logicLevel: 0.40, aggression: 0.15, stubbornness: 0.25, coPreference: 0.20, speechStyle: "争いを避け穏やかに諭す口調", quotePrefix: "みんな喧嘩しないで落ち着こうよ、", quoteSuffix: "誤処刑を防ぐために穏やかに話し合いたいな。" },
       { id: 9,  archetype: "疑心暗鬼オオカミ", logicLevel: 0.55, aggression: 0.85, stubbornness: 0.80, coPreference: 0.75, speechStyle: "誰彼構わず怪しむピリピリした口調", quotePrefix: "全員の裏の顔が怪しく見えてきたよ！", quoteSuffix: "誰も信用できない！白黒を突きつけよう！" },
-      { id: 10, archetype: "セオリー信奉者", logicLevel: 0.85, aggression: 0.45, stubbornness: 0.70, coPreference: 0.65, speechStyle: "人狼ゲームのセオリーを説く口調", quotePrefix: "人狼ゲームの定石通りに進めるべきだよ、", quoteSuffix: "定石から外れた不自然な行動は悪手でしかない。" },
+      { id: 10, archetype: "セオリー信奉者", logicLevel: 0.85, aggression: 0.45, stubbornness: 0.70, coPreference: 0.65, speechStyle: "審判会議のセオリーを説く口調", quotePrefix: "審判会議の定石通りに進めるべきだよ、", quoteSuffix: "定石から外れた不自然な行動は悪手でしかない。" },
       { id: 11, archetype: "揺さぶり巧者",  logicLevel: 0.75, aggression: 0.75, stubbornness: 0.40, coPreference: 0.80, speechStyle: "相手に揺さぶりをかける挑発的口調", quotePrefix: "フフッ、面白い主張をしてくれるね、", quoteSuffix: "その必死な弁明が真実かどうか試させてもらうよ。" },
       { id: 12, archetype: "頑固一徹型",    logicLevel: 0.35, aggression: 0.70, stubbornness: 0.95, coPreference: 0.40, speechStyle: "一度決めた疑いを曲げない意固地口調", quotePrefix: "一度疑ったら私はブレないよ！", quoteSuffix: "どんなに言い訳されても私の疑いは変わらない！" },
       { id: 13, archetype: "無口な観察者",  logicLevel: 0.80, aggression: 0.30, stubbornness: 0.45, coPreference: 0.25, speechStyle: "短文で鋭い指摘をする物静かな口調", quotePrefix: "……静かにログを精査していたが、", quoteSuffix: "……この一点の食い違いだけは看過できない。" },
@@ -5416,6 +6318,164 @@ ${speakerName}としての議論発言:`;
       switchView(1);
     }
 
+    // =====================================================
+    // ⚔️ ゲーム進行フロー制御（ストーリーモード / フリーモード / 冒険の書）
+    // =====================================================
+    let currentPlayMode = 'free'; // 'story' | 'free'
+    let currentStoryChapter = 1;  // 1 〜 5
+
+    // ストーリーモード全5章データ構成
+    const STORY_CHAPTERS = {
+      1: { id: 1, name: "始まりの村", size: 5, difficulty: "初級", desc: "村人3, 賢者1 / 魔物1", roles: { villager: 3, seer: 1, wolf: 1 }, unlockReq: "最初からプレイ可能" },
+      2: { id: 2, name: "平穏の村", size: 7, difficulty: "中級", desc: "村人4, 賢者1, 聖騎士1 / 魔物1", roles: { villager: 4, seer: 1, knight: 1, wolf: 1 }, unlockReq: "第1章クリア" },
+      3: { id: 3, name: "黄昏の村", size: 9, difficulty: "上級", desc: "村人5, 賢者1, 聖騎士1 / 魔物2", roles: { villager: 5, seer: 1, knight: 1, wolf: 2 }, unlockReq: "第2章クリア" },
+      4: { id: 4, name: "暗雲の村", size: 12, difficulty: "超級", desc: "村人7, 賢者1, 聖騎士1, 聖職者1 / 魔物2, 魔教徒1", roles: { villager: 7, seer: 1, knight: 1, medium: 1, wolf: 2, madman: 1 }, unlockReq: "第3章クリア" },
+      5: { id: 5, name: "絶望の村（最終決戦）", size: 20, difficulty: "最終決戦", desc: "村人11, 賢者1, 聖騎士1, 聖職者1, 猫又1 / 魔物4 / 妖狐1", roles: { villager: 11, seer: 1, knight: 1, medium: 1, nekomata: 1, wolf: 4, fox: 1 }, unlockReq: "第4章クリア" }
+    };
+
+    /**
+     * 「はじめから（新たな旅立ち）」をクリックした時の処理
+     * 1. 冒険の書（スロット）選択モーダルを開く
+     */
+    function onStartNewGameClick() {
+      openSaveModal();
+    }
+
+    /**
+     * 冒険の書スロット選択後、モード選択ダイアログを表示
+     */
+    function openModeSelectModal(slotId) {
+      if (slotId) selectActiveSaveSlot(slotId);
+      closeModal('save-slot-modal');
+      openModal('mode-select-modal');
+    }
+
+    /**
+     * モード選択（'story' または 'free'）
+     */
+    function selectPlayMode(mode) {
+      currentPlayMode = mode;
+      closeModal('mode-select-modal');
+      closeModal('save-slot-modal');
+
+      const freeSection = document.getElementById('free-mode-selection-section');
+
+      if (mode === 'story') {
+        if (freeSection) freeSection.style.display = 'none';
+        openStoryChapterModal();
+      } else {
+        // フリーモード選択時：タイトル画面（画像1）内に村選択パネルを表示してスムーズにスクロール
+        if (freeSection) freeSection.style.display = 'block';
+        showNotification("🛡️ フリーモード（審判の模擬戦）を選択しました。村の規模を選んで出撃してください。");
+        setTimeout(() => {
+          if (freeSection) freeSection.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+
+    /**
+     * ストーリー章選択モーダルを開く
+     */
+    function openStoryChapterModal() {
+      renderStoryChapterModalContent();
+      openModal('story-chapter-modal');
+    }
+
+    /**
+     * 章選択モーダルコンテンツの描画
+     */
+    function renderStoryChapterModalContent() {
+      const headerEl = document.getElementById('story-book-status-header');
+      const container = document.getElementById('story-chapters-list-container');
+      if (!container) return;
+
+      const saveData = loadGameData(activeSaveSlot) || {};
+      const currentUnlockedChapter = Math.min(5, Math.max(1, saveData.currentChapter || 1));
+      const heroIQ = typeof saveData.heroIQ === 'number' ? saveData.heroIQ : 100;
+      const score = typeof saveData.totalScore === 'number' ? saveData.totalScore.toLocaleString() : "0";
+      const rankTitle = saveData.rankTitle || getRankTitle(heroIQ, saveData.totalScore || 0);
+
+      if (headerEl) {
+        headerEl.innerHTML = `
+          <div>📜 <strong>${BOOK_NAMES[activeSaveSlot] || '冒険の書'}</strong> | 勇者名: <strong>${saveData.heroName || "勇者"}</strong></div>
+          <div>【${rankTitle}】 勇者IQ: <strong style="color:#60a5fa;">${heroIQ}</strong> | スコア: <strong style="color:#34d399;">${score} pt</strong></div>
+        `;
+      }
+
+      container.innerHTML = '';
+
+      for (let chId = 1; chId <= 5; chId++) {
+        const ch = STORY_CHAPTERS[chId];
+        const isUnlocked = (chId <= currentUnlockedChapter);
+        const isCleared = (saveData.chapterRecords && saveData.chapterRecords[`ch${chId}`] && saveData.chapterRecords[`ch${chId}`].cleared);
+        
+        const card = document.createElement('div');
+        card.style.background = isUnlocked ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9))' : 'rgba(15, 23, 42, 0.5)';
+        card.style.border = isUnlocked ? (isCleared ? '2px solid #34d399' : '2px solid #fbbf24') : '1px dashed #64748b';
+        card.style.borderRadius = '10px';
+        card.style.padding = '0.9rem';
+        card.style.opacity = isUnlocked ? '1' : '0.6';
+        card.style.display = 'flex';
+        card.style.justifyContent = 'space-between';
+        card.style.alignItems = 'center';
+
+        const titleColor = isUnlocked ? (isCleared ? '#34d399' : '#fbbf24') : '#94a3b8';
+        const badgeText = isCleared ? '✅ 完了' : (isUnlocked ? '⚔️ 挑戦可能' : '🔒 未解放');
+
+        card.innerHTML = `
+          <div style="text-align: left;">
+            <div style="font-size: 1.05rem; font-weight: bold; color: ${titleColor};">
+              第${chId}章：${ch.name} <span style="font-size: 0.78rem; font-weight: normal; color: #cbd5e1;">(${ch.difficulty} / ${ch.size}名)</span>
+              <span style="font-size: 0.75rem; background: rgba(0,0,0,0.4); color: ${titleColor}; padding: 0.15rem 0.4rem; border-radius: 6px; margin-left: 0.4rem;">${badgeText}</span>
+            </div>
+            <div style="font-size: 0.8rem; color: #e2e8f0; margin-top: 0.3rem;">
+              👥 役職: <strong>${ch.desc}</strong>
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem;">
+              条件: ${ch.unlockReq}
+            </div>
+          </div>
+          <div>
+            ${isUnlocked 
+              ? `<button class="btn btn-primary" style="padding: 0.5rem 0.9rem; font-weight: bold;" onclick="startStoryChapter(${chId})">出撃</button>`
+              : `<button class="btn btn-secondary" style="padding: 0.5rem 0.9rem;" disabled>🔒 封印</button>`
+            }
+          </div>
+        `;
+
+        container.appendChild(card);
+      }
+    }
+
+    /**
+     * ストーリー章出撃開始
+     */
+    function startStoryChapter(chId) {
+      currentStoryChapter = chId;
+      currentPlayMode = 'story';
+      closeModal('story-chapter-modal');
+
+      // オープニング物語を表示
+      openModal('opening-story-modal');
+    }
+
+    /**
+     * オープニング物語の完了・スキップ処理
+     */
+    function finishOpeningStory() {
+      localStorage.setItem("has_seen_opening", "true");
+      closeModal('opening-story-modal');
+      startGame();
+    }
+
+    // Global exports
+    window.onStartNewGameClick = onStartNewGameClick;
+    window.openModeSelectModal = openModeSelectModal;
+    window.selectPlayMode = selectPlayMode;
+    window.openStoryChapterModal = openStoryChapterModal;
+    window.startStoryChapter = startStoryChapter;
+    window.finishOpeningStory = finishOpeningStory;
+
     // Start Game
     function startGame() {
       requestFullScreen(); // ゲーム開始時にフルスクリーン化を試行
@@ -5436,7 +6496,19 @@ ${speakerName}としての議論発言:`;
       let maxMistakes = 2;
       let roleDistribution = [];
 
-      if (selectedGameCategory === 'daily') {
+      if (currentPlayMode === 'story') {
+        const ch = STORY_CHAPTERS[currentStoryChapter] || STORY_CHAPTERS[1];
+        size = ch.size;
+        targetWolves = ch.roles.wolf || 1;
+        maxMistakes = size >= 20 ? 5 : (size >= 12 ? 4 : (size >= 9 ? 3 : 2));
+
+        const rolesObj = ch.roles;
+        for (let r in rolesObj) {
+          for (let i = 0; i < rolesObj[r]; i++) {
+            roleDistribution.push(r);
+          }
+        }
+      } else if (selectedGameCategory === 'daily') {
         const todayStr = new Date().toISOString().split('T')[0];
         if (!currentDailyConfig) currentDailyConfig = generateDailyVillage(todayStr);
 
@@ -5571,7 +6643,7 @@ ${speakerName}としての議論発言:`;
         });
       }
 
-      // 5. 騙り役職（人狼・狂人）の騙り役職設定
+      // 5. 騙り役職（擬態モンスター・魔教徒）の騙り役職設定
       const fakeCandidates = chars.filter(c => gameState.roles[c] === 'wolf' || gameState.roles[c] === 'madman');
       if (fakeCandidates.length > 0 && Math.random() < 0.85) {
         const fake1 = pickRandom(fakeCandidates);
@@ -5593,11 +6665,11 @@ ${speakerName}としての議論発言:`;
       const placeShuffled = [...PLACES].sort(() => 0.5 - Math.random());
       chars.forEach((c, idx) => gameState.alibis[c] = placeShuffled[idx % placeShuffled.length]);
 
-      // 配役集計テキストの生成 (例: 8人村 (人狼2/占い1/霊媒1/騎士1/狂人1/市民2))
+      // 配役集計テキストの生成 (例: 8人村 (魔物2/賢者1/聖職者1/聖騎士1/魔教徒1/村人2))
       const ROLE_LABELS = {
-        wolf: '人狼', seer: '占い', medium: '霊媒', knight: '騎士', madman: '狂人',
+        wolf: '魔物', seer: '賢者', medium: '聖職者', knight: '聖騎士', madman: '魔教徒',
         baker: 'パン', cakeShop: 'ケーキ', freemason: '共有', psychic: '霊能',
-        nekomata: '猫又', bodyguard: '黒服', fox: '妖狐', citizen: '市民'
+        nekomata: '猫又', bodyguard: '黒服', fox: '妖狐', citizen: '村人', villager: '村人'
       };
       const roleCounts = {};
       Object.values(gameState.roles).forEach(r => {
@@ -5687,6 +6759,9 @@ ${speakerName}としての議論発言:`;
       renderCharacters();
       selectCharacter(null);
 
+      // ★ 初日開戦時のオートセーブ
+      autoSaveCurrentGame();
+
       startDiscussionTimer();
     }
 
@@ -5704,18 +6779,18 @@ ${speakerName}としての議論発言:`;
       const victims = gameState.lastNightVictims || [];
       let victimText = '';
       if (victims.length === 0) {
-        victimText = `${formatDay(gameState.day)}の朝…… 昨夜の犠牲者は居ませんでした。全員無事です。`;
+        victimText = `${formatDay(gameState.day)}の朝…… 昨夜の魔物の襲撃被害はありませんでした。全員無事です。`;
       } else if (victims.length === 1) {
         const victimName = getCharDisplayName(victims[0]);
-        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、${victimName} が冷たい遺体となって発見されました。`;
+        victimText = `${formatDay(gameState.day)}の朝…… 悲鳴が響き渡った…… ${victimName} が魔物の犠牲となった。`;
       } else if (victims.length >= 2) {
         const victimNames = victims.map(v => getCharDisplayName(v)).join(' と ');
-        victimText = `${formatDay(gameState.day)}の朝…… 昨夜、${victimNames} が冷たい遺体となって発見されました。`;
+        victimText = `${formatDay(gameState.day)}の朝…… 悲鳴が響き渡った…… ${victimNames} が魔物の犠牲となった。`;
       }
 
       const timeLimitText = getFormattedDiscussionTimeText();
       const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const morningNewsText = `${victimText} これより${formatDay(gameState.day)}の議論を開始します。制限時間は${timeLimitText}です。自由に対象へ質問を行ってください。`;
+      const morningNewsText = `${victimText} 審判会議を開始します。村の中に潜む『擬態モンスター』の発言の矛盾を見抜いてください。制限時間は${timeLimitText}です。`;
 
       addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
       await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${morningNewsText}`);
@@ -5752,6 +6827,9 @@ ${speakerName}としての議論発言:`;
       renderStatus();
       renderCharacters();
       selectCharacter(null);
+
+      // ★ 毎朝開戦時のオートセーブ
+      autoSaveCurrentGame();
 
       startDiscussionTimer();
     }
@@ -5790,7 +6868,7 @@ ${speakerName}としての議論発言:`;
             result = gameState.roles[target] === 'wolf' ? '人狼' : '人間';
 
           } else if (realRole === 'wolf') {
-            // 偽占い師(人狼): 「囲い(仲間に白)」または「対立村人に黒打ち」戦術
+            // 偽賢者(擬態モンスター): 「囲い(仲間に白)」または「対立村人に黒打ち」戦術
             const fellowWolves = candidates.filter(c => gameState.roles[c] === 'wolf');
             const nonWolves = candidates.filter(c => gameState.roles[c] !== 'wolf');
 
@@ -5808,11 +6886,18 @@ ${speakerName}としての議論発言:`;
             }
 
           } else if (realRole === 'madman') {
-            // 偽占い師(狂人): グレー中心に占う（人狼誤黒出しを避けるため慎重）
+            // 偽賢者(魔教徒): グレー中心に占う（擬態モンスター誤黒出しを避けるため慎重）
             const greys = candidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager');
             target = greys.length > 0 ? pickRandom(greys) : pickRandom(candidates);
             // 70%で白出し（狼囲いを狙う）、30%で村人黒打ち乱立
             result = Math.random() < 0.3 ? '人狼' : '人間';
+          }
+
+          // 真賢者が妖狐を占った場合：即座に呪殺（即死）が発生
+          if (realRole === 'seer' && target && gameState.roles[target] === 'fox' && gameState.status[target] === 'alive') {
+            gameState.status[target] = 'cursed';
+            if (!gameState.curseHistory) gameState.curseHistory = [];
+            gameState.curseHistory.push({ day: gameState.day, target });
           }
 
           const report = { day: gameState.day, target, result };
@@ -5836,7 +6921,7 @@ ${speakerName}としての議論発言:`;
           else if (execRole === 'fox') result = '妖狐';
           else result = '人間';
         } else {
-          // 偽霊媒師（人狼・狂人）の騙り霊媒結果生成
+          // 偽聖職者（擬態モンスター・魔教徒）の騙り霊媒結果生成
           result = pickRandom(['人狼', '人間']);
         }
 
@@ -5855,12 +6940,12 @@ ${speakerName}としての議論発言:`;
         const roleType = gameState.claimedRoleTypes[char];
         let shouldCO = false;
 
-        // 1. 霊媒師（真霊媒・偽霊媒）: 2日目の朝、昨夜の処刑結果が存在する場合に一斉潜伏解除CO！
+        // 1. 聖職者（真聖職者・偽聖職者）: 2日目の朝、昨夜の処刑結果が存在する場合に一斉潜伏解除CO！
         if (roleType === 'medium' && gameState.day >= 2 && gameState.lastExecutedChar) {
           shouldCO = true;
         }
 
-        // 2. 例外（初日対抗霊媒COトリガー）: 1日目に他のNPC/プレイヤーが霊媒COした場合、乗っ取り防止のため対抗初日CO
+        // 2. 例外（初日対抗聖職者COトリガー）: 1日目に他のNPC/プレイヤーが聖職者COした場合、乗っ取り防止のため対抗初日CO
         if (roleType === 'medium' && gameState.day === 1) {
           const activeMediumCOs = gameState.charList.filter(c => c !== char && gameState.coRoles[c] === 'medium' && gameState.status[c] === 'alive');
           if (activeMediumCOs.length > 0) {
@@ -5868,7 +6953,7 @@ ${speakerName}としての議論発言:`;
           }
         }
 
-        // 3. 占い師（潜伏中の場合）: 人狼判定を発見したか、2日目以降に一斉CO
+        // 3. 賢者（潜伏中の場合）: 魔物判定を発見したか、2日目以降に一斉CO
         if (roleType === 'seer') {
           const lastRep = gameState.dailySeerReports[char];
           if ((lastRep && lastRep.result === '人狼') || gameState.day >= 2) {
@@ -5876,7 +6961,7 @@ ${speakerName}としての議論発言:`;
           }
         }
 
-        // 4. 騎士 (真騎士): 終盤（生存人数3人以下）に到達した場合のみCO
+        // 4. 聖騎士 (真聖騎士): 終盤（生存人数3人以下）に到達した場合のみCO
         if (roleType === 'knight') {
           const aliveTotal = gameState.charList.filter(c => gameState.status[c] === 'alive').length;
           if (aliveTotal <= 3) {
@@ -5890,18 +6975,18 @@ ${speakerName}としての議論発言:`;
       });
     }
 
-    // Helper function to unify speaker introduction prefix ("〇〇です。" / "〇〇（占いCO）です。")
+    // Helper function to unify speaker introduction prefix ("〇〇です。" / "〇〇（賢者CO）です。")
     function formatSpeechMessage(speakerChar, rawMessage) {
       const displayName = getCharDisplayName(speakerChar);
       const coRole = gameState.coRoles[speakerChar];
       
       let prefixStr = displayName;
       if (coRole === 'seer') {
-        prefixStr += '（占いCO）';
+        prefixStr += '（賢者CO）';
       } else if (coRole === 'medium') {
-        prefixStr += '（霊媒CO）';
+        prefixStr += '（聖職者CO）';
       } else if (coRole === 'knight') {
-        prefixStr += '（騎士CO）';
+        prefixStr += '（聖騎士CO）';
       } else if (coRole === 'freemason') {
         prefixStr += '（共有CO）';
       }
@@ -5933,26 +7018,53 @@ ${speakerName}としての議論発言:`;
       const seerName = getCharDisplayName(seerChar);
       const rand = Math.random();
       const realRole = gameState.roles[accusedChar];
+      const existingCO = gameState.coRoles[accusedChar] || 'grey';
 
       let msg = '';
-      if (rand < 0.50) {
-        // 【パターンA / B: 対立CO（占い騙し返し または 騎士/霊媒CO）】
-        const fakeRole = (realRole === 'wolf' || Math.random() < 0.5) ? 'seer' : 'knight';
-        gameState.isStealthing[accusedChar] = false;
-        gameState.coRoles[accusedChar] = fakeRole;
-        gameState.claimedRoleTypes[accusedChar] = fakeRole;
 
-        if (fakeRole === 'seer') {
-          msg = `嘘をつかないでください！私こそが本物の【占い師】です！${seerName}さんは村を騙す偽物（人狼）です！真の鑑定結果を述べて対抗します！`;
+      // ① 既に役職CO済みのキャラは、自身のCO役職を絶対に撤回・変更せず主張を維持
+      if (existingCO && existingCO !== 'grey' && existingCO !== 'villager') {
+        const roleMap = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
+        const roleName = roleMap[existingCO] || existingCO;
+        msg = `嘘をつかないでください！私は【${roleName}】として公言して行動しています！${seerName}さんは村を騙す偽物（魔物）です！真の鑑定・ログと照らし合わせればどちらが本物か明白です！`;
+      }
+      // ② 真役職者（真賢者・真聖職者・真聖騎士・共有等）が黒出しされた場合
+      else if (realRole === 'seer' || realRole === 'medium' || realRole === 'knight' || realRole === 'freemason') {
+        // 自身の真役職を即座に正しくCO（嘘役職の騙りは絶対にしない）
+        gameState.isStealthing[accusedChar] = false;
+        gameState.coRoles[accusedChar] = realRole;
+        gameState.claimedRoleTypes[accusedChar] = realRole;
+
+        if (realRole === 'seer') {
+          msg = `嘘をつかないでください！私こそが本物の【賢者】です！${seerName}さんは村を騙す偽物（魔物）です！真の鑑定結果を述べて対抗します！`;
+        } else if (realRole === 'medium') {
+          msg = `デタラメな占いです！私は本物の【聖職者】です！今夜処刑者の判定を行う重要役職なのに、なぜ偽賢者に黒出しされなきゃいけないんですか！私を吊ったら村の情報源が途絶えます！`;
+        } else if (realRole === 'knight') {
+          msg = `デタラメな占いです！私は本物の【聖騎士】です！今夜守るべき重要な役職なのに、なぜ偽賢者に黒出しされなきゃいけないんですか！私を吊ったら村の防衛線が崩壊します！`;
         } else {
-          msg = `デタラメな占いです！私は【騎士】です！今夜守るべき重要な役職なのに、なぜ偽占いに黒出しされなきゃいけないんですか！私を吊ったら村の防衛線が崩壊します！`;
+          msg = `デタラメな占いです！私は【共有者】です！確定白の人間に対して黒出しするとは、${seerName}さんの偽物が確定しました！`;
         }
-      } else if (rand < 0.80) {
-        // 【パターンC: 論理的反論＆相手の破綻追及・ライン攻撃】
-        msg = `急な黒出しですね。${seerName}さんは昨日から誘導があからさまですし、あからさまな偽占い師の擦り付けです！私の潔白を証明するために、この偽占いの破綻を精査してください！`;
-      } else {
-        // 【パターンD: 狂人/人狼の道連れブラフ】
-        msg = `まんまと引っかかりましたね！${seerName}さんが偽物であることがこれで確定しました。村の皆さん、騙されないでこの偽占いを処刑してください！`;
+      }
+      // ③ 真村人の場合：嘘の役職騙りは行わず、論理的反論または潔白主張
+      else if (realRole === 'villager') {
+        msg = `急な黒出しですね。${seerName}さんはあからさまな偽賢者で、無実の村人である私を濡れ衣で吊らせようとしています！村の皆さん、この偽賢者の破綻を精査してください！`;
+      }
+      // ④ 擬態モンスター・魔教徒の場合：一定確率で対抗役職騙り（偽賢者/偽聖騎士/偽聖職者）または論理反論
+      else {
+        if (rand < 0.50) {
+          const fakeRole = (realRole === 'wolf' || Math.random() < 0.5) ? 'seer' : 'knight';
+          gameState.isStealthing[accusedChar] = false;
+          gameState.coRoles[accusedChar] = fakeRole;
+          gameState.claimedRoleTypes[accusedChar] = fakeRole;
+
+          if (fakeRole === 'seer') {
+            msg = `嘘をつかないでください！私こそが本物の【賢者】です！${seerName}さんは村を騙す偽物（魔物）です！真の鑑定結果を述べて対抗します！`;
+          } else {
+            msg = `デタラメな占いです！私は【聖騎士】です！今夜守るべき重要な役職なのに、なぜ偽賢者に黒出しされなきゃいけないんですか！私を吊ったら村の防衛線が崩壊します！`;
+          }
+        } else {
+          msg = `急な黒出しですね。${seerName}さんは昨日から誘導があからさまですし、あからさまな偽賢者の擦り付けです！私の潔白を証明するために、この偽賢者の破綻を精査してください！`;
+        }
       }
 
       return msg;
@@ -5971,14 +7083,15 @@ ${speakerName}としての議論発言:`;
           const rep = gameState.dailySeerReports[char];
           if (rep && rep.target) {
             const targetName = getCharDisplayName(rep.target);
-            const rawMsg = `昨夜は${targetName}さんを占って【${rep.result}】でした。`;
+            const displayResult = rep.result === '人狼' ? '魔物' : rep.result;
+            const rawMsg = `昨夜は${targetName}さんを占って【${displayResult}】でした。`;
             const formattedMsg = formatSpeechMessage(char, rawMsg);
-            const speakMsg = `${displayName}（占いCO）です。${rawMsg}`;
+            const speakMsg = `${displayName}（賢者CO）です。${rawMsg}`;
             
             addLogItem(`💬 ${displayName}`, '', formattedMsg, 'ai-discussion', char, false);
             await playSpeechAsync(speakMsg, getCharVoiceProfileKey(char));
 
-            // ★ 占い黒出し（人狼判定）時の即時反論・必死の弁明の最優先割り込み
+            // ★ 占い黒出し（魔物判定）時の即時反論・必死の弁明の最優先割り込み
             if (rep.result === '人狼' && gameState.status[rep.target] === 'alive') {
               const accused = rep.target;
               const accusedDisplayName = getCharDisplayName(accused);
@@ -6010,9 +7123,10 @@ ${speakerName}としての議論発言:`;
           const rep = gameState.dailyMediumReports[char];
           if (rep && rep.target) {
             const targetName = getCharDisplayName(rep.target);
-            const rawMsg = `昨日処刑された${targetName}さんは【${rep.result}】でした。`;
+            const displayResult = rep.result === '人狼' ? '魔物' : rep.result;
+            const rawMsg = `昨日処刑された${targetName}さんは【${displayResult}】でした。`;
             const formattedMsg = formatSpeechMessage(char, rawMsg);
-            const speakMsg = `${displayName}（霊媒CO）です。${rawMsg}`;
+            const speakMsg = `${displayName}（聖職者CO）です。${rawMsg}`;
             
             addLogItem(`💬 ${displayName}`, '', formattedMsg, 'ai-discussion', char, false);
             await playSpeechAsync(speakMsg, getCharVoiceProfileKey(char));
@@ -6032,19 +7146,19 @@ ${speakerName}としての議論発言:`;
       let coText = '';
       if (roleType === 'seer') {
         const history = gameState.seerHistory[char] || [];
-        const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
-        coText = `「私は占い師です！これまでの全鑑定結果を開示します。 ${historyStr}」`;
+        const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+        coText = `「私は賢者です！これまでの全鑑定結果を開示します。 ${historyStr}」`;
       } else if (roleType === 'medium') {
         const rep = gameState.dailyMediumReports[char];
         if (rep && rep.target) {
-          coText = `「【霊媒師CO】昨日処刑された ${getCharDisplayName(rep.target)} さんの霊媒結果は【${rep.result}】でした！」`;
+          coText = `「【聖職者CO】昨日処刑された ${getCharDisplayName(rep.target)} さんの鑑定結果は【${rep.result === '人狼' ? '魔物' : rep.result}】でした！」`;
         } else {
           const history = gameState.mediumHistory[char] || [];
-          const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
-          coText = `「私は霊媒師です！過去の全霊媒結果を一括報告します。 ${historyStr}」`;
+          const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+          coText = `「私は聖職者です！過去の全鑑定結果を一括報告します。 ${historyStr}」`;
         }
       } else if (roleType === 'knight') {
-        coText = `「【騎士CO】私は本物の【騎士】です！人狼の襲撃から村人を防衛していました。私を処刑しないでください！」`;
+        coText = `「【聖騎士CO】私は本物の【聖騎士】です！魔物の襲撃から村人を防衛していました。私を処刑しないでください！」`;
       }
 
       addLogItem(`📢 役職CO: ${getCharDisplayName(char)}`, '', coText, 'narration', char, false);
@@ -6075,14 +7189,14 @@ ${speakerName}としての議論発言:`;
         if (coRole === 'seer') {
           const history = gameState.seerHistory[char] || [];
           if (history.length > 1) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
-            gameState.morningComments[char] = `「占い師CO。これまでの全鑑定結果です。【 ${historyStr} 】」`;
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+            gameState.morningComments[char] = `「賢者CO。これまでの全鑑定結果です。【 ${historyStr} 】」`;
           } else {
             const rep = gameState.dailySeerReports[char];
             if (rep) {
-              gameState.morningComments[char] = `「真占い師として報告します。昨夜は ${getCharDisplayName(rep.target)} さんを占い、結果は【${rep.result}】でした。」`;
+              gameState.morningComments[char] = `「真の賢者として報告します。昨夜は ${getCharDisplayName(rep.target)} さんを鑑定し、結果は【${rep.result === '人狼' ? '魔物' : rep.result}】でした。」`;
             } else {
-              gameState.morningComments[char] = `「私は本物の占い師です。村を誤処刑から守るため、全力を尽くして鑑定します。」`;
+              gameState.morningComments[char] = `「私は本物の賢者です。村を誤処刑から守るため、全力を尽くして真偽を確かめます。」`;
             }
           }
         } else if (coRole === 'medium') {
@@ -6091,16 +7205,16 @@ ${speakerName}としての議論発言:`;
           
           if (rep && rep.target) {
             if (history.length > 1) {
-              const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
-              gameState.morningComments[char] = `「霊媒結果の報告です！昨日処刑された ${getCharDisplayName(rep.target)} さんの霊媒結果は【${rep.result}】でした。（全霊媒履歴: ${historyStr}）」`;
+              const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+              gameState.morningComments[char] = `「聖職結果の報告です！昨日浄化された ${getCharDisplayName(rep.target)} さんの正体は【${rep.result === '人狼' ? '魔物' : rep.result}】でした。（全聖職履歴: ${historyStr}）」`;
             } else {
-              gameState.morningComments[char] = `「霊媒結果を報告します！昨日処刑された ${getCharDisplayName(rep.target)} さんの霊媒結果は【${rep.result}】でした。」`;
+              gameState.morningComments[char] = `「聖職結果を報告します！昨日浄化された ${getCharDisplayName(rep.target)} さんの正体は【${rep.result === '人狼' ? '魔物' : rep.result}】でした。」`;
             }
           } else if (history.length > 0) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result}】`).join('、 ');
-            gameState.morningComments[char] = `「霊媒師CO。これまでの霊媒鑑定結果一覧です。【 ${historyStr} 】」`;
+            const historyStr = history.map(h => `${formatDay(h.day)}: 処刑者 ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+            gameState.morningComments[char] = `「聖職者CO。これまでの聖職結果一覧です。【 ${historyStr} 】」`;
           } else {
-            gameState.morningComments[char] = `「私は霊媒師です。処刑された人物の真の姿を明らかにしていきます。」`;
+            gameState.morningComments[char] = `「私は聖職者です。浄化された人物の真の姿を明らかにしていきます。」`;
           }
         } else if (coRole === 'freemason') {
           const partnerMason = gameState.charList.find(c => c !== char && gameState.roles[c] === 'freemason');
@@ -6109,29 +7223,29 @@ ${speakerName}としての議論発言:`;
           if (realRole === 'wolf') {
             const commentPattern = isDayOne ? pickRandom([
               `「初日の朝を無事に迎えられて安堵しています。ですが、${targetName} さんの視点の置き方に少し違和感を感じています。」`,
-              `「人狼の潜伏を見破るため、${targetName} さんのこれからの発言を注意深く観察したいですね。」`,
+              `「擬態モンスターの潜伏を見破るため、${targetName} さんのこれからの発言を注意深く観察したいですね。」`,
               `「初日ですので慎重に手掛かりを探していきましょう。${targetName} さんの意見に注目しています。」`
             ]) : pickRandom([
               `「昨夜も犠牲者が出てしまいましたね……。${targetName} さんの発言にどこか防衛的な違和感を感じています。」`,
               `「夜が無事に明けて安堵しています。ですが、${targetName} さんの視点の狭さがどうしても引っかかります。」`,
-              `「人狼の潜伏が巧妙になっていますね。${targetName} さんの過去のログと矛盾がないか注視すべきです。」`
+              `「擬態モンスターの潜伏が巧妙になっていますね。${targetName} さんの過去のログと矛盾がないか注視すべきです。」`
             ]);
             gameState.morningComments[char] = commentPattern;
           } else if (realRole === 'madman') {
             const commentPattern = isDayOne ? pickRandom([
               `「真実を隠している者がこの中にいます！ ${targetName} さんの言動、気になりますよ！」`,
-              `「占い師のCO結果だけでなく、発言の不自然さにも目を向けるべきです。${targetName} さん、何か隠していませんか？」`,
+              `「賢者のCO結果だけでなく、発言の不自然さにも目を向けるべきです。${targetName} さん、何か隠していませんか？」`,
               `「初日から混乱に陥る前に、発言の曖昧な人物を炙り出しましょう！」`
             ]) : pickRandom([
               `「真実を隠している者がこの中にいます！ ${targetName} さんの言動、極めて怪しいですよ！」`,
-              `「占い師や霊媒師の結果だけでなく、発言の不自然さにも目を向けるべきです。${targetName} さん、何か隠していませんか？」`,
+              `「賢者や聖職者の結果だけでなく、発言の不自然さにも目を向けるべきです。${targetName} さん、何か隠していませんか？」`,
               `「村が混乱に陥る前に、発言の二転三転している人物を炙り出しましょう！」`
             ]);
             gameState.morningComments[char] = commentPattern;
           } else if (realRole === 'fox') {
             const commentPattern = pickRandom([
               `「安易な感情論や誘導に乗らないことが肝要です。${targetName} さんの意見の整合性をじっくり検証しましょう。」`,
-              `「人狼の甘言に騙されないよう、冷静に盤面を整理して議論を進めたいですね。」`,
+              `「擬態モンスターの甘言に騙されないよう、冷静に盤面を整理して議論を進めたいですね。」`,
               `「静観しているだけでは見えてこない真実があります。皆様の考察をしっかり聞かせていただきます。」`
             ]);
             gameState.morningComments[char] = commentPattern;
@@ -6150,8 +7264,8 @@ ${speakerName}としての議論発言:`;
         }
 
         let coText = 'グレー';
-        if (coRole === 'seer') coText = '占いCO';
-        if (coRole === 'medium') coText = '霊媒CO';
+        if (coRole === 'seer') coText = '賢者CO';
+        if (coRole === 'medium') coText = '聖職者CO';
         if (coRole === 'freemason') coText = '共有CO';
 
         if (!gameState.morningCommentsHistory) gameState.morningCommentsHistory = [];
@@ -6204,6 +7318,11 @@ ${speakerName}としての議論発言:`;
       const realRole = gameState.roles[speaker];
       const coRole = gameState.coRoles[speaker] || 'grey';
 
+      // 既にいずれかの役職COを行っている場合は役職の変更（上書きCO）を行わない
+      if (coRole !== 'grey' && coRole !== 'villager') {
+        return null;
+      }
+
       // --- 1. 潜伏役職者（真役職）の緊急防衛CO ---
       if (gameState.isStealthing[speaker] && (realRole === 'seer' || realRole === 'medium' || realRole === 'knight' || realRole === 'freemason')) {
         // CO登録
@@ -6214,13 +7333,13 @@ ${speakerName}としての議論発言:`;
         let coMsg = '';
         if (realRole === 'seer') {
           const history = gameState.seerHistory[speaker] || [];
-          const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
-          coMsg = `「待ってください、私への疑いは完全な誤解です！実は【占い師】です！これまでの鑑定結果は（${historyStr || 'まだありません'}）です！私を吊ると村が負けます！」`;
+          const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+          coMsg = `「待ってください、私への疑いは完全な誤解です！実は【賢者】です！これまでの鑑定結果は（${historyStr || 'まだありません'}）です！私を吊ると村が負けます！」`;
         } else if (realRole === 'medium') {
           const rep = gameState.dailyMediumReports[speaker];
-          coMsg = `「ちょっと待って！私を処刑するのは危険すぎます！実は【霊媒師】です！${rep && rep.target ? `昨日処刑された 村人 ${rep.target} は【${rep.result}】でした！` : ''} 私を吊らないでください！」`;
+          coMsg = `「ちょっと待って！私を処刑するのは危険すぎます！実は【聖職者】です！${rep && rep.target ? `昨日処刑された 村人 ${rep.target} は【${rep.result === '人狼' ? '魔物' : rep.result}】でした！` : ''} 私を吊らないでください！」`;
         } else if (realRole === 'knight') {
-          coMsg = `「待ってください！私に票を集めるのは村の破滅です！実は【騎士】です！昨夜も密かに護衛を行っていました！私を処刑しないでください！」`;
+          coMsg = `「待ってください！私に票を集めるのは村の破滅です！実は【聖騎士】です！昨夜も密かに護衛を行っていました！私を処刑しないでください！」`;
         } else if (realRole === 'freemason') {
           coMsg = `「落ち着いてください！私は【共有者】です！人間であることが確定しています！私を処刑するのは無駄吊りです！」`;
         }
@@ -6232,11 +7351,11 @@ ${speakerName}としての議論発言:`;
         return { type: 'defensive-co', role: realRole, text: coMsg };
       }
 
-      // --- 2. 人狼・狂人の緊急偽CO（coPreferenceプロファイルパラメータに基づいて偽CO判断） ---
+      // --- 2. 魔物・魔教徒の緊急偽CO（coPreferenceプロファイルパラメータに基づいて偽CO判断） ---
       const prof = (gameState.charProfiles && gameState.charProfiles[speaker]) || null;
       const fakeCoProb = prof ? (prof.coPreference * 0.5 + 0.1) : 0.30; // coPrefが高いと最大60%, 低いと10%で偽CO
       if ((coRole === 'grey' || coRole === 'villager') && (realRole === 'wolf' || realRole === 'madman') && Math.random() < fakeCoProb) {
-        // 騙る役職の戦略的選定（占いCO・霊媒CO・騎士CO）
+        // 騙る役職の戦略的選定（賢者CO・聖職者CO・聖騎士CO）
         const existingCOs = Object.values(gameState.coRoles);
         let fakeRole = 'seer';
         if (!existingCOs.includes('seer')) {
@@ -6272,12 +7391,12 @@ ${speakerName}としての議論発言:`;
         let coMsg = '';
         if (fakeRole === 'seer') {
           const history = gameState.seerHistory[speaker] || [];
-          const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result}】`).join('、 ');
-          coMsg = `「ここまできたら隠せません！私こそが真の【占い師】です！${historyStr ? `鑑定結果: ${historyStr}` : ''} 対抗のCOは全員偽者です！」`;
+          const historyStr = history.map(h => `${formatDay(h.day)}: 村人 ${h.target}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、 ');
+          coMsg = `「ここまできたら隠せません！私こそが真の【賢者】です！${historyStr ? `鑑定結果: ${historyStr}` : ''} 対抗のCOは全員偽者です！」`;
         } else if (fakeRole === 'medium') {
-          coMsg = `「待ちなさい！私を吊るならハッキリ言います、私こそが真の【霊媒師】です！私を処分すれば村の霊媒視点が途絶えますよ！」`;
+          coMsg = `「待ちなさい！私を吊るならハッキリ言います、私こそが真の【聖職者】です！私を処分すれば村の聖職者視点が途絶えますよ！」`;
         } else {
-          coMsg = `「緊急事態なのでCOします！私は【騎士】です！今夜私を処刑すれば、今夜人狼の襲撃を誰一人防げなくなりますよ！」`;
+          coMsg = `「緊急事態なのでCOします！私は【聖騎士】です！今夜私を処刑すれば、今夜魔物の襲撃を誰一人防げなくなりますよ！」`;
         }
 
         renderBulletinBoard();
@@ -6290,11 +7409,11 @@ ${speakerName}としての議論発言:`;
       return null;
     }
 
-    // --- 役職結果（占い・霊媒）の矛盾・違和感 自動検知ヘルパー ---
+    // --- 役職結果（賢者・聖職者）の矛盾・違和感 自動検知ヘルパー ---
     function detectRoleContradictions() {
       const contradictions = [];
 
-      // 1. 【黒出し重複・白黒矛盾破綻】同一対象へ異なる結果（黒 vs 白）を出した占い師ペア
+      // 1. 【黒出し重複・白黒矛盾破綻】同一対象へ異なる結果（黒 vs 白）を出した賢者ペア
       const inspectionsByTarget = {};
       Object.keys(gameState.seerHistory || {}).forEach(seer => {
         if (gameState.status[seer] !== 'alive' && gameState.coRoles[seer] !== 'seer') return;
@@ -6317,19 +7436,19 @@ ${speakerName}としての議論発言:`;
             target,
             bSeer,
             wSeer,
-            text: `ちょっと待ってください！${getCharDisplayName(target)}さんに対して、${getCharDisplayName(bSeer)}さんは【人狼】、${getCharDisplayName(wSeer)}さんは【人間】と判定しています！真と偽で完全な白黒破綻が起きていますよ！`
+            text: `ちょっと待ってください！${getCharDisplayName(target)}さんに対して、${getCharDisplayName(bSeer)}さんは【魔物】、${getCharDisplayName(wSeer)}さんは【人間】と判定しています！真と偽で完全な白黒破綻が起きていますよ！`
           });
         }
       });
 
-      // 2. 【霊媒結果とのズレ破綻】前日処刑者の霊媒結果と占い結果の喰い違い
+      // 2. 【聖職者結果とのズレ破綻】前日処刑者の聖職者結果と賢者結果の喰い違い
       if (gameState.lastExecutedChar) {
         const execChar = gameState.lastExecutedChar;
         const mediumClaimants = gameState.charList.filter(c => (gameState.coRoles[c] === 'medium' || gameState.claimedRoleTypes[c] === 'medium') && gameState.status[c] === 'alive');
         mediumClaimants.forEach(med => {
           const medRep = gameState.dailyMediumReports[med];
           if (medRep && medRep.target === execChar) {
-            // 過去にexecCharを占った占い師と比較
+            // 過去にexecCharを鑑定した賢者と比較
             Object.keys(gameState.seerHistory || {}).forEach(seer => {
               if (gameState.status[seer] !== 'alive' && gameState.coRoles[seer] !== 'seer') return;
               const seerRep = (gameState.seerHistory[seer] || []).find(r => r.target === execChar);
@@ -6339,7 +7458,7 @@ ${speakerName}としての議論発言:`;
                   target: execChar,
                   medSeer: med,
                   seerChar: seer,
-                  text: `待ってください！昨日処刑された${getCharDisplayName(execChar)}さんについて、霊媒師の${getCharDisplayName(med)}さんは【${medRep.result}】、占い師の${getCharDisplayName(seer)}さんは【${seerRep.result}】と鑑定しており整合性が崩れています！`
+                  text: `待ってください！昨日処刑された${getCharDisplayName(execChar)}さんについて、聖職者の${getCharDisplayName(med)}さんは【${medRep.result === '人狼' ? '魔物' : medRep.result}】、賢者の${getCharDisplayName(seer)}さんは【${seerRep.result === '人狼' ? '魔物' : seerRep.result}】と鑑定しており整合性が崩れています！`
                 });
               }
             });
@@ -6347,20 +7466,20 @@ ${speakerName}としての議論発言:`;
         });
       }
 
-      // 3. 【3人以上占いCOの乱立・破綻盤面】
+      // 3. 【3人以上賢者COの乱立・破綻盤面】
       const seerCOs = gameState.charList.filter(c => gameState.coRoles[c] === 'seer' && gameState.status[c] === 'alive');
       if (seerCOs.length >= 3) {
         const names = seerCOs.map(c => getCharDisplayName(c)).join('さん、');
         contradictions.push({
           type: 'triple_seer_co',
-          text: `落ち着いて整理しましょう！占い師COが${names}さん3人も乱立しています！間違いなく2人以上の偽者（人狼・狂人）が紛れ込んでいます！`
+          text: `落ち着いて整理しましょう！賢者COが${names}さん3人も乱立しています！間違いなく2人以上の偽者（魔物・魔教徒）が紛れ込んでいます！`
         });
       }
 
       return contradictions;
     }
 
-    // --- 占い白出し（人間判定）結果の盤面集約ヘルパー ---
+    // --- 賢者白出し（人間判定）結果の盤面集約ヘルパー ---
     function getSeerWhiteResults() {
       const whiteResults = [];
       Object.keys(gameState.seerHistory || {}).forEach(seerChar => {
@@ -6414,16 +7533,103 @@ ${speakerName}としての議論発言:`;
       return false;
     }
 
+    // --- フォールバック発言生成（重複検出時に議論を継続させる） ---
+    function generateFallbackDiscussion(speaker, aliveChars, recentHistory, prof) {
+      const aliveOthers = aliveChars.filter(c => c !== speaker);
+      const target1 = pickRandom(aliveOthers) || speaker;
+      const target2 = pickRandom(aliveOthers.filter(c => c !== target1)) || target1;
+      const t1Name = getCharDisplayName(target1);
+      const t2Name = getCharDisplayName(target2);
+      const speakerName = getCharDisplayName(speaker);
+      const day = gameState.day || 1;
+      const aliveCount = aliveChars.length;
+
+      // 話題カテゴリをランダムに選択
+      const category = Math.floor(Math.random() * 8);
+      let msg = '';
+
+      switch (category) {
+        case 0: // 投票意向の表明
+          msg = pickRandom([
+            `現時点での私の投票先を明言します。【${t1Name}さん】に投票する予定です。理由は、ここまでの発言で具体的な推理がほとんど出ていないからです。`,
+            `投票先についてですが、今は【${t1Name}さん】と【${t2Name}さん】で迷っています。皆さんの意見を聞いてから最終判断したいと思います。`,
+            `はっきり言います。今日は【${t1Name}さん】を処刑すべきだと考えています。異論がある方は今のうちに声を上げてください。`
+          ]);
+          break;
+        case 1: // 疑惑の提示
+          msg = pickRandom([
+            `ずっと気になっていたのですが、${t1Name}さんは他の人が疑われている時、常に話題を逸らそうとしていませんか？`,
+            `${t1Name}さんと${t2Name}さんの投票先が一致しすぎているのが不自然です。ラインが繋がっている可能性を考えるべきでは？`,
+            `${t1Name}さん、あなたは今日ずっと当たり障りのない発言ばかりしていますよね。本心を隠しているように見えます。`
+          ]);
+          break;
+        case 2: // 自己弁護・潔白主張
+          msg = pickRandom([
+            `私のことを疑っている方がいるかもしれませんが、私はこれまで一貫して正確な推理を述べてきたつもりです。私を吊るのは村にとって損失です。`,
+            `もし私が魔物側なら、こんなに積極的に推理を展開するリスクを冒しませんよ。私の立場をもう少し冷静に考えてみてください。`,
+            `正直に申し上げます。私を疑うよりも、ここまで一度も具体的な考察を出していない人物にこそ注目すべきではないでしょうか。`
+          ]);
+          break;
+        case 3: // 盤面整理の提案
+          msg = pickRandom([
+            `ここまでの情報を一度整理しましょう。現在生存者は${aliveCount}人。処刑と夜の襲撃で毎日2人減ると考えると、残された猶予は多くありません。`,
+            `${day}日目も議論が進んでいますが、確定情報がまだ少ないですね。もっとCO情報の精査に時間を使うべきだと思います。`,
+            `皆さん、感情的にならずに論理的に考えましょう。確定白と確定黒を明確にして、グレーの中から最も怪しい人物を絞り込むべきです。`
+          ]);
+          break;
+        case 4: // 夜の出来事への言及
+          msg = pickRandom([
+            `昨夜の襲撃先について考えてみましょう。なぜあの人が狙われたのか…魔物側の思惑が透けて見える気がしませんか？`,
+            `襲撃パターンから推理すると、魔物はCO者を避けて確定白候補を狙っている可能性があります。つまりグレーの中に魔物が潜んでいます。`,
+            `昨夜のことですが、私は何か違和感を感じたんです。うまく言葉にできませんが…${t1Name}さんは何か気づいたことはありませんか？`
+          ]);
+          break;
+        case 5: // 他者への質問
+          msg = pickRandom([
+            `${t1Name}さんに質問です。あなたが今一番怪しいと思っている人は誰ですか？そしてその根拠は何ですか？`,
+            `${t2Name}さん、さっきから黙っていますが、現時点での推理を聞かせてもらえませんか？沈黙は疑われる原因になりますよ。`,
+            `${t1Name}さん、先ほどの発言で少し引っかかる部分がありました。もう少し詳しく説明していただけますか？`
+          ]);
+          break;
+        case 6: // 陣営推理
+          msg = pickRandom([
+            `冷静に考えると、今の生存者${aliveCount}人の中に確実に魔物が紛れています。消去法で考えると…${t1Name}さんが最も可能性が高いと私は見ています。`,
+            `魔物の立場で考えてみてください。もし自分が魔物なら、今の状況でどう振る舞いますか？その行動パターンに一番近い人が怪しいんです。`,
+            `この村の構成を考えると、まだ役職者が全員COしているとは限りません。潜伏役職者がいるなら、そろそろ情報を出すべき局面です。`
+          ]);
+          break;
+        case 7: // 議論への感想・態度表明
+          msg = pickRandom([
+            `今日の議論を聞いていて思ったのですが、${t1Name}さんの発言には一貫性がある一方、${t2Name}さんの主張は途中で変わっている気がします。`,
+            `皆さんの推理を聞いて、だんだん全体像が見えてきた気がします。鍵を握っているのは${t1Name}さんの真偽判定だと確信しています。`,
+            `率直に言って、今の議論は堂々巡りになりつつあります。新しい切り口として、${t1Name}さんの初日の発言を思い出してみませんか？`
+          ]);
+          break;
+      }
+
+      // 性格トーン適用
+      if (prof && prof.quotePrefix && Math.random() < 0.35) {
+        msg = `${prof.quotePrefix} ${msg}`;
+      }
+      if (prof && prof.aggression >= 0.8) {
+        msg = msg.replace(/と思います。/g, 'に決まってるよ！').replace(/考えます。/g, 'で決定だろ！');
+      } else if (prof && prof.aggression <= 0.3) {
+        msg = msg.replace(/違和感/g, '少し気になる点').replace(/一択です/g, '有力候補です');
+      }
+
+      return msg;
+    }
+
     // --- ③ 敗北危機（「次間違えると村が負ける」PP/過半数）自動検知ヘルパー ---
     function checkMustWinCondition() {
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       const aliveTotal = aliveChars.length;
       
-      // 実際の人狼数（生存中）
+      // 実際の魔物数（生存中）
       const wolfAliveCount = aliveChars.filter(c => gameState.roles[c] === 'wolf').length;
 
       // 村人が今日1人処刑され、夜1人襲撃された場合、翌朝生存者は aliveTotal - 2 人。
-      // その場合の翌朝の狼生存数が (aliveTotal - 2) / 2 以上になれば敗北確定。
+      // その場合の翌朝の魔物生存数が (aliveTotal - 2) / 2 以上になれば敗北確定。
       if (wolfAliveCount > 0) {
         const nextMorningAlive = aliveTotal - 2;
         if (nextMorningAlive <= 0 || wolfAliveCount >= (nextMorningAlive / 2)) {
@@ -6438,7 +7644,7 @@ ${speakerName}としての議論発言:`;
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       const aliveOthers = aliveChars.filter(c => c !== speakerChar);
 
-      // 確白（占い師からの白出し判定者または共有者・本物CO者）
+      // 確白（賢者からの白出し判定者または共有者・本物CO者）
       const whiteResults = getSeerWhiteResults();
       const whiteTargets = whiteResults.map(w => w.target);
 
@@ -6451,10 +7657,10 @@ ${speakerName}としての議論発言:`;
       if (greys.length > 0) {
         const target = pickRandom(greys);
         const confirmedWhiteNames = aliveOthers.filter(c => whiteTargets.includes(c) || gameState.coRoles[c] === 'freemason').map(c => getCharDisplayName(c));
-        const whiteStr = confirmedWhiteNames.length > 0 ? `${confirmedWhiteNames.join('さんや')}さんの白出し結果` : 'これまでのCOと占い結果';
+        const whiteStr = confirmedWhiteNames.length > 0 ? `${confirmedWhiteNames.join('さんや')}さんの白出し結果` : 'これまでのCOと賢者結果';
         return {
           target,
-          reason: `${whiteStr}を整理して確定枠を除外すると、潜伏している人狼は【${getCharDisplayName(target)}さん】しかあり得ない`
+          reason: `${whiteStr}を整理して確定枠を除外すると、潜伏している魔物は【${getCharDisplayName(target)}さん】しかあり得ない`
         };
       } else if (aliveOthers.length > 0) {
         const target = pickRandom(aliveOthers);
@@ -6470,32 +7676,32 @@ ${speakerName}としての議論発言:`;
     function getTheoryProposal(speakerChar) {
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       
-      // 1. 対抗占い師COが2人以上いる場合（ローラー/対抗精査）
+      // 1. 対抗賢者COが2人以上いる場合（ローラー/対抗精査）
       const seerCOs = aliveChars.filter(c => gameState.coRoles[c] === 'seer');
       if (seerCOs.length >= 2 && seerCOs.includes(speakerChar)) {
         const otherSeers = seerCOs.filter(c => c !== speakerChar);
         const otherSeerNames = otherSeers.map(c => getCharDisplayName(c)).join('さんや');
-        return `私以外にも${otherSeerNames}さんが占い師COしていて真偽が絞れません。今日は確実に人狼を減らすためにも、セオリー通り【対抗の占い師から処刑】してラインを特定しませんか？`;
+        return `私以外にも${otherSeerNames}さんが賢者COしていて真偽が絞れません。今日は確実に魔物を減らすためにも、セオリー通り【対抗の賢者から処刑】してラインを特定しませんか？`;
       } else if (seerCOs.length >= 2) {
         const seerNames = seerCOs.map(c => getCharDisplayName(c)).join('さんと');
-        return `占い師が${seerNames}さん2人以上出ていて真偽が絞れません。今日は確実に人狼を減らすためにも、セオリー通り【対抗の占い師から処刑】してラインを特定しませんか？`;
+        return `賢者が${seerNames}さん2人以上出ていて真偽が絞れません。今日は確実に魔物を減らすためにも、セオリー通り【対抗の賢者から処刑】してラインを特定しませんか？`;
       }
 
-      // 2. 霊媒COが2人以上いる場合
+      // 2. 聖職者COが2人以上いる場合
       const mediumCOs = aliveChars.filter(c => gameState.coRoles[c] === 'medium');
       if (mediumCOs.length >= 2 && mediumCOs.includes(speakerChar)) {
         const otherMeds = mediumCOs.filter(c => c !== speakerChar);
         const otherMedNames = otherMeds.map(c => getCharDisplayName(c)).join('さんや');
-        return `私以外にも${otherMedNames}さんが霊媒師COして対抗で並んでいます。偽霊媒による情報攪乱を防ぐため、今日は霊媒対抗枠から精査・処刑することを提案します。`;
+        return `私以外にも${otherMedNames}さんが聖職者COして対抗で並んでいます。偽聖職者による情報攪乱を防ぐため、今日は聖職者対抗枠から精査・処刑することを提案します。`;
       } else if (mediumCOs.length >= 2) {
         const medNames = mediumCOs.map(c => getCharDisplayName(c)).join('さんと');
-        return `霊媒師が${medNames}さん対抗で並んでいます。偽霊媒による情報攪乱を防ぐため、今日は霊媒対抗枠から精査・処刑することを提案します。`;
+        return `聖職者が${medNames}さん対抗で並んでいます。偽聖職者による情報攪乱を防ぐため、今日は聖職者対抗枠から精査・処刑することを提案します。`;
       }
 
       // 3. 役職COが出揃い、グレー吊りを狙う場合
       const greys = aliveChars.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'grey' || gameState.coRoles[c] === 'villager');
       if (greys.length >= 2 && Math.random() < 0.6) {
-        return `真役職者を誤保護しつつ潜伏人狼を炙り出すため、今日は役職COしていない【グレーのメンバーの中から選んで】処刑するのが一番安全な進行です。`;
+        return `真役職者を誤保護しつつ潜伏魔物を炙り出すため、今日は役職COしていない【グレーのメンバーの中から選んで】処刑するのが一番安全な進行です。`;
       }
 
       return null;
@@ -6565,7 +7771,7 @@ ${speakerName}としての議論発言:`;
         if (realRole === 'wolf') {
           msg = `【緊急局面】ここでの間違いは村の即敗北に直結します！怪しさが極めて高い【${logicalTargetName}さん】を吊るしか勝ち筋はありません！`;
         } else {
-          msg = `【警告】村人の皆さん落ち着いて！今日の処刑で人狼を吊れないと過半数を握られて敗北が確定します！絶対に【${logicalTargetName}さん】に票を合わせましょう！`;
+          msg = `【警告】村人の皆さん落ち着いて！今日の処刑で魔物を浄化できないと過半数を握られて敗北が確定します！絶対に【${logicalTargetName}さん】に票を合わせましょう！`;
         }
       }
       // ④ 役職CO主張矛盾の自動突っ込み
@@ -6585,7 +7791,7 @@ ${speakerName}としての議論発言:`;
       else if (lastItem && lastItem.isCO && lastItem.char !== speaker) {
         const coChar = lastItem.char;
         const coName = getCharDisplayName(coChar);
-        const coRoleName = lastItem.coRole === 'seer' ? '占い師' : (lastItem.coRole === 'medium' ? '霊媒師' : '騎士');
+        const coRoleName = lastItem.coRole === 'seer' ? '賢者' : (lastItem.coRole === 'medium' ? '聖職者' : '聖騎士');
         
         msg = pickRandom([
           `【${coName}さん】が【${coRoleName}】COを宣言されましたね。土壇場での騙りでないか、対抗者の有無とログの整合性を慎重に検証しましょう。`,
@@ -6599,9 +7805,9 @@ ${speakerName}としての議論発言:`;
         const wSeerName = getCharDisplayName(whiteInfo.seer);
 
         if (whiteInfo.target === speaker) {
-          msg = `占い師の${wSeerName}さんから私は白出しされています。身の潔白は証明されているので、完全グレーの【${logicalTargetName}さん】の発言を精査すべきです。`;
+          msg = `賢者の${wSeerName}さんから私は白出しされています。身の潔白は証明されているので、完全グレーの【${logicalTargetName}さん】の発言を精査すべきです。`;
         } else {
-          msg = `占い師の${wSeerName}さんから${wTargetName}さんに白判定が出ています。確白枠を除外すると、潜伏人狼の位置はグレーの【${logicalTargetName}さん】周辺に絞られます。`;
+          msg = `賢者の${wSeerName}さんから${wTargetName}さんに白判定が出ています。確白枠を除外すると、潜伏する擬態モンスターの位置はグレーの【${logicalTargetName}さん】周辺に絞られます。`;
         }
       }
       // ⑨ 直前発言者へのリアルタイム対話・反論
@@ -6616,9 +7822,9 @@ ${speakerName}としての議論発言:`;
       // ⑩ 汎用盤面考察（デフォルト）
       else {
         if (coRole === 'seer') {
-          msg = `占い師の立場から主張します。生存しているグレー枠の精査とライン判定を最優先して進めましょう。`;
+          msg = `賢者の立場から主張します。生存しているグレー枠の精査とライン判定を最優先して進めましょう。`;
         } else if (coRole === 'medium') {
-          msg = `霊媒師の判定報告を元に、誤処刑を防ぐための着実な議論をつなげていきましょう。`;
+          msg = `聖職者の判定報告を元に、誤処刑を防ぐための着実な議論をつなげていきましょう。`;
         } else {
           msg = `誤処刑を防ぐために客観的なログを再確認しています。【${logicalTargetName}さん】の発言整合性に少し違和感を感じているので意見を聞きたいです。`;
         }
@@ -6675,10 +7881,28 @@ ${speakerName}としての議論発言:`;
         }
       }
 
-      // 重複・類似発言のフィルタリング（スキップ）
+      // 重複・類似発言のフィルタリング → フォールバック発言で議論継続
       if (!defensiveCO && isDuplicateOrMeaningless(msg, recentHistory)) {
-        console.log(`[AI議論] 重複発言をスキップしました: (${speaker}: ${msg})`);
-        return;
+        console.log(`[AI議論] 重複発言を検出、フォールバック発言を生成します: (${speaker})`);
+        // フォールバック：多様な話題で新しい発言を生成
+        msg = generateFallbackDiscussion(speaker, aliveChars, recentHistory, prof);
+        // フォールバックも重複なら最終手段のユニーク発言
+        if (isDuplicateOrMeaningless(msg, recentHistory)) {
+          const timestamp = Math.floor(Date.now() / 1000) % 100;
+          const randomOther = pickRandom(aliveChars.filter(c => c !== speaker)) || speaker;
+          const randomOtherName = getCharDisplayName(randomOther);
+          msg = pickRandom([
+            `…ちょっと待ってください。${randomOtherName}さん、今日ここまでの議論で一番気になっている人は誰ですか？率直に聞きたいです。`,
+            `少し視点を変えましょう。今日まだ発言が少ない人がいませんか？沈黙も一つの情報です。${randomOtherName}さんはどう思いますか？`,
+            `ここで改めて全員に問いたい。現時点で一番怪しいと思う人と、その根拠を一言で述べてください。私は…${randomOtherName}さんが気になっています。`,
+            `${randomOtherName}さんの投票先の傾向が気になります。これまでの投票ラインを振り返ると、何か見えてくるものがあるはずです。`,
+            `正直に言います。今の議論の流れだと判断材料が足りない気がします。${randomOtherName}さん、もう少し具体的な根拠を示していただけませんか？`,
+            `ふと気づいたのですが、${randomOtherName}さんは特定の人物への追及を避けている印象があります。何か理由があるのでしょうか？`,
+            `議論が煮詰まってきましたね。ここで一旦、確定している情報だけを整理し直しませんか？${randomOtherName}さん、賛成していただけますか？`,
+            `${randomOtherName}さん、昨日の夜のことについてもう少し詳しく聞かせてください。何か気づいたことはありませんでしたか？`
+          ]);
+          console.log(`[AI議論] 最終フォールバック発言を使用: (${speaker})`);
+        }
       }
 
       // 記憶・ログ保存
@@ -6753,11 +7977,12 @@ ${speakerName}としての議論発言:`;
           const history = gameState.seerHistory[char] || [];
           history.forEach(h => {
             const targetName = getCharDisplayName(h.target);
-            const text = `${speakerName} 占いCO。${formatDay(h.day)} 占い: ${targetName} は ${h.result}。`;
+            const resText = h.result === '人狼' ? '魔物' : h.result;
+            const text = `${speakerName} 賢者CO。${formatDay(h.day)} 鑑定: ${targetName} は ${resText}。`;
             const item = document.createElement('div');
             item.className = 'bulletin-item';
             item.innerHTML = `
-              <div>🔮 <strong>${speakerName} (占いCO)</strong> ➡️ [${formatDay(h.day)}] <strong>${targetName}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
+              <div>🔮 <strong>${speakerName} (賢者CO)</strong> ➡️ [${formatDay(h.day)}] <strong>${targetName}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${resText}</span>】</div>
               <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
             `;
             list.appendChild(item);
@@ -6767,11 +7992,12 @@ ${speakerName}としての議論発言:`;
           const history = gameState.mediumHistory[char] || [];
           history.forEach(h => {
             const targetName = getCharDisplayName(h.target);
-            const text = `${speakerName} 霊媒CO。${formatDay(h.day)} 霊媒: 処刑者 ${targetName} は ${h.result}。`;
+            const resText = h.result === '人狼' ? '魔物' : h.result;
+            const text = `${speakerName} 聖職者CO。${formatDay(h.day)} 霊視: 処刑者 ${targetName} は ${resText}。`;
             const item = document.createElement('div');
             item.className = 'bulletin-item';
             item.innerHTML = `
-              <div>👻 <strong>${speakerName} (霊媒CO)</strong> ➡️ [${formatDay(h.day)}] 処刑者 <strong>${targetName}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${h.result}</span>】</div>
+              <div>👻 <strong>${speakerName} (聖職者CO)</strong> ➡️ [${formatDay(h.day)}] 処刑者 <strong>${targetName}</strong> は【<span style="color:${h.result === '人狼' ? 'var(--wolf-color)' : 'var(--citizen-color)'}">${resText}</span>】</div>
               <button class="btn-speak" onclick="speakText('${text}', null, false, '${char}')">🔊</button>
             `;
             list.appendChild(item);
@@ -6784,12 +8010,12 @@ ${speakerName}としての議論発言:`;
       }
     }
 
-    // --- 【論理思考エンジン①】確定破綻者（100%人狼/偽物）の検出ヘルパー ---
+    // --- 【論理思考エンジン①】確定破綻者（100%魔物/偽物）の検出ヘルパー ---
     function getDefiniteBustedPlayers() {
       const busted = [];
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
 
-      // 1. 白出しした人物が死亡し、霊媒結果や過去役職で「人狼」と確定判明しているにもかかわらず「白出し」していた占い師（破綻占い）
+      // 1. 白出しした人物が死亡し、霊媒結果や過去役職で「魔物」と確定判明しているにもかかわらず「白出し」していた賢者（破綻占い）
       Object.keys(gameState.seerHistory || {}).forEach(seer => {
         if (!aliveChars.includes(seer)) return;
         const history = gameState.seerHistory[seer] || [];
@@ -6801,7 +8027,7 @@ ${speakerName}としての議論発言:`;
             if (medRep && medRep.result === '人狼') {
               busted.push({
                 target: seer,
-                reason: `霊媒結果で【人狼】と確定した${getCharDisplayName(rep.target)}さんを【人間】と偽判定していたため（完全破綻）`,
+                reason: `霊媒結果で【魔物】と確定した${getCharDisplayName(rep.target)}さんを【人間】と偽判定していたため（完全破綻）`,
                 isCertain: true
               });
             }
@@ -6809,28 +8035,28 @@ ${speakerName}としての議論発言:`;
         });
       });
 
-      // 2. 3人目の占いCO（進行上破綻）
+      // 2. 3人目の賢者CO（進行上破綻）
       const seerCOs = aliveChars.filter(c => gameState.coRoles[c] === 'seer');
       if (seerCOs.length >= 3) {
         seerCOs.forEach(c => {
           if (!busted.some(b => b.target === c)) {
             busted.push({
               target: c,
-              reason: `占いCOが3人以上乱立しており構造的に破綻しているため`,
+              reason: `賢者COが3人以上乱立しており構造的に破綻しているため`,
               isCertain: true
             });
           }
         });
       }
 
-      // 3. 2人目の霊媒CO（1人死亡後の3人目等）または霊媒破綻
+      // 3. 2人目の聖職者CO（1人死亡後の3人目等）または霊媒破綻
       const medCOs = aliveChars.filter(c => gameState.coRoles[c] === 'medium');
       if (medCOs.length >= 3) {
         medCOs.forEach(c => {
           if (!busted.some(b => b.target === c)) {
             busted.push({
               target: c,
-              reason: `霊媒COが複数破綻して乱立しているため`,
+              reason: `聖職者COが複数破綻して乱立しているため`,
               isCertain: true
             });
           }
@@ -6846,13 +8072,13 @@ ${speakerName}としての議論発言:`;
       const aliveOthers = aliveChars.filter(c => c !== speakerAI);
       if (aliveOthers.length === 0) return null;
 
-      // 1. 自身が占い師COしており、黒（人狼）を出している対象がいる場合、その黒出し対象を100%徹底追及（他者への浮気禁止）
+      // 1. 自身が賢者COしており、黒（魔物）を出している対象がいる場合、その黒出し対象を100%徹底追及（他者への浮気禁止）
       if (gameState.coRoles[speakerAI] === 'seer') {
         const seerRep = gameState.dailySeerReports[speakerAI];
         if (seerRep && seerRep.result === '人狼' && aliveChars.includes(seerRep.target)) {
           return {
             target: seerRep.target,
-            reason: `自身の鑑定結果で【人狼】と確定判明しているため`,
+            reason: `自身の鑑定結果で【魔物】と確定判明しているため`,
             isCertain: true
           };
         }
@@ -6993,13 +8219,13 @@ ${speakerName}としての議論発言:`;
               score = 10;
               reason = '確白判定者への信頼（除外）';
             } else {
-              // 1. 占い師・霊媒師の黒判定結果
+              // 1. 賢者・聖職者の黒判定結果
               const hasBlackReport = Object.values(gameState.dailySeerReports || {}).some(r => r.target === target && r.result === '人狼')
                 || Object.values(gameState.mediumHistory || {}).flat().some(r => r.target === target && r.result === '人狼');
 
               if (hasBlackReport) {
                 score += 35;
-                reason = '能力者からの【人狼判定】';
+                reason = '能力者からの【魔物判定】';
               }
 
               // 2. 役職CO対抗関係
@@ -7141,8 +8367,8 @@ ${speakerName}としての議論発言:`;
           row.className = `vote-item-row ${isDeadVoter ? 'is-dead-voter' : ''}`;
 
           let voterCoText = '（グレー）';
-          if (gameState.coRoles[voter] === 'seer') voterCoText = '（占いCO）';
-          if (gameState.coRoles[voter] === 'medium') voterCoText = '（霊媒CO）';
+          if (gameState.coRoles[voter] === 'seer') voterCoText = '（賢者CO）';
+          if (gameState.coRoles[voter] === 'medium') voterCoText = '（聖職者CO）';
           if (gameState.coRoles[voter] === 'freemason') voterCoText = '（共有CO）';
 
           row.innerHTML = `
@@ -7263,10 +8489,10 @@ ${speakerName}としての議論発言:`;
         let coBadgeText = '👤 グレー';
         if (coRole === 'seer') {
           coBadgeClass = 'co-seer';
-          coBadgeText = '🔮 占いCO';
+          coBadgeText = '🔮 賢者CO';
         } else if (coRole === 'medium') {
           coBadgeClass = 'co-medium';
-          coBadgeText = '👻 霊媒CO';
+          coBadgeText = '👻 聖職者CO';
         } else if (coRole === 'freemason') {
           coBadgeClass = 'co-freemason';
           coBadgeText = '🤝 共有CO';
@@ -7296,11 +8522,11 @@ ${speakerName}としての議論発言:`;
           <select class="memo-select memo-${memoRole}" onclick="event.stopPropagation()" onchange="updateMemoRole('${char}', this.value, event)">
             <option value="none" ${memoRole === 'none' ? 'selected' : ''}>❓ 未予想</option>
             <option value="villager" ${memoRole === 'villager' ? 'selected' : ''}>🔵 村人</option>
-            <option value="wolf" ${memoRole === 'wolf' ? 'selected' : ''}>🔴 人狼</option>
-            <option value="seer" ${memoRole === 'seer' ? 'selected' : ''}>🔮 占い師</option>
-            <option value="medium" ${memoRole === 'medium' ? 'selected' : ''}>👻 霊媒師</option>
-            <option value="knight" ${memoRole === 'knight' ? 'selected' : ''}>🛡️ 騎士</option>
-            <option value="madman" ${memoRole === 'madman' ? 'selected' : ''}>💗 狂人</option>
+            <option value="wolf" ${memoRole === 'wolf' ? 'selected' : ''}>🔴 擬態モンスター</option>
+            <option value="seer" ${memoRole === 'seer' ? 'selected' : ''}>🔮 賢者</option>
+            <option value="medium" ${memoRole === 'medium' ? 'selected' : ''}>👻 聖職者</option>
+            <option value="knight" ${memoRole === 'knight' ? 'selected' : ''}>🛡️ 聖騎士</option>
+            <option value="madman" ${memoRole === 'madman' ? 'selected' : ''}>💗 魔教徒</option>
             <option value="baker" ${memoRole === 'baker' ? 'selected' : ''}>🍞 パン屋</option>
             <option value="fox" ${memoRole === 'fox' ? 'selected' : ''}>🦊 妖狐</option>
           </select>
@@ -7368,8 +8594,8 @@ ${speakerName}としての議論発言:`;
 
       if (gameState.selectedChar) {
         let coText = '（グレー）';
-        if (gameState.coRoles[gameState.selectedChar] === 'seer') coText = '（占いCO）';
-        if (gameState.coRoles[gameState.selectedChar] === 'medium') coText = '（霊媒CO）';
+        if (gameState.coRoles[gameState.selectedChar] === 'seer') coText = '（賢者CO）';
+        if (gameState.coRoles[gameState.selectedChar] === 'medium') coText = '（聖職者CO）';
         if (gameState.coRoles[gameState.selectedChar] === 'freemason') coText = '（共有CO）';
 
         const profile = (gameState.charProfiles && gameState.charProfiles[gameState.selectedChar]) || AI_PROFILES[0];
@@ -7435,7 +8661,7 @@ ${speakerName}としての議論発言:`;
       const myVoteTarget = myVote ? myVote.target : null;
       const myVoteReason = myVote ? myVote.reason : '';
 
-      // 本人の占い履歴（占い師または偽占いCO時）
+      // 本人の占い履歴（賢者または偽賢者CO時）
       const seerHistory = (gameState.seerHistory && gameState.seerHistory[char]) ? gameState.seerHistory[char] : [];
       
       // 本人の霊視履歴
@@ -7470,13 +8696,13 @@ ${speakerName}としての議論発言:`;
       // ----------------------------------------------------
       // 意図解析（Intent Parser）
       // ----------------------------------------------------
-      const isSeerQ = /占|うらな|うらなっ|うらない|鑑定|結果|白|黒|うらないし|占い師/.test(q);
+      const isSeerQ = /占|うらな|うらなっ|うらない|鑑定|結果|白|黒|うらないし|賢者/.test(q);
       const isKnightGuardQ = /守っ|護衛|プロテクト|守り|誰を守|守った人|守った対象|ガード|騎士|きし/.test(q);
       const isMediumQ = /霊媒|霊能|昨日の処刑|死んだ人|霊視|霊媒結果|れいばい/.test(q);
       const isAlibi = /アリバイ|場所|行動|どこ|昨夜|夜|何してた|何していた|居場所|どこいた|どこ居た/.test(q);
       const isRoleInquiry = /役職|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職|役割|能力者/.test(q);
       const isWhyMe = /なぜ私|なんで私|私を|自分を|僕を|俺を|私の|どう思|疑う理由/.test(q);
-      const isTargetQ = /誰|だれ|ターゲット|目標|狙い|処刑|吊る|吊り|怪しい|怪しい人|怪しいの|人狼|狼|黒|処刑候補|おすすめ/.test(q);
+      const isTargetQ = /誰|だれ|ターゲット|目標|狙い|処刑|吊る|吊り|怪しい|怪しい人|怪しいの|魔物|狼|黒|処刑候補|おすすめ/.test(q);
       const isMorningQ = /朝|理由|理由について|さっきの発言|発言の真意|言葉/.test(q);
 
       // ----------------------------------------------------
@@ -7505,14 +8731,14 @@ ${speakerName}としての議論発言:`;
             const lastReport = seerHistory[seerHistory.length - 1];
             const targetName = getCharDisplayName(lastReport.target);
             directConclusionText = `私がこれまでに占った人物は【${targetName}さん】で、結果は【${lastReport.result}】です。`;
-            reasoningText = `占い師としての能力により、${lastReport.result === '人狼' ? '村に潜む人狼を特定しました。' : '人間であることを確認して白枠を作りました。'}`;
+            reasoningText = `賢者としての能力により、${lastReport.result === '人狼' ? '村に潜む魔物と判定しました。' : '人間であることを確認して白枠を作りました。'}`;
           } else {
-            directConclusionText = `私は占い師ですが、まだ誰の占い鑑定も行っていません。`;
+            directConclusionText = `私は賢者ですが、まだ誰の占い鑑定も行っていません。`;
             reasoningText = `今夜の夜に怪しい人物を占って判定を行い、翌朝確実に村へ共有します。`;
           }
         } else {
-          directConclusionText = `誰を占ったかという質問への結論は『誰も占っていません（私は占い師ではありません）』。`;
-          reasoningText = `私には占い能力がないため、本物の占い師からの結果報告を元に推論を進める立場です。`;
+          directConclusionText = `誰を占ったかという質問への結論は『誰も占っていません（私は賢者ではありません）』。`;
+          reasoningText = `私には占い能力がないため、本物の賢者からの結果報告を元に推論を進める立場です。`;
         }
       }
       // ② 特定人物指名についての質疑
@@ -7521,11 +8747,11 @@ ${speakerName}としての議論発言:`;
         const tCo = coSummary[askedTargetChar] || 'grey';
 
         if (tCo && tCo !== 'grey' && tCo !== 'villager') {
-          const roleMap = { seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者' };
+          const roleMap = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
           directConclusionText = `${tName}さんに対する私の評価は【CO真偽の観察・保留中】です。`;
           reasoningText = `【${roleMap[tCo] || tCo}】を名乗られていますが、対抗者とのログの整合性を慎重に確認すべきだからです。`;
         } else if (myVoteTarget === askedTargetChar) {
-          directConclusionText = `${tName}さんは私の中で【人狼（黒）候補の筆頭】です。`;
+          directConclusionText = `${tName}さんは私の中で【魔物（黒）候補の筆頭】です。`;
           reasoningText = `${myVoteReason || '周囲の発言に同調しつつ本質的な議論を避けている姿勢が不自然だから'}です。`;
         } else {
           directConclusionText = `${tName}さんに対する現時点での評価は【判断材料不足による保留】です。`;
@@ -7561,7 +8787,7 @@ ${speakerName}としての議論発言:`;
       // ⑥ 役職・正体
       else if (isRoleInquiry) {
         if (coRole && coRole !== 'grey' && coRole !== 'villager') {
-          const roleMap = { seer: '占い師', medium: '霊媒師', knight: '騎士', freemason: '共有者' };
+          const roleMap = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
           directConclusionText = `私の宣言役職は【${roleMap[coRole] || coRole}】です。`;
           reasoningText = `能力で行使した真実の情報を村に提示し、勝利へ導くために行動しています。`;
         } else {
@@ -7575,14 +8801,14 @@ ${speakerName}としての議論発言:`;
           if (lastGuard) {
             const guardedName = getCharDisplayName(lastGuard);
             directConclusionText = `昨夜の私の護衛対象は【${guardedName}さん】です。`;
-            reasoningText = `村にとって不可欠な役職者であり、人狼からの襲撃リスクが最も高かったからです。`;
+            reasoningText = `村にとって不可欠な役職者であり、魔物からの襲撃リスクが最も高かったからです。`;
           } else {
             directConclusionText = `昨夜の護衛対象の詳細は【非公開】とさせていただきます。`;
-            reasoningText = `護衛先を明かすことで人狼に次の噛みラインを読まれるリスクを防ぐためです。`;
+            reasoningText = `護衛先を明かすことで魔物に次の噛みラインを読まれるリスクを防ぐためです。`;
           }
         } else {
-          directConclusionText = `護衛に関する質問への結論は『回答不可（私は騎士ではありません）』。`;
-          reasoningText = `私には護衛能力がありませんので、真の騎士が重要人物を守り抜くことに期待しています。`;
+          directConclusionText = `護衛に関する質問への結論は『回答不可（私は聖騎士ではありません）』。`;
+          reasoningText = `私には護衛能力がありませんので、真の聖騎士が重要人物を守り抜くことに期待しています。`;
         }
       }
       // ⑧ 霊媒の判定質問
@@ -7591,15 +8817,16 @@ ${speakerName}としての議論発言:`;
           if (mediumHistory.length > 0) {
             const lastReport = mediumHistory[mediumHistory.length - 1];
             const targetName = getCharDisplayName(lastReport.target);
-            directConclusionText = `昨日処刑された${targetName}さんの霊視結果は【${lastReport.result}】です。`;
-            reasoningText = `霊媒師としての能力により、処刑された人物の正体を確定情報として提示します。`;
+            const resText = lastReport.result === '人狼' ? '魔物' : lastReport.result;
+            directConclusionText = `昨日処刑された${targetName}さんの霊視結果は【${resText}】です。`;
+            reasoningText = `聖職者としての能力により、処刑された人物の正体を確定情報として提示します。`;
           } else {
             directConclusionText = `霊視結果の報告は【現在提示できるデータがありません】。`;
             reasoningText = `処刑が発生した夜に判定を行い、翌朝確定情報を提示いたします。`;
           }
         } else {
-          directConclusionText = `霊媒結果に関する回答は『回答不可（私は霊媒師ではありません）』です。`;
-          reasoningText = `私には霊視能力がないため、本物の霊媒師からの結果報告を待つ立場です。`;
+          directConclusionText = `霊媒結果に関する回答は『回答不可（私は聖職者ではありません）』です。`;
+          reasoningText = `私には霊視能力がないため、本物の聖職者からの結果報告を待つ立場です。`;
         }
       }
       // ⑨ 朝の発言の真意
@@ -8207,6 +9434,27 @@ ${speakerName}としての議論発言:`;
         gameState.mistakesLeft--;
       }
 
+      // 冒険の書（セーブスロット）単位の勇者IQ・評価の計算＆リアルタイム保存
+      if (typeof calculateHeroEvaluation === 'function') {
+        calculateHeroEvaluation(activeSaveSlot, {
+          type: 'execution',
+          executedIsMonster: (targetRole === 'wolf' || targetRole === 'fox')
+        });
+      }
+
+      // 猫又処刑時の道連れ処理
+      if (targetRole === 'nekomata' || targetRole === 'cat') {
+        const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
+        if (aliveOthers.length > 0) {
+          const draggedChar = pickRandom(aliveOthers);
+          gameState.status[draggedChar] = 'executed';
+          const draggedName = getCharDisplayName(draggedChar);
+          setTimeout(() => {
+            showNotification(`🐱【猫又の報復】処刑された猫又の怨念により、${draggedName} が道連れとなり共に浄化されました！`);
+          }, 1500);
+        }
+      }
+
       // 画面を発言ログ画面（Page 2）へ切り替え
       switchView(2);
 
@@ -8214,7 +9462,7 @@ ${speakerName}としての議論発言:`;
       const personality = getCharPersonality(char);
       const lastWordsPool = {
         aggressive: [
-          `ここで処刑？冗談じゃない…本物の人狼はまだこの中にいるぞ！`,
+          `ここで処刑？冗談じゃない…本物の魔物はまだこの中にいるぞ！`,
           `俺を疑うのか？いいだろう…だが明日の朝、後悔するのはお前たちだ。`,
           `こんな判断で村が守れると思っているのか？甘いな…`,
           `勝手にしろ。だがこの村は確実に間違った方向へ進んでいる。`,
@@ -8257,7 +9505,7 @@ ${speakerName}としての議論発言:`;
       const pool = lastWordsPool[personality] || lastWordsPool.cautious;
       let lastWords = pickRandom(pool);
 
-      addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', `審判員の決断により ${targetDisplayName} の処刑が決定しました。`, 'execution', null, false);
+      addLogItem(`⚖️ 勇者の裁き: ${targetDisplayName}`, '', `勇者の剣が振り下ろされた。 ${targetDisplayName} は浄化された。`, 'execution', null, false);
       addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', char, false);
 
       selectCharacter(null);
@@ -8382,7 +9630,7 @@ ${speakerName}としての議論発言:`;
       const wolfEyes = document.getElementById('wolf-eyes');
 
       if (titleEl) titleEl.textContent = '🌕 夜の暗躍 🌕';
-      if (descEl) descEl.innerHTML = '― 夜が訪れました ―<br>街に静けさが戻り、人狼たちが闇の中で密かに動き出します…';
+      if (descEl) descEl.innerHTML = '― 夜が訪れました ―<br>街に静けさが戻り、魔物たちが闇の中で密かに動き出します…';
       if (wolfEyes) wolfEyes.classList.add('visible');
       if (overlay) {
         overlay.classList.add('active');
@@ -8392,7 +9640,7 @@ ${speakerName}としての議論発言:`;
 
       try {
         // Step 1: Night Log & Speech
-        const nightLogText = '街に静けさが戻り、夜が訪れました。人狼たちが闇の中で密かに動き出します……';
+        const nightLogText = '街に静けさが戻り、夜が訪れました。魔物たちが闇の中で密かに動き出します……';
         const nightSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${nightLogText}`;
         addLogItem('ナレーション', '', nightLogText, 'narration', null, false);
 
@@ -8450,7 +9698,7 @@ ${speakerName}としての議論発言:`;
           }
         }
 
-        // 2. 人狼 (高度な心理戦襲撃ターゲット選定)
+        // 2. 魔物 (高度な心理戦襲撃ターゲット選定)
         const aliveWolves = gameState.charList.filter(c => gameState.roles[c] === 'wolf' && gameState.status[c] === 'alive');
         const aliveNonWolves = gameState.charList.filter(c => gameState.roles[c] !== 'wolf' && gameState.status[c] === 'alive');
 
@@ -8512,22 +9760,23 @@ ${speakerName}としての議論発言:`;
             gameState.status[attackTarget] = 'attacked';
             nightVictims.push(attackTarget);
 
-            // 🐾 猫又の噛まれ道連れ
-            if (gameState.roles[attackTarget] === 'nekomata') {
-              const otherAlive = gameState.charList.filter(c => c !== attackTarget && gameState.status[c] === 'alive');
-              if (otherAlive.length > 0) {
-                const revengeTarget = pickRandom(otherAlive);
-                gameState.status[revengeTarget] = 'attacked';
-                nightVictims.push(revengeTarget);
+            // 🐾 猫又の噛まれ道連れ（襲撃してきた魔物の中から1体を相討ち道連れ）
+            if (gameState.roles[attackTarget] === 'nekomata' || gameState.roles[attackTarget] === 'cat') {
+              if (aliveWolves.length > 0) {
+                const revengeWolf = pickRandom(aliveWolves);
+                gameState.status[revengeWolf] = 'attacked';
+                if (!nightVictims.includes(revengeWolf)) {
+                  nightVictims.push(revengeWolf);
+                }
               }
             }
           }
         }
 
-        // 3. 真占い師 (呪殺チェック用夜処理)
+        // 3. 真賢者 (呪殺チェック用夜処理)
         const trueSeerChar = gameState.charList.find(c => gameState.roles[c] === 'seer' && gameState.status[c] === 'alive');
         if (trueSeerChar) {
-          // 真占い師の最新ターゲットを取得（performNightAbilitiesより先行判定または評価）
+          // 真賢者の最新ターゲットを取得（performNightAbilitiesより先行判定または評価）
           const aliveOthers = gameState.charList.filter(c => c !== trueSeerChar && gameState.status[c] === 'alive');
           if (aliveOthers.length > 0) {
             // グレーでかつ怪しい人物を優先占い
@@ -8609,27 +9858,27 @@ ${speakerName}としての議論発言:`;
       if (gameState.wolvesExecuted >= gameState.targetWolvesCount || aliveWolves === 0) {
         stopAllTimers();
         if (aliveFoxes > 0) {
-          endGame('fox_win', '人狼は全滅しましたが、陰に潜んでいた【妖狐】が生き残り、単独勝利を収めました！村は妖狐に欺かれました…');
+          endGame('fox_win', '擬態モンスター（魔物）は全滅しましたが、陰に潜んでいた【妖狐】が生き残り、単独勝利を収めました！村は妖狐に欺かれました…');
         } else {
-          endGame(true, `見事に${gameState.targetWolvesCount}人の人狼を特定し全滅させました！村に平和が戻りました！`);
+          endGame(true, `見事すべての擬態モンスター（魔物）を退治した！村に平和が戻った。（勇者の勝利）`);
         }
         return true;
       } 
       else if (gameState.mistakesLeft <= 0) {
         stopAllTimers();
         if (aliveFoxes > 0) {
-          endGame('fox_win', '誤処刑により村は混乱に陥り、生き残った【妖狐】が単独勝利を収めました！');
+          endGame('fox_win', '無実の村人を追放しすぎて村は混乱に陥り、生き残った【妖狐】が単独勝利を収めました！');
         } else {
-          endGame(false, '無実の人間を誤処刑しすぎてしまいました…（誤処刑限界到達）');
+          endGame(false, '無実の村人を誤って浄化しすぎてしまいました…（誤追放限界到達）');
         }
         return true;
       } 
       else if (aliveWolves >= aliveNonWolves) {
         stopAllTimers();
         if (aliveFoxes > 0) {
-          endGame('fox_win', '人狼と人間が同数となり村が崩壊する中、生き残った【妖狐】がすべての高みの見物で単独勝利を収めました！');
+          endGame('fox_win', '魔物の数が村人の数と同等になり村が崩壊する中、生き残った【妖狐】が単独勝利を収めました！');
         } else {
-          endGame(false, '犠牲者が増え、生存者の半分以上が人狼となりました…村は人狼に支配されました。');
+          endGame(false, '魔物の数が村人の数と同等になった……村は魔物に喰らい尽くされた。（敗北）');
         }
         return true;
       }
@@ -8938,7 +10187,7 @@ ${speakerName}としての議論発言:`;
         playBgm('syouri');
         title.textContent = '🎉 審判成功！ - Victory -';
         title.className = 'modal-title win';
-        titleSpeechText = '審判成功！人狼全滅！';
+        titleSpeechText = '審判成功！魔物全滅！';
 
         if (gameState.gameCategory === 'daily') {
           recordDailyChallengeResult();
@@ -8960,6 +10209,16 @@ ${speakerName}としての議論発言:`;
       }
 
       recordGameResult(gameState.villageSize, winningFaction);
+
+      // 冒険の書（セーブスロット）単位の勇者IQ・総合戦績評価をアップデート
+      if (typeof calculateHeroEvaluation === 'function') {
+        calculateHeroEvaluation(activeSaveSlot, {
+          type: 'gameEnd',
+          isVictory: (result === true),
+          isFoxWin: (result === 'fox_win'),
+          totalDays: gameState.day || 1
+        });
+      }
 
       // ■ リザルトカード描画
       const gameResult = calculateGameResult(result);
@@ -9018,12 +10277,12 @@ ${speakerName}としての議論発言:`;
       let revealHTML = '<strong style="font-size: 1.15rem;">【全員の実際の役職と最終状態】</strong><div class="reveal-items-grid">';
       gameState.charList.forEach(char => {
         const role = gameState.roles[char];
-        let tag = '🔵 市民';
-        if (role === 'wolf') tag = '🔴 人狼';
-        if (role === 'seer') tag = '🔮 占い師';
-        if (role === 'medium') tag = '👻 霊媒師';
-        if (role === 'knight') tag = '🛡️ 騎士';
-        if (role === 'madman') tag = '💗 狂人';
+        let tag = '🔵 村人';
+        if (role === 'wolf') tag = '🔴 擬態モンスター';
+        if (role === 'seer') tag = '🔮 賢者';
+        if (role === 'medium') tag = '👻 聖職者';
+        if (role === 'knight') tag = '🛡️ 聖騎士';
+        if (role === 'madman') tag = '💗 魔教徒';
         if (role === 'baker') tag = '🍞 パン屋';
         if (role === 'freemason') tag = '🤝 共有者';
         if (role === 'fox') tag = '🦊 妖狐';
@@ -9047,8 +10306,9 @@ ${speakerName}としての議論発言:`;
 
     function getRoleLabelName(role) {
       const roleMap = {
-        wolf: '🔴 人狼', seer: '🔮 占い師', medium: '👻 霊媒師', knight: '🛡️ 騎士',
-        madman: '💗 狂人', baker: '🍞 パン屋', freemason: '🤝 共有者', fox: '🦊 妖狐', villager: '🔵 市民'
+        wolf: '🔴 擬態モンスター', seer: '🔮 賢者', medium: '👻 聖職者', knight: '🛡️ 聖騎士',
+        madman: '💗 魔教徒', baker: '🍞 パン屋', freemason: '🤝 共有者', fox: '🦊 妖狐',
+        nekomata: '🐱 猫又', cat: '🐱 猫又', villager: '🔵 村人', citizen: '🔵 村人'
       };
       return roleMap[role] || role;
     }
@@ -9075,6 +10335,7 @@ ${speakerName}としての議論発言:`;
       resetGameState();
       renderVillageStats();
       updateMainMenuUI();
+      updateTitleSaveSlotUI();
       playBgm('title');
 
       // ユーザーの最初の操作（タップまたはクリック）で全画面化を実行（1回のみ）
