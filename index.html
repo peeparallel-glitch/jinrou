@@ -2221,8 +2221,47 @@
       transform: scale(1.05);
     }
 
-
-
+    /* ⚔️ 処刑演出（MOVE/syokei.mp4）用フルスクリーンオーバーレイ */
+    .execution-video-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000000;
+      z-index: 100000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .execution-video-overlay.active {
+      display: flex;
+    }
+    .execution-video-overlay video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .execution-video-skip-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #e2e8f0;
+      font-size: 0.82rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 100001;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+    }
+    .execution-video-skip-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+    }
     .warning-box {
       color: var(--accent-amber);
       font-size: 0.75rem;
@@ -2673,6 +2712,84 @@
       0% { transform: scale(0.9); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
+    /* Custom Confirm Modal */
+    .custom-confirm-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      backdrop-filter: blur(4px);
+    }
+    .custom-confirm-content {
+      background: linear-gradient(145deg, #1e2230, #151927);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 24px;
+      width: 88%;
+      max-width: 420px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 20px rgba(245, 158, 11, 0.15);
+      text-align: center;
+      color: #ffffff;
+      animation: customModalPop 0.2s ease-out;
+    }
+    .custom-confirm-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+    }
+    .custom-confirm-text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      text-align: left;
+      white-space: pre-wrap;
+      color: var(--text-main);
+    }
+    .custom-confirm-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .custom-confirm-btn-ok {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+    .custom-confirm-btn-ok:hover {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    .custom-confirm-btn-cancel {
+      background: rgba(71, 85, 105, 0.6);
+      color: #e2e8f0;
+      border: 1px solid #64748b;
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+    .custom-confirm-btn-cancel:hover {
+      background: rgba(71, 85, 105, 0.9);
+    }
 
     /* Toast Notification Styles */
     .toast-notification {
@@ -2832,6 +2949,14 @@
     <div class="mislynch-banner-text">【誤審】村人の血が流された……</div>
   </div>
 
+  <!-- ⚔️ 処刑アニメーション動画用オーバーレイ -->
+  <div id="execution-video-overlay" class="execution-video-overlay">
+    <video id="execution-video-player" playsinline preload="auto">
+      <source src="MOVE/syokei.mp4" type="video/mp4">
+    </video>
+    <button class="execution-video-skip-btn" onclick="skipExecutionVideo()">スキップ ⏭</button>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-notification" class="toast-notification">
     <span id="toast-message">⚡ 通信上限のため軽量AIモードで動作中</span>
@@ -2842,6 +2967,18 @@
     <div class="custom-alert-content">
       <div id="custom-alert-text" class="custom-alert-text"></div>
       <button class="custom-alert-btn" onclick="closeCustomAlertModal()">OK</button>
+    </div>
+  </div>
+
+  <!-- Game Custom Confirm Modal Overlay -->
+  <div id="custom-confirm-overlay" class="custom-confirm-overlay" style="display: none;">
+    <div class="custom-confirm-content">
+      <div id="custom-confirm-title" class="custom-confirm-title">⚠️ 確認</div>
+      <div id="custom-confirm-text" class="custom-confirm-text"></div>
+      <div class="custom-confirm-buttons">
+        <button id="custom-confirm-btn-cancel" class="custom-confirm-btn-cancel">キャンセル</button>
+        <button id="custom-confirm-btn-ok" class="custom-confirm-btn-ok">実行する</button>
+      </div>
     </div>
   </div>
 
@@ -2878,9 +3015,12 @@
 私の剣が、災いに引導を渡す――」
 
 暗雲立ち込める村の門を叩き、勇者の審判が今、始まる。</div>
-      <div style="text-align: center;">
-        <button id="opening-story-btn" class="btn-start-game" onclick="finishOpeningStory()" style="width: 100%; max-width: 320px; font-size: 1.05rem; padding: 0.75rem; margin-top: 0;">
-          ⚔️ 災いの村へ足を踏み入れる
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 0.5rem;">
+        <button id="opening-story-prev-btn" class="btn btn-secondary" onclick="prevStoryStep()" style="display: none; padding: 0.65rem 1.2rem; font-size: 0.95rem;">
+          ◀ 前へ
+        </button>
+        <button id="opening-story-btn" class="btn-start-game" onclick="nextStoryStep()" style="flex: 1; font-size: 1.05rem; padding: 0.75rem; margin-top: 0;">
+          次へ進む ▶
         </button>
       </div>
     </div>
@@ -3652,7 +3792,8 @@
           <!-- Dynamically generated 5 chapters -->
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn" style="background: linear-gradient(135deg, #991b1b, #7f1d1d); color: #fca5a5; border: 1px solid #dc2626; font-size: 0.78rem; padding: 0.4rem 0.7rem;" onclick="confirmStoryReset()">🔄 全リセット</button>
         <button class="btn btn-secondary" onclick="returnToTitleScreen()">戻る</button>
       </div>
     </div>
@@ -4182,6 +4323,9 @@ ${speakerName}としての審判会議発言:`;
           scoreGained += 2000 + dayBonus;
           iqChange += 10;
 
+          // ★ ステージクリアボーナス: 信頼度 +10
+          updateTrust('STAGE_CLEAR');
+
           // ストーリーモード専用処理
           if (currentPlayMode === 'story') {
             if (!data.chapterRecords) data.chapterRecords = {};
@@ -4219,8 +4363,8 @@ ${speakerName}としての審判会議発言:`;
       data.heroIQ = Math.min(200, Math.max(50, currentIQ + iqChange));
       data.totalScore = Math.max(0, currentScore + scoreGained);
       data.rankTitle = getRankTitle(data.heroIQ, data.totalScore);
-      // ★ 信頼度の永続化（最新の信頼度を冒険の書データに保存）
-      if (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') {
+      // ★ 信頼度の永続化（勝利時のみ保存 — ゲームオーバー時は保存しない）
+      if (gameResult.isVictory && typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') {
         data.playerTrust = gameState.playerTrust;
       }
       data.updatedAt = new Date().toLocaleString("ja-JP");
@@ -5637,10 +5781,34 @@ ${speakerName}としての審判会議発言:`;
      * カスタム確認ダイアログ（Confirm）表示関数
      */
     function showCustomConfirmModal(messageText, callback) {
-      setTimeout(() => {
+      const overlay = document.getElementById('custom-confirm-overlay');
+      const textEl = document.getElementById('custom-confirm-text');
+      const btnOk = document.getElementById('custom-confirm-btn-ok');
+      const btnCancel = document.getElementById('custom-confirm-btn-cancel');
+      if (!overlay || !textEl) {
         const confirmed = window.confirm(messageText);
         if (typeof callback === 'function') callback(confirmed);
-      }, 50);
+        return;
+      }
+
+      textEl.textContent = messageText;
+      overlay.style.display = 'flex';
+
+      const cleanup = () => {
+        overlay.style.display = 'none';
+        btnOk.onclick = null;
+        btnCancel.onclick = null;
+      };
+
+      btnOk.onclick = () => {
+        cleanup();
+        if (typeof callback === 'function') callback(true);
+      };
+
+      btnCancel.onclick = () => {
+        cleanup();
+        if (typeof callback === 'function') callback(false);
+      };
     }
 
     // Mode Category & Custom/Daily Settings Management
@@ -6460,19 +6628,13 @@ ${speakerName}としての審判会議発言:`;
 
       switch (reason) {
         case 'EXECUTE_HUMAN':    // 人間を誤処刑
-          gameState.playerTrust = Math.max(0, gameState.playerTrust - 35);
+          gameState.playerTrust = Math.max(0, gameState.playerTrust - 25);
           break;
         case 'EXECUTE_MONSTER':  // 魔物（人狼）を処刑
           gameState.playerTrust = Math.min(100, gameState.playerTrust + 10);
           break;
-        case 'EXECUTE_FANATIC':  // 魔教徒を処刑
-          gameState.playerTrust = Math.min(100, gameState.playerTrust + 5);
-          break;
-        case 'EXECUTE_FOX':      // 妖狐を処刑
-          gameState.playerTrust = Math.min(100, gameState.playerTrust + 15);
-          break;
-        case 'NIGHT_KILL':       // 夜に村人が襲撃された
-          gameState.playerTrust = Math.max(0, gameState.playerTrust - 5);
+        case 'STAGE_CLEAR':     // ステージクリアボーナス
+          gameState.playerTrust = Math.min(100, gameState.playerTrust + 10);
           break;
       }
 
@@ -6499,13 +6661,8 @@ ${speakerName}としての審判会議発言:`;
       if (!item) return;
 
       item.resolved = true;
-      const r = item.role;
-      if (r === 'wolf') {
+      if (item.role === 'wolf') {
         updateTrust('EXECUTE_MONSTER');
-      } else if (r === 'madman' || r === 'fanatic') {
-        updateTrust('EXECUTE_FANATIC');
-      } else if (r === 'fox') {
-        updateTrust('EXECUTE_FOX');
       } else {
         updateTrust('EXECUTE_HUMAN');
       }
@@ -6515,33 +6672,20 @@ ${speakerName}としての審判会議発言:`;
     function resolveAllPendingTrustUpdates() {
       if (!gameState.pendingTrustUpdates || gameState.pendingTrustUpdates.length === 0) return;
       
-      let totalDiff = 0;
       let unresolvedItems = gameState.pendingTrustUpdates.filter(p => !p.resolved);
       if (unresolvedItems.length === 0) return;
 
       unresolvedItems.forEach(item => {
         item.resolved = true;
-        const r = item.role;
-        if (r === 'wolf') {
+        if (item.role === 'wolf') {
           gameState.playerTrust = Math.min(100, gameState.playerTrust + 10);
-        } else if (r === 'madman' || r === 'fanatic') {
-          gameState.playerTrust = Math.min(100, gameState.playerTrust + 5);
-        } else if (r === 'fox') {
-          gameState.playerTrust = Math.min(100, gameState.playerTrust + 15);
         } else {
-          gameState.playerTrust = Math.max(0, gameState.playerTrust - 35);
+          gameState.playerTrust = Math.max(0, gameState.playerTrust - 25);
         }
       });
 
       renderTrustUI();
       checkTrustEvents();
-
-      // ストーリーモード中なら最新の信頼度を冒険の書へ自動更新保存
-      if (currentPlayMode === 'story' && activeSaveSlot) {
-        const saveData = loadGameData(activeSaveSlot) || {};
-        saveData.playerTrust = gameState.playerTrust;
-        saveGameData(activeSaveSlot, saveData);
-      }
     }
 
     // 信頼度UI・ゲージ描画および通知ポップアップ演出
@@ -6734,36 +6878,42 @@ ${speakerName}としての審判会議発言:`;
     // 📜 ストーリーテキストデータ定義（STORY_DATA）
     // =====================================================
     const STORY_DATA = {
-        ch1: {
+        prologue: {
             title: "序章 ～災いに見舞われし地～",
-            btnText: "⚔️ 災いの村へ足を踏み入れる",
-            content: `かつて平和を誇った「レムの王国」。\nいま、その辺境の村々には、恐ろしい災いが忍び寄っていた。\n\n人間に完璧に化け、夜闇に乗じて住民を喰らう悪魔――「擬態モンスター」。\n姿形も声も、昨日まで共に過ごした家族や友人そのもの。\n誰が人間で、誰が皮を被った化け物なのか……村人たちは互いを疑い、狂気に呑まれつつあった。\n\nそこへ現れたのが、絶対の審判権を持つ「勇者（あなた）」力。\n\n「これより審判会議を執り行う。\n言葉の裏に潜む偽りを見抜き、私に潜伏する魔物を示せ。\n私の剣が、災いに引導を渡す――」\n\n暗雲立ち込める村の門を叩き、勇者の審判が今、始まる。`
+            btnText: "災いの村へ足を踏み入れる",
+            content: `かつて平和を誇った「レムの王国」。\nいま、その辺境の村々には、恐ろしい災いが忍び寄っていた。\n\n人間に完璧に化け、夜闇に乗じて住民を喰らう悪魔――「擬態モンスター」。\n姿形も声も、昨日まで共に過ごした家族や友人そのもの。\n誰が人間で、誰が皮を被った化け物なのか……村人たちは互いを疑い、狂気に呑まれつつあった。\n\nそこへ現れたのが、絶対の審判権を持つ「勇者（あなた）」。\n\n「これより審判会議を執り行う。\n言葉の裏に潜む偽りを見抜き、私に潜伏する魔物を示せ。\n私の剣が、災いに引導を渡す――」\n\n暗雲立ち込める村の門を叩き、勇者の審判が今、始まる。\n\n━━━━━━━━━━━━━━━━━━━\n【世界の状況】\n王国全土で 5 つの村が擬態モンスターの脅威に晒されている。\n勇者よ、最初の地「始まりの村」へ急ぐのだ。\n━━━━━━━━━━━━━━━━━━━`
+        },
+        ch1: {
+            title: "第1章：始まりの村",
+            btnText: "審判を開始する",
+            content: `勇者が最初に降り立った「始まりの村」。\nかつては旅人で賑わっていた小さな集落も、今は不気味な静寂に包まれていた。\n\n住民たちの瞳には怯えの色が浮かび、互いに距離を置いて身を寄せ合っている。\n人間に化けた「魔物」が、この集落に1体だけ潜伏しているのだ。\n審判者として最初の試練。偽りの言動を見抜き、村に平和を取り戻せ！\n\n━━━━━━━━━━━━━━━━━━━\n【村の規模（構成メンバー: 5名）】\n・村人：3名\n・賢者：1名\n・魔物：1名\n\n【勝利条件】\n潜伏する「魔物」を特定し、審判（処刑）によって退治せよ！\n━━━━━━━━━━━━━━━━━━━`
         },
         ch2: {
-            title: "第2章 ～偽りの安寧～",
-            btnText: "⚔️ 平穏の村へ進軍する",
-            content: `最初の村を救った勇者は、街道沿いの「平穏の村」へと足を踏み入れる。\n\n一見すると何事も起きていない長閑な村。\nしかし裏では、一人の「聖騎士」が夜な夜な魔物と刃を交え、限界を迎えていた。\n\n村人に完璧に化けた1体の魔物は、聖騎士の隙を狙い、喰殺の機会を窺っている。\n\n偽りの安寧を破り、潜む悪魔を断罪せよ。`
+            title: "第2章：平穏の村",
+            btnText: "審判を開始する",
+            content: `最初の村を救った勇者は、街道沿いの「平穏の村」へと足を踏み入れる。\n\n一見すると長閑な村。しかしその裏では夜な夜な、一人の「聖騎士」が村人を守るため刃を交えていた。\n聖騎士の盾も限界に近い。村人に紛れた1体の魔物は、聖騎士の隙を盗み喰殺の機会を窺っている。\n\n偽りの安寧を破り、闇に潜む悪魔を断罪せよ！\n\n━━━━━━━━━━━━━━━━━━━\n【村の規模（構成メンバー: 7名）】\n・村人：4名\n・賢者：1名\n・聖騎士：1名\n・魔物：1名\n\n【勝利条件】\n聖騎士と協力し、村に潜む「魔物」を処刑せよ！\n━━━━━━━━━━━━━━━━━━━`
         },
         ch3: {
-            title: "第3章 ～蠢く複数の影～",
-            btnText: "⚔️ 黄昏の村の門を開く",
-            content: `太陽が沈みかけ、長い影が落とされる「黄昏の村」。\nこの村の脅威は、もはや単体ではない。\n\n2体の擬態モンスターが密かに手を組み、互いを庇い合いながら村を侵食しつつあった。\n\n巧妙に張り巡らされた「偽りの絆」を見抜き、2体の影を同時に闇へと葬り去れ。\n黄昏が完全に闇へ呑まれる前に、審判の鉄槌を下すのだ。`
+            title: "第3章：黄昏の村",
+            btnText: "審判を開始する",
+            content: `太陽が沈みかけ、長い影が落とされる「黄昏の村」。\nこの村の脅威は、もはや単体ではない。\n\n2体の擬態モンスターが密かに手を組み、互いを庇い合いながら村を裏から支配しつつあった。\nさらに死者の魂と対話する「聖職者」も加わるが、もし審判を間違えれば翌朝その死が人間であったことが容赦なく暴かれてしまう……。\n\n巧妙な「偽りの絆」を見抜き、聖職者の報告と照らし合わせながら2体の影を断罪せよ！\n\n━━━━━━━━━━━━━━━━━━━\n【村の規模（構成メンバー: 9名）】\n・村人：4名\n・賢者：1名 / 聖騎士：1名 / 聖職者：1名\n・魔物：2名\n\n【勝利条件】\n誤審の恐怖を乗り越え、2体存在する「魔物」を全て全滅させよ！\n━━━━━━━━━━━━━━━━━━━`
         },
         ch4: {
-            title: "第4章 ～信仰の狂気～",
-            btnText: "⚔️ 暗雲立ち込める森へ",
-            content: `深い森の奥深く、暗雲に覆われた「暗雲の村」。\nここに渦巻くのは、魔物の恐怖だけではない。\n\n人間でありながら魔物を神と崇める狂信者――「魔教徒」の存在である。\n魔教徒は自らを犠牲にしてでも魔物を生かすべく、嘘の発言で審判を混乱させる。\n\n2体の魔物と、心を悪魔に売った1人の狂信者。\n狂気の霧を切り裂き、真実の光を照らせ！`
+            title: "第4章：暗雲の村",
+            btnText: "審判を開始する",
+            content: `深い森の奥深く、暗雲に覆われた「暗雲の村」。\nここに渦巻くのは、魔物の恐怖だけではない。\n\n人間でありながら魔物を神と崇める狂信者――「魔教徒」の存在である。\n魔教徒は自らを犠牲にしてでも魔物を生かすべく、嘘の発言で審判を混乱させる。\n狂気の霧を切り裂き、真実の光を照らせ！\n\n━━━━━━━━━━━━━━━━━━━\n【村の規模（構成メンバー: 12名）】\n・村人：7名 / 賢者：1名 / 聖騎士：1名 / 聖職者：1名\n・魔物：2名 / 魔教徒：1名\n\n【勝利条件】\n魔教徒の罠をくぐり抜け、2体の「魔物」を全滅させよ！\n━━━━━━━━━━━━━━━━━━━`
         },
         ch5: {
-            title: "第5章 ～終焉と狐火～",
-            btnText: "⚔️ 最終決戦の地へ",
-            content: `王国全土の命運を賭けた最終決戦の地、20人がひしめく「絶望の村」。\n\n闇に潜む4体の擬態モンスター。\n命を賭して報復を狙う「猫又」。\nそして、すべてを欺いて世界を嘲笑う古の怪異「妖狐」。\n\n誰の言葉が真実で、誰の瞳に偽りが宿るのか。\n一つの誤審が即座に世界の崩壊を招く極限の裁判。\n\n勇者よ、その神眼をもって全ての欺瞞を切り伏せ、世界にまことの朝焼けを取り戻せ！`
+            title: "第5章：絶望の村",
+            btnText: "最終決戦を開始する",
+            content: `王国全土の命運を賭けた最終決戦の地、20人がひしめく「絶望の村」。\n\n闇に潜む4体の擬態モンスター。\n命を賭して報復を狙う「猫又」。\nそして、すべてを欺いて世界を嘲笑う古の怪異「妖狐」。\n勇者よ、その神眼をもって全ての欺瞞を切り伏せ、世界に朝焼けを取り戻せ！\n\n━━━━━━━━━━━━━━━━━━━\n【村の規模（構成メンバー: 20名）】\n・村人：11名 / 賢者：1名 / 聖騎士：1名 / 聖職者：1名 / 猫又：1名\n・魔物：4名 / 妖狐：1名\n\n【勝利条件】\n4体の「魔物」を討伐し、かつ「妖狐」の生存を阻止せよ！\n━━━━━━━━━━━━━━━━━━━`
         },
         grandEnding: {
             title: "【絶望を越えて ―― 救世の勇者】",
             content: `20人の疑心が渦巻く「絶望の村」に、静寂が訪れる。\n\n妖狐の妖しい幻影を破り、4体の魔物を全て審判の剣で討ち果たした瞬間、村を覆っていた不吉な暗雲がゆっくりと裂けていった。\n\n擬態モンスターの脅威は去った。\n人間に化け、絆を切り裂き、世界を喰らい尽くそうとしていた悪魔は、勇者の「神眼」の前に一体残らず駆逐されたのだ。\n\n差し込む一筋の朝光が、傷つきながらも生き残った村人たちと勇者を温かく包み込む。\n人々は涙を流しながら膝を折り、絶対の審判者に感謝の祈りを捧げた。\n\n「讃えよ、審判の勇者を。その剣は偽りを断ち、世界に永遠の平和をもたらした」\n\nレムの王国の歴史に、新たな伝説が今、刻まれたのである――。`
         }
     };
+    const CHAPTER_STORY_DATA = STORY_DATA;
 
     let currentPlayMode = 'free'; // 'story' | 'free'
     let currentStoryChapter = 1;  // 1 〜 5
@@ -6772,7 +6922,7 @@ ${speakerName}としての審判会議発言:`;
     const STORY_CHAPTERS = {
       1: { id: 1, name: "始まりの村", size: 5, difficulty: "初級", desc: "村人3, 賢者1 / 魔物1", roles: { villager: 3, seer: 1, wolf: 1 }, unlockReq: "最初からプレイ可能" },
       2: { id: 2, name: "平穏の村", size: 7, difficulty: "中級", desc: "村人4, 賢者1, 聖騎士1 / 魔物1", roles: { villager: 4, seer: 1, knight: 1, wolf: 1 }, unlockReq: "第1章クリア" },
-      3: { id: 3, name: "黄昏の村", size: 9, difficulty: "上級", desc: "村人5, 賢者1, 聖騎士1 / 魔物2", roles: { villager: 5, seer: 1, knight: 1, wolf: 2 }, unlockReq: "第2章クリア" },
+      3: { id: 3, name: "黄昏の村", size: 9, difficulty: "上級", desc: "村人4, 賢者1, 聖騎士1, 聖職者1 / 魔物2", roles: { villager: 4, seer: 1, knight: 1, medium: 1, wolf: 2 }, unlockReq: "第2章クリア" },
       4: { id: 4, name: "暗雲の村", size: 12, difficulty: "超級", desc: "村人7, 賢者1, 聖騎士1, 聖職者1 / 魔物2, 魔教徒1", roles: { villager: 7, seer: 1, knight: 1, medium: 1, wolf: 2, madman: 1 }, unlockReq: "第3章クリア" },
       5: { id: 5, name: "絶望の村（最終決戦）", size: 20, difficulty: "最終決戦", desc: "村人11, 賢者1, 聖騎士1, 聖職者1, 猫又1 / 魔物4 / 妖狐1", roles: { villager: 11, seer: 1, knight: 1, medium: 1, nekomata: 1, wolf: 4, fox: 1 }, unlockReq: "第4章クリア" }
     };
@@ -6937,26 +7087,160 @@ ${speakerName}としての審判会議発言:`;
     }
 
     /**
+     * ストーリー全リセット確認ダイアログ
+     */
+    function confirmStoryReset() {
+      showCustomConfirmModal(
+        '⚠️ 全リセット確認\n\nこの冒険の書のストーリー進行・信頼度・勇者IQ・スコアを全てリセットして初期状態に戻します。\n\nこの操作は取り消せません。本当にリセットしますか？',
+        (confirmed) => {
+          if (confirmed) executeStoryReset();
+        }
+      );
+    }
+
+    /**
+     * ストーリー全リセット実行
+     * 信頼度100, IQ100, スコア0, 全章ロック, 進行記録クリア
+     */
+    function executeStoryReset() {
+      if (!activeSaveSlot) return;
+
+      const saveData = loadGameData(activeSaveSlot) || {};
+      
+      // リセット対象パラメータ
+      saveData.playerTrust = 100;
+      saveData.heroIQ = 100;
+      saveData.totalScore = 0;
+      saveData.unlockChapter = 1;
+      saveData.chapterRecords = {};
+      saveData.isStoryCleared = false;
+      saveData.rankTitle = getRankTitle(100, 0);
+      saveData.updatedAt = new Date().toLocaleString("ja-JP");
+
+      // 保存
+      try {
+        localStorage.setItem(BOOK_KEY_PREFIX + activeSaveSlot, JSON.stringify(saveData));
+      } catch (e) {
+        console.error("リセット保存失敗:", e);
+      }
+
+      // 現在のゲーム状態もリセット
+      if (typeof gameState !== 'undefined') {
+        gameState.playerTrust = 100;
+      }
+
+      // UIを再描画
+      renderStoryChapterModalContent();
+      updateTitleSaveSlotUI();
+      showNotification('🔄 冒険の書をリセットしました。信頼度・IQ・進行状況が初期化されました。');
+    }
+
+    // ストーリー導入ページのステップ管理
+    let storyPages = [];
+    let currentStoryPageIndex = 0;
+
+    /**
      * ストーリー章出撃開始
+     * 1章の場合: 序章 ➔ 1章の物語 ➔ 村の詳細情報（3ページ構成）
+     * 2章〜5章の場合: 章の物語 ➔ 村の詳細情報（2ページ構成）
      */
     function startStoryChapter(chId) {
       currentStoryChapter = chId;
       currentPlayMode = 'story';
       closeModal('story-chapter-modal');
 
-      // STORY_DATA から対象章のストーリーテキストを動的に反映
       const dataKey = `ch${chId}`;
       const storyObj = STORY_DATA[dataKey] || STORY_DATA.ch1;
+      const chapterConfig = STORY_CHAPTERS[chId] || STORY_CHAPTERS[1];
+
+      // 物語テキストと村の詳細情報（区切り線以降）を分離
+      const rawContent = storyObj.content || '';
+      const splitIdx = rawContent.indexOf('━━━━━━━━━━━━━━━━━━━');
+      let narrativeText = rawContent;
+      let villageDetailsText = '';
+
+      if (splitIdx !== -1) {
+        narrativeText = rawContent.slice(0, splitIdx).trim();
+        villageDetailsText = rawContent.slice(splitIdx).trim();
+      } else {
+        villageDetailsText = `━━━━━━━━━━━━━━━━━━━\n【村の規模（構成メンバー: ${chapterConfig.size}名）】\n${chapterConfig.desc}\n\n【勝利条件】\n潜伏する魔物を全て審判し、村に光を取り戻せ！\n━━━━━━━━━━━━━━━━━━━`;
+      }
+
+      storyPages = [];
+
+      // 第1章の場合、まず「序章」を第1ページとして追加
+      if (chId === 1 && STORY_DATA.prologue) {
+        storyPages.push({
+          title: `📜 ${STORY_DATA.prologue.title}`,
+          content: STORY_DATA.prologue.content,
+          btnText: "次へ進む（第1章へ） ▶"
+        });
+      }
+
+      // 章の物語ページ
+      storyPages.push({
+        title: `📜 ${storyObj.title}`,
+        content: narrativeText,
+        btnText: "次へ進む（村の詳細情報） ▶"
+      });
+
+      // 村の詳細情報ページ
+      storyPages.push({
+        title: `📜 ${storyObj.title} - 村の詳細情報`,
+        content: villageDetailsText,
+        btnText: storyObj.btnText || "審判を開始する ⚔️"
+      });
+
+      currentStoryPageIndex = 0;
+      renderStoryPage();
+      openModal('opening-story-modal');
+    }
+
+    /**
+     * 現在のストーリーページを描画
+     */
+    function renderStoryPage() {
+      if (!storyPages || storyPages.length === 0) return;
+      const page = storyPages[currentStoryPageIndex];
+      if (!page) return;
 
       const titleEl = document.getElementById('opening-story-title');
       const contentEl = document.getElementById('opening-story-content');
       const btnEl = document.getElementById('opening-story-btn');
+      const prevBtnEl = document.getElementById('opening-story-prev-btn');
 
-      if (titleEl) titleEl.textContent = `📜 ${storyObj.title}`;
-      if (contentEl) contentEl.textContent = storyObj.content;
-      if (btnEl) btnEl.textContent = storyObj.btnText;
+      if (titleEl) titleEl.textContent = page.title;
+      if (contentEl) {
+        contentEl.textContent = page.content;
+        contentEl.scrollTop = 0;
+      }
+      if (btnEl) btnEl.textContent = page.btnText;
 
-      openModal('opening-story-modal');
+      if (prevBtnEl) {
+        prevBtnEl.style.display = currentStoryPageIndex > 0 ? 'inline-block' : 'none';
+      }
+    }
+
+    /**
+     * 次のストーリーページへ進む（最後のページならゲーム開始）
+     */
+    function nextStoryStep() {
+      if (currentStoryPageIndex < storyPages.length - 1) {
+        currentStoryPageIndex++;
+        renderStoryPage();
+      } else {
+        finishOpeningStory();
+      }
+    }
+
+    /**
+     * 前のストーリーページへ戻る
+     */
+    function prevStoryStep() {
+      if (currentStoryPageIndex > 0) {
+        currentStoryPageIndex--;
+        renderStoryPage();
+      }
     }
 
     /**
@@ -6994,6 +7278,8 @@ ${speakerName}としての審判会議発言:`;
     window.startStoryChapter = startStoryChapter;
     window.proceedNextStoryChapter = proceedNextStoryChapter;
     window.finishOpeningStory = finishOpeningStory;
+    window.nextStoryStep = nextStoryStep;
+    window.prevStoryStep = prevStoryStep;
 
     // Start Game
     function startGame() {
@@ -7518,10 +7804,7 @@ ${speakerName}としての審判会議発言:`;
 
       addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
       
-      // 夜の被害があった場合、信頼度低下 (-5 per victim)
-      if (victims.length > 0) {
-        victims.forEach(() => updateTrust('NIGHT_KILL'));
-      }
+
 
       await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${morningNewsText}`);
 
@@ -10438,7 +10721,6 @@ ${speakerName}としての審判会議発言:`;
       let lastWords = pickRandom(pool);
 
       addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', char, false);
-      addLogItem(`⚖️ 勇者の裁き: ${targetDisplayName}`, '', `勇者の剣が振り下ろされた。 ${targetDisplayName} は浄化された。`, 'execution', null, false);
 
       selectCharacter(null);
       renderStatus();
@@ -10451,7 +10733,25 @@ ${speakerName}としての審判会議発言:`;
         console.log('Speech error in execution sequence:', err);
       }
 
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 400));
+
+      // ⚔️ 処刑アニメーション動画（MOVE/syokei.mp4）再生
+      try {
+        await playExecutionVideoAsync();
+      } catch(err) {
+        console.log('Video playback error in execution sequence:', err);
+      }
+
+      // 処刑を執り行ったコメント・ログを出力
+      const execText = `勇者の剣が振り下ろされ、${targetDisplayName} の処刑が執り行われた。`;
+      addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', execText, 'execution', null, false);
+      try {
+        await playSpeechAsync(execText);
+      } catch(err) {
+        console.log('Speech error after execution video:', err);
+      }
+
+      await new Promise(r => setTimeout(r, 600));
 
       // 🐾 猫又処刑時の道連れ処理
       if (targetRole === 'nekomata') {
@@ -10475,6 +10775,85 @@ ${speakerName}としての審判会議発言:`;
         runEnhancedSeamlessSequence();
       }
     }
+
+    // ⚔️ 処刑アニメーション動画再生管理関数
+    let executionVideoResolve = null;
+
+    function playExecutionVideoAsync() {
+      return new Promise((resolve) => {
+        const overlay = document.getElementById('execution-video-overlay');
+        const video = document.getElementById('execution-video-player');
+
+        if (!overlay || !video) {
+          resolve();
+          return;
+        }
+
+        executionVideoResolve = resolve;
+        overlay.classList.add('active');
+
+        video.currentTime = 0;
+
+        const onEnd = () => {
+          cleanup();
+          if (executionVideoResolve) {
+            const res = executionVideoResolve;
+            executionVideoResolve = null;
+            res();
+          }
+        };
+
+        const onError = () => {
+          cleanup();
+          if (executionVideoResolve) {
+            const res = executionVideoResolve;
+            executionVideoResolve = null;
+            res();
+          }
+        };
+
+        const cleanup = () => {
+          video.removeEventListener('ended', onEnd);
+          video.removeEventListener('error', onError);
+          video.pause();
+          overlay.classList.remove('active');
+        };
+
+        video.addEventListener('ended', onEnd, { once: true });
+        video.addEventListener('error', onError, { once: true });
+
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.log('Video autoplay blocked or error:', err);
+            // 自動再生ブロック時でも一定時間（または即座）にフォールバック
+            cleanup();
+            if (executionVideoResolve) {
+              const res = executionVideoResolve;
+              executionVideoResolve = null;
+              res();
+            }
+          });
+        }
+      });
+    }
+
+    function skipExecutionVideo() {
+      const overlay = document.getElementById('execution-video-overlay');
+      const video = document.getElementById('execution-video-player');
+      if (video) {
+        video.pause();
+      }
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+      if (executionVideoResolve) {
+        const res = executionVideoResolve;
+        executionVideoResolve = null;
+        res();
+      }
+    }
+    window.skipExecutionVideo = skipExecutionVideo;
 
     // Skip Execution Handler
     async function skipExecution() {
