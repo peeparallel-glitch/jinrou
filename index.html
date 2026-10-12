@@ -2366,6 +2366,57 @@
         gap: 0.25rem;
       }
 
+      .mass-call-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.35rem 0.45rem;
+        background: rgba(15, 23, 42, 0.65);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        border-radius: 8px;
+        margin-bottom: 0.2rem;
+      }
+
+      .mass-call-title {
+        font-size: 0.72rem;
+        font-weight: bold;
+        color: var(--accent-amber);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      .mass-call-buttons {
+        display: flex;
+        gap: 0.25rem;
+      }
+
+      .btn-mass-call {
+        flex: 1;
+        padding: 0.38rem 0.45rem !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+        background: linear-gradient(135deg, rgba(217, 119, 6, 0.25), rgba(180, 83, 9, 0.45)) !important;
+        border: 1px solid rgba(245, 158, 11, 0.5) !important;
+        color: #fef3c7 !important;
+        border-radius: 6px !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .btn-mass-call:hover:not(:disabled) {
+        background: linear-gradient(135deg, rgba(217, 119, 6, 0.45), rgba(180, 83, 9, 0.7)) !important;
+        border-color: var(--accent-amber) !important;
+        box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+      }
+
+      .btn-mass-call:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
       .btn-question {
         padding: 0.45rem 0.6rem !important;
         font-size: 0.78rem !important;
@@ -3030,7 +3081,6 @@
   <div id="title-screen" class="screen">
     <div class="title-box" id="title-box-container" style="display: none;">
       <h1 class="main-title">ひとり人狼<br><span class="sub-title">〜審判の勇者〜</span></h1>
-      <div class="title-subtitle">1人用 ファンタジーRPG（勇者の裁き＆心理戦AI搭載版）</div>
 
       <!-- Sub Header Buttons (遊び方・ランク・冒険の書・設定) -->
       <div class="title-sub-buttons" style="margin-bottom: 0.8rem;">
@@ -3157,30 +3207,16 @@
           </div>
         </div>
 
-        <!-- Title Save Slot Selector Bar -->
-        <div class="slot-select-container">
-          <div class="slot-select-title">
-            <span>📜 冒険の書（記録先）の選択 (オートセーブ対象):</span>
-            <span style="font-size: 0.72rem; color: #fbbf24;" id="active-slot-label">冒険の書 第一巻 選択中</span>
-          </div>
-          <div class="slot-select-buttons" id="title-slot-buttons">
-            <button class="btn-slot-select active" id="title-slot-btn-1" onclick="selectActiveSaveSlot(1)">
-              <span>第一巻</span>
-              <span class="slot-subtext" id="title-slot-sub-1">白紙の書</span>
-            </button>
-            <button class="btn-slot-select" id="title-slot-btn-2" onclick="selectActiveSaveSlot(2)">
-              <span>第二巻</span>
-              <span class="slot-subtext" id="title-slot-sub-2">白紙の書</span>
-            </button>
-            <button class="btn-slot-select" id="title-slot-btn-3" onclick="selectActiveSaveSlot(3)">
-              <span>第三巻</span>
-              <span class="slot-subtext" id="title-slot-sub-3">白紙の書</span>
-            </button>
-          </div>
-        </div>
-
         <div class="title-action-buttons">
           <button class="btn-start-game" id="btn-start-game-main" onclick="startGame()">模擬戦（フリーモード）を出撃する</button>
+          <div style="display: flex; gap: 0.6rem; margin-top: 0.3rem;">
+            <button class="btn btn-secondary" onclick="returnToModeSelect()" style="flex: 1; padding: 0.65rem 0.8rem; font-size: 0.88rem; font-weight: bold; background: rgba(30, 41, 59, 0.85); border: 1px solid #475569; color: #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+              ◀ モード選択へ戻る
+            </button>
+            <button class="btn btn-secondary" onclick="returnToTitleScreen()" style="flex: 1; padding: 0.65rem 0.8rem; font-size: 0.88rem; font-weight: bold; background: rgba(30, 41, 59, 0.85); border: 1px solid #475569; color: #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+              🏠 タイトルへ戻る
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -3261,12 +3297,28 @@
             <div id="target-info" class="target-info">尋問・追放する人物を選択してください</div>
             
             <div class="question-scroll-container">
+              <!-- 一斉質問: 役職対抗・名乗り出呼びかけ -->
+              <div class="mass-call-container">
+                <div class="mass-call-title">📢 一斉質問（対抗CO・役職名乗り出）</div>
+                <div class="mass-call-buttons">
+                  <button class="btn btn-mass-call" id="btn-mass-seer" onclick="triggerMassRoleCall('seer')">
+                    🔮 「賢者」の対抗は？
+                  </button>
+                  <button class="btn btn-mass-call" id="btn-mass-medium" onclick="triggerMassRoleCall('medium')">
+                    👻 「聖職者」の対抗は？
+                  </button>
+                  <button class="btn btn-mass-call" id="btn-mass-knight" onclick="triggerMassRoleCall('knight')">
+                    🛡️ 「聖騎士」の対抗は？
+                  </button>
+                </div>
+              </div>
+
               <div class="question-buttons">
                 <button class="btn btn-question" id="btn-q1" onclick="askQuestion(1)" disabled>
-                  1. 「朝の発言について詳しく教えて」
+                  1. 「あなたが人間だと言える一番の証拠は？」
                 </button>
                 <button class="btn btn-question" id="btn-q2" onclick="askQuestion(2)" disabled>
-                  2. 「昨夜のアリバイや行動は？」
+                  2. 「現在出ている役職の中で、誰を一番信用している？」
                 </button>
                 <button class="btn btn-question" id="btn-q3" onclick="askQuestion(3)" disabled>
                   3. 「今日誰を浄化すべきだと思う？」
@@ -3547,7 +3599,19 @@
       </div>
       <div class="modal-body">
         <div class="setting-item" style="margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
-          <button class="btn btn-secondary" onclick="openNameModal()" style="width: 100%; font-weight: bold; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 0.7rem; font-size: 0.9rem;">
+          <div class="setting-label-row">
+            <label for="language-setting" id="lbl-language-setting">🌐 Language / 言語</label>
+          </div>
+          <select id="language-setting" class="setting-select" onchange="changeLanguage(this.value)">
+            <option value="ja">日本語 (Japanese)</option>
+            <option value="en">English</option>
+            <option value="zh">中文 (Chinese)</option>
+            <option value="ko">한국어 (Korean)</option>
+          </select>
+        </div>
+
+        <div class="setting-item" style="margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+          <button class="btn btn-secondary" id="btn-open-name-modal" onclick="openNameModal()" style="width: 100%; font-weight: bold; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 0.7rem; font-size: 0.9rem;">
             📝 村人の名前設定（カスタマイズ）
           </button>
         </div>
@@ -3586,6 +3650,16 @@
             <span id="voice-volume-val" class="volume-val">80%</span>
           </div>
           <input type="range" id="voice-volume" min="0" max="100" value="80" oninput="updateVolume('voice', this.value)">
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-label-row">
+            <label for="speech-enabled-toggle" id="lbl-speech-enabled">🎙️ ボイス / 読み上げ (TTS)</label>
+          </div>
+          <select id="speech-enabled-toggle" class="setting-select" onchange="updateSpeechEnabled(this.value)">
+            <option value="true" selected>ON (有効)</option>
+            <option value="false">OFF (無効)</option>
+          </select>
         </div>
       </div>
       <div class="modal-footer">
@@ -4793,41 +4867,6 @@ ${speakerName}としての審判会議発言:`;
 
     // グローバル公開
     window.showCustomConfirmModal = showCustomConfirmModal;
-
-    // グローバル公開
-    /**
-     * 第5章「絶望の村」クリア時のグランドエンディング画面描画
-     */
-    function showGrandEndingModal(finalIQ, totalScore, rankTitle) {
-      const geData = STORY_DATA.grandEnding || {};
-      const titleEl = document.getElementById('grand-ending-title');
-      const contentEl = document.getElementById('grand-ending-content');
-
-      if (titleEl && geData.title) titleEl.textContent = geData.title;
-      if (contentEl && geData.content) contentEl.textContent = geData.content;
-
-      const statsContainer = document.getElementById('grand-ending-stats');
-      if (statsContainer) {
-        statsContainer.innerHTML = `
-          <div style="font-size:0.88rem; color:#fde68a; font-weight:bold; margin-bottom:0.2rem;">【最終冒険録】</div>
-          <div>最終勇者IQ: <strong style="color:#60a5fa; font-size:1.15rem;">${finalIQ || 100}</strong> （評価: <span style="color:#fbbf24; font-weight:bold;">【${rankTitle || "伝説の神眼勇者"}】</span>）</div>
-          <div>総得点: <strong style="color:#34d399; font-size:1.15rem;">${(totalScore || 0).toLocaleString()} pt</strong></div>
-          <div style="color:#34d399; font-weight:bold; margin-top:0.3rem;">🎉 全5章完全クリア達成</div>
-        `;
-      }
-      openModal('grand-ending-modal');
-    }
-
-    function returnToTitleFromGrandEnding() {
-      closeModal('grand-ending-modal');
-      closeModal('modal-overlay');
-      document.getElementById('game-screen').classList.add('hidden');
-      document.getElementById('title-screen').classList.remove('hidden');
-      updateTitleSaveSlotUI();
-    }
-
-    window.showGrandEndingModal = showGrandEndingModal;
-    window.returnToTitleFromGrandEnding = returnToTitleFromGrandEnding;
     window.selectActiveSaveSlot = selectActiveSaveSlot;
     window.updateTitleSaveSlotUI = updateTitleSaveSlotUI;
     window.autoSaveCurrentGame = autoSaveCurrentGame;
@@ -4853,10 +4892,327 @@ ${speakerName}としての審判会議発言:`;
     window.enableLLM = () => { useLLMMode = true; isOfflineMode = false; llmConsecutiveFailures = 0; console.log('✅ LLMモードを有効にしました'); };
     window.disableLLM = () => { useLLMMode = false; isOfflineMode = true; console.log('🔒 LLMモードを無効にしました（ローカル軽量AIモード）'); };
 
+    // =====================================================
+    // 🌐 多言語対応システム (i18n: ja / en / zh / ko)
+    // =====================================================
+    const I18N_TRANSLATIONS = {
+      ja: {
+        main_title: "ひとり人狼<br><span class=\"sub-title\">〜審判の勇者〜</span>",
+        how_to_play: "📖 遊び方",
+        hero_rank: "🏆 勇者ランク",
+        settings: "⚙ 設定",
+        start_new: "⚔️ はじめから<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(新たな旅立ち)</span>",
+        open_save: "📜 冒険の書を開く<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(続きから)</span>",
+        tab_normal: "通常試練",
+        tab_daily: "📅 デイリー村",
+        tab_custom: "🛠️ カスタマイズ村",
+        mode_select_title: "村の規模を選択してください",
+        village_size_label: "規模: ",
+        day_label: "日数: ",
+        timer_label: "⏱️ 審判時間:",
+        trust_label: "🤝 信頼度:",
+        to_title: "タイトルへ",
+        nav_tab_0: "[ 1. 仮想投票・疑い度履歴 ◀ ]",
+        nav_tab_1: "[ 2. 村人一覧・尋問 ]",
+        nav_tab_2: "[ 3. 発言ログ・確定情報 ► ]",
+        villager_list_title: "村人一覧 (尋問・勇者の裁き対象を選択)",
+        target_info_default: "尋問・追放する人物を選択してください",
+        mass_call_title: "📢 一斉質問（対抗CO・役職名乗り出）",
+        btn_mass_seer: "🔮 「賢者」の対抗は？",
+        btn_mass_medium: "👻 「聖職者」の対抗は？",
+        btn_mass_knight: "🛡️ 「聖騎士」の対抗は？",
+        btn_q1: "1. 「あなたが人間だと言える一番の証拠は？」",
+        btn_q2: "2. 「現在出ている役職の中で、誰を一番信用している？」",
+        btn_q3: "3. 「今日誰を浄化すべきだと思う？」",
+        custom_question_placeholder: "自由尋問（例: 昨日〇〇さんを占った理由は？）",
+        btn_custom_q: "尋問する",
+        btn_goto_decision: "⚖ 勇者の裁きへ進む（審判終了）",
+        btn_execute: "選択者を処刑（浄化）",
+        btn_skip_execute: "誰も処分しない",
+        settings_title: "⚙ ゲーム設定",
+        lbl_language: "🌐 Language / 言語",
+        btn_custom_names: "📝 村人の名前設定（カスタマイズ）",
+        lbl_discussion_time: "💬 昼の議論時間",
+        lbl_bgm_vol: "🎵 BGM 音量",
+        lbl_se_vol: "🔔 SE (効果音) 音量",
+        lbl_voice_vol: "🗣️ Voice (音声) 音量",
+        lbl_speech_enabled: "🎙️ ボイス / 読み上げ (TTS)",
+        btn_close: "閉じる"
+      },
+      en: {
+        main_title: "Solo Werewolf<br><span class=\"sub-title\">~The Judgment of the Hero~</span>",
+        how_to_play: "📖 How to Play",
+        hero_rank: "🏆 Hero Rank",
+        settings: "⚙ Settings",
+        start_new: "⚔️ New Game<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(New Journey)</span>",
+        open_save: "📜 Load Game<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(Continue)</span>",
+        tab_normal: "Standard Trials",
+        tab_daily: "📅 Daily Village",
+        tab_custom: "🛠️ Custom Village",
+        mode_select_title: "Select Village Scale",
+        village_size_label: "Size: ",
+        day_label: "Day: ",
+        timer_label: "⏱️ Time Left:",
+        trust_label: "🤝 Trust:",
+        to_title: "Title",
+        nav_tab_0: "[ 1. Votes & Suspicion ◀ ]",
+        nav_tab_1: "[ 2. Villagers & Inquiry ]",
+        nav_tab_2: "[ 3. Logs & Intel ► ]",
+        villager_list_title: "Villagers (Select target to interrogate or judge)",
+        target_info_default: "Select a villager to interrogate or banish",
+        mass_call_title: "📢 Mass Inquiry (Role Claims & Counters)",
+        btn_mass_seer: "🔮 Any Counter-Seer?",
+        btn_mass_medium: "👻 Any Counter-Medium?",
+        btn_mass_knight: "🛡️ Any Counter-Knight?",
+        btn_q1: "1. \"What is your strongest proof of being human?\"",
+        btn_q2: "2. \"Among current role claims, who do you trust most?\"",
+        btn_q3: "3. \"Who do you believe should be banished today?\"",
+        custom_question_placeholder: "Free question (e.g. Why did you inspect them yesterday?)",
+        btn_custom_q: "Interrogate",
+        btn_goto_decision: "⚖ Proceed to Hero's Judgment",
+        btn_execute: "Execute Selected Villager",
+        btn_skip_execute: "Skip Execution Today",
+        settings_title: "⚙ Game Settings",
+        lbl_language: "🌐 Language / 言語",
+        btn_custom_names: "📝 Customize Villager Names",
+        lbl_discussion_time: "💬 Day Discussion Time",
+        lbl_bgm_vol: "🎵 BGM Volume",
+        lbl_se_vol: "🔔 SFX Volume",
+        lbl_voice_vol: "🗣️ Voice Volume",
+        lbl_speech_enabled: "🎙️ Voice / Speech (TTS)",
+        btn_close: "Close"
+      },
+      zh: {
+        main_title: "单人人狼<br><span class=\"sub-title\">〜审判之勇者〜</span>",
+        how_to_play: "📖 游戏玩法",
+        hero_rank: "🏆 勇者段位",
+        settings: "⚙ 设置",
+        start_new: "⚔️ 从头开始<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(新的旅程)</span>",
+        open_save: "📜 冒险之书<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(继续游戏)</span>",
+        tab_normal: "常规试炼",
+        tab_daily: "📅 每日之村",
+        tab_custom: "🛠️ 自定义村庄",
+        mode_select_title: "请选择村庄规模",
+        village_size_label: "规模: ",
+        day_label: "天数: ",
+        timer_label: "⏱️ 审判时间:",
+        trust_label: "🤝 信任度:",
+        to_title: "返回标题",
+        nav_tab_0: "[ 1. 虚拟投票·嫌疑度 ◀ ]",
+        nav_tab_1: "[ 2. 村民列表·审问 ]",
+        nav_tab_2: "[ 3. 发言日志·确凿信息 ► ]",
+        villager_list_title: "村民列表 (选择审问·审判的目标)",
+        target_info_default: "请选择要审问或放逐的对象",
+        mass_call_title: "📢 全员发问（身份对跳·报身份）",
+        btn_mass_seer: "🔮 还有其他「预言家」吗？",
+        btn_mass_medium: "👻 还有其他「通灵师」吗？",
+        btn_mass_knight: "🛡️ 还有其他「圣骑士」吗？",
+        btn_q1: "1. 「你自证清白最有力的证据是什么？」",
+        btn_q2: "2. 「在目前报出的身份中，你最相信谁？」",
+        btn_q3: "3. 「你认为今天应该净化谁？」",
+        custom_question_placeholder: "自由提问（例：你昨天查验他的理由是？）",
+        btn_custom_q: "进行审问",
+        btn_goto_decision: "⚖ 进行勇者之裁决（结束审判）",
+        btn_execute: "处决选定者（净化）",
+        btn_skip_execute: "今日不处决任何人",
+        settings_title: "⚙ 游戏设置",
+        lbl_language: "🌐 Language / 语言",
+        btn_custom_names: "📝 自定义村民姓名",
+        lbl_discussion_time: "💬 白天讨论时长",
+        lbl_bgm_vol: "🎵 背景音乐 音量",
+        lbl_se_vol: "🔔 音效 音量",
+        lbl_voice_vol: "🗣️ 语音 音量",
+        lbl_speech_enabled: "🎙️ 语音 / 朗读 (TTS)",
+        btn_close: "关闭"
+      },
+      ko: {
+        main_title: "나홀로 인랑<br><span class=\"sub-title\">〜심판의 용사〜</span>",
+        how_to_play: "📖 게임 방법",
+        hero_rank: "🏆 용사 랭크",
+        settings: "⚙ 설정",
+        start_new: "⚔️ 처음부터<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(새로운 여정)</span>",
+        open_save: "📜 모험의 서<br><span style=\"font-size:0.75rem; font-weight:normal; opacity:0.9;\">(이어하기)</span>",
+        tab_normal: "일반 시련",
+        tab_daily: "📅 데일리 마을",
+        tab_custom: "🛠️ 커스텀 마을",
+        mode_select_title: "마을 규모를 선택하세요",
+        village_size_label: "규모: ",
+        day_label: "일차: ",
+        timer_label: "⏱️ 심판 시간:",
+        trust_label: "🤝 신뢰도:",
+        to_title: "타이틀로",
+        nav_tab_0: "[ 1. 가상 투표·의심도 ◀ ]",
+        nav_tab_1: "[ 2. 마을 주민·신문 ]",
+        nav_tab_2: "[ 3. 발언 로그·정보 ► ]",
+        villager_list_title: "주민 목록 (신문 및 심판 대상 선택)",
+        target_info_default: "신문하거나 추방할 인물을 선택하세요",
+        mass_call_title: "📢 일제 질문（대립 CO·직업 자진 신고）",
+        btn_mass_seer: "🔮 「현자(예언자)」 대립자 있습니까?",
+        btn_mass_medium: "👻 「성직자(영매사)」 대립자 있습니까?",
+        btn_mass_knight: "🛡️ 「성기사(기사)」 대립자 있습니까?",
+        btn_q1: "1. 「당신이 인간이라는 가장 확실한 증거는?」",
+        btn_q2: "2. 「현재 나온 직업 중 누구를 가장 신뢰합니까?」",
+        btn_q3: "3. 「오늘 누구를 정화해야 한다고 생각합니까?」",
+        custom_question_placeholder: "자유 신문 (예: 어제 그 사람을 점친 이유는?)",
+        btn_custom_q: "신문하기",
+        btn_goto_decision: "⚖ 용사의 재판으로 진행（심판 종료）",
+        btn_execute: "선택자 처형（정화）",
+        btn_skip_execute: "아무도 처형하지 않음",
+        settings_title: "⚙ 게임 설정",
+        lbl_language: "🌐 Language / 언어",
+        btn_custom_names: "📝 주민 이름 설정（커스텀）",
+        lbl_discussion_time: "💬 낮 토론 시간",
+        lbl_bgm_vol: "🎵 BGM 볼륨",
+        lbl_se_vol: "🔔 효과음 볼륨",
+        lbl_voice_vol: "🗣️ 보이스 볼륨",
+        lbl_speech_enabled: "🎙️ 보이스 / 낭독 (TTS)",
+        btn_close: "닫기"
+      }
+    };
+
+    let currentAppLanguage = 'ja';
+
+    // 1. 初回起動時の言語判定・選択ロジック
+    function getInitialLanguage() {
+      // 1. すでにユーザーが手動で言語を選択・保存している場合はそれを優先
+      const savedLang = localStorage.getItem('user_selected_language');
+      if (savedLang && (savedLang === 'ja' || savedLang === 'en' || savedLang === 'zh' || savedLang === 'ko')) {
+        return savedLang;
+      }
+
+      // 2. 端末（ブラウザ）の言語を取得
+      const browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+
+      // 3. 言語コードの前方一致で判定
+      if (browserLang.startsWith('ja')) {
+        return 'ja';
+      } else if (browserLang.startsWith('zh')) {
+        return 'zh';
+      } else if (browserLang.startsWith('ko')) {
+        return 'ko';
+      } else {
+        // 対応言語以外（例: fr, de, esなど）はすべてデフォルトで英語を適用
+        return 'en';
+      }
+    }
+
+    // 2. 言語切り替えハンドラ
+    function changeLanguage(langCode) {
+      if (!I18N_TRANSLATIONS[langCode]) langCode = 'en';
+      currentAppLanguage = langCode;
+      localStorage.setItem('user_selected_language', langCode);
+
+      const langSelect = document.getElementById('language-setting');
+      if (langSelect && langSelect.value !== langCode) {
+        langSelect.value = langCode;
+      }
+
+      applyLanguageToUI(langCode);
+    }
+
+    // 3. UIテキスト一括適用処理
+    function applyLanguageToUI(langCode) {
+      const t = I18N_TRANSLATIONS[langCode] || I18N_TRANSLATIONS.en;
+
+      // タイトル画面
+      const mainTitle = document.querySelector('.main-title');
+      if (mainTitle) mainTitle.innerHTML = t.main_title;
+
+      const titleSubButtons = document.querySelectorAll('.title-sub-buttons .btn-title-sub');
+      if (titleSubButtons.length >= 3) {
+        titleSubButtons[0].textContent = t.how_to_play;
+        titleSubButtons[1].textContent = t.hero_rank;
+        titleSubButtons[2].textContent = t.settings;
+      }
+
+      const titleMainButtons = document.querySelectorAll('.title-main-menu-buttons .btn-start-game');
+      if (titleMainButtons.length >= 2) {
+        titleMainButtons[0].innerHTML = t.start_new;
+        titleMainButtons[1].innerHTML = t.open_save;
+      }
+
+      const tabNormal = document.getElementById('tab-cat-normal');
+      if (tabNormal) tabNormal.textContent = t.tab_normal;
+      const tabDaily = document.getElementById('tab-cat-daily');
+      if (tabDaily) tabDaily.textContent = t.tab_daily;
+      const tabCustom = document.getElementById('tab-cat-custom');
+      if (tabCustom) tabCustom.textContent = t.tab_custom;
+
+      const modeSelectTitle = document.querySelector('.mode-select-title');
+      if (modeSelectTitle) modeSelectTitle.textContent = t.mode_select_title;
+
+      // ゲーム画面ヘッダー
+      const btnTitleMini = document.querySelector('.btn-title-mini');
+      if (btnTitleMini) btnTitleMini.textContent = t.to_title;
+
+      const navBtn0 = document.getElementById('nav-btn-0');
+      if (navBtn0 && navBtn0.querySelector('span')) navBtn0.querySelector('span').textContent = t.nav_tab_0;
+      const navBtn1 = document.getElementById('nav-btn-1');
+      if (navBtn1 && navBtn1.querySelector('span')) navBtn1.querySelector('span').textContent = t.nav_tab_1;
+      const navBtn2 = document.getElementById('nav-btn-2');
+      if (navBtn2 && navBtn2.querySelector('span')) navBtn2.querySelector('span').textContent = t.nav_tab_2;
+
+      // 尋問パネル
+      const massTitle = document.querySelector('.mass-call-title');
+      if (massTitle) massTitle.textContent = t.mass_call_title;
+
+      const btnMassSeer = document.getElementById('btn-mass-seer');
+      if (btnMassSeer) btnMassSeer.textContent = t.btn_mass_seer;
+      const btnMassMedium = document.getElementById('btn-mass-medium');
+      if (btnMassMedium) btnMassMedium.textContent = t.btn_mass_medium;
+      const btnMassKnight = document.getElementById('btn-mass-knight');
+      if (btnMassKnight) btnMassKnight.textContent = t.btn_mass_knight;
+
+      const btnQ1 = document.getElementById('btn-q1');
+      if (btnQ1) btnQ1.textContent = t.btn_q1;
+      const btnQ2 = document.getElementById('btn-q2');
+      if (btnQ2) btnQ2.textContent = t.btn_q2;
+      const btnQ3 = document.getElementById('btn-q3');
+      if (btnQ3) btnQ3.textContent = t.btn_q3;
+
+      const customInput = document.getElementById('custom-question-input');
+      if (customInput) customInput.placeholder = t.custom_question_placeholder;
+      const btnCustomQ = document.getElementById('btn-custom-q');
+      if (btnCustomQ) btnCustomQ.textContent = t.btn_custom_q;
+
+      const btnGotoDecision = document.getElementById('btn-goto-decision');
+      if (btnGotoDecision) btnGotoDecision.textContent = t.btn_goto_decision;
+      const btnExecute = document.getElementById('btn-execute');
+      if (btnExecute) btnExecute.textContent = t.btn_execute;
+      const btnSkipExecute = document.getElementById('btn-skip-execute');
+      if (btnSkipExecute) btnSkipExecute.textContent = t.btn_skip_execute;
+
+      // 設定モーダル
+      const settingsH2 = document.querySelector('#settings-modal .modal-header h2');
+      if (settingsH2) settingsH2.textContent = t.settings_title;
+      const lblLang = document.getElementById('lbl-language-setting');
+      if (lblLang) lblLang.textContent = t.lbl_language;
+      const btnOpenName = document.getElementById('btn-open-name-modal');
+      if (btnOpenName) btnOpenName.textContent = t.btn_custom_names;
+
+      const lblDiscTime = document.querySelector('label[for="discussion-time-setting"]');
+      if (lblDiscTime) lblDiscTime.textContent = t.lbl_discussion_time;
+      const lblBgm = document.querySelector('label[for="bgm-volume"]');
+      if (lblBgm) lblBgm.textContent = t.lbl_bgm_vol;
+      const lblSe = document.querySelector('label[for="se-volume"]');
+      if (lblSe) lblSe.textContent = t.lbl_se_vol;
+      const lblVoice = document.querySelector('label[for="voice-volume"]');
+      if (lblVoice) lblVoice.textContent = t.lbl_voice_vol;
+      const lblSpeechToggle = document.getElementById('lbl-speech-enabled');
+      if (lblSpeechToggle && t.lbl_speech_enabled) lblSpeechToggle.textContent = t.lbl_speech_enabled;
+
+      const settingsClose = document.querySelector('#settings-modal .modal-footer .btn-primary');
+      if (settingsClose) settingsClose.textContent = t.btn_close;
+
+      const timerLabel = document.getElementById('timer-label');
+      if (timerLabel) timerLabel.textContent = t.timer_label;
+    }
+
     // --- Volume & Modal Settings Management ---
     let bgmVolume = 80;
     let seVolume = 80;
     let voiceVolume = 80;
+    let isSpeechEnabled = true; // ボイス / 読み上げ (TTS) 有効フラグ
     let discussionTimeSetting = 300; // 300 (5分 - デフォルト), 180 (3分), 600 (10分), -1 (無制限)
 
     // --- デフォルト名とカスタム名の管理 ---
@@ -4878,10 +5234,24 @@ ${speakerName}としての審判会議発言:`;
       const savedDiscussionTime = localStorage.getItem('jinnrou_discussionTime');
       const savedNames = localStorage.getItem('custom_player_names');
 
+      // 言語設定の初期化・読み込み
+      const initialLang = getInitialLanguage();
+      currentAppLanguage = initialLang;
+      const langSelect = document.getElementById('language-setting');
+      if (langSelect) langSelect.value = initialLang;
+      applyLanguageToUI(initialLang);
+
       if (savedBgm !== null) bgmVolume = parseInt(savedBgm, 10);
       if (savedSe !== null) seVolume = parseInt(savedSe, 10);
       if (savedVoice !== null) voiceVolume = parseInt(savedVoice, 10);
       if (savedDiscussionTime !== null) discussionTimeSetting = parseInt(savedDiscussionTime, 10);
+
+      const savedSpeechEnabled = localStorage.getItem('jinnrou_speechEnabled');
+      if (savedSpeechEnabled !== null) {
+        isSpeechEnabled = (savedSpeechEnabled === 'true');
+      }
+      const speechToggle = document.getElementById('speech-enabled-toggle');
+      if (speechToggle) speechToggle.value = isSpeechEnabled ? 'true' : 'false';
 
       if (savedNames) {
         try {
@@ -4917,10 +5287,19 @@ ${speakerName}としての審判会議発言:`;
       seRooster.volume = 0.5 * (seVolume / 100);
     }
 
+    function updateSpeechEnabled(val) {
+      isSpeechEnabled = (val === 'true');
+      saveSettings();
+      if (!isSpeechEnabled) {
+        cancelSpeech();
+      }
+    }
+
     function saveSettings() {
       localStorage.setItem('jinnrou_bgmVolume', bgmVolume);
       localStorage.setItem('jinnrou_seVolume', seVolume);
       localStorage.setItem('jinnrou_voiceVolume', voiceVolume);
+      localStorage.setItem('jinnrou_speechEnabled', isSpeechEnabled);
       localStorage.setItem('jinnrou_discussionTime', discussionTimeSetting);
       localStorage.setItem('custom_player_names', JSON.stringify(playerCustomNames));
     }
@@ -5164,6 +5543,12 @@ ${speakerName}としての審判会議発言:`;
       });
       currentBgmKey = null;
       currentBgm = null;
+      if (typeof stopStoryBgm === 'function') {
+        stopStoryBgm();
+      }
+      if (typeof stopEndingBgm === 'function') {
+        stopEndingBgm();
+      }
     }
 
     // Global Speech Interruption & Cancel Function (AndroidHost + Web Speech API)
@@ -5314,22 +5699,31 @@ ${speakerName}としての審判会議発言:`;
     let preferredJapaneseVoice = null;
     let japaneseVoiceMale = null;
     let japaneseVoiceFemale = null;
+    const cachedVoiceMap = {
+      'ja-JP': null,
+      'en-US': null,
+      'zh-CN': null,
+      'ko-KR': null
+    };
 
     function initVoice() {
       if (!('speechSynthesis' in window)) return;
 
       const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices();
-        const jaVoices = voices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
+        const jaVoices = voices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja'));
+        const enVoices = voices.filter(v => v.lang === 'en-US' || v.lang === 'en_US' || v.lang.startsWith('en'));
+        const zhVoices = voices.filter(v => v.lang === 'zh-CN' || v.lang === 'zh_CN' || v.lang.startsWith('zh'));
+        const koVoices = voices.filter(v => v.lang === 'ko-KR' || v.lang === 'ko_KR' || v.lang.startsWith('ko'));
 
-        preferredJapaneseVoice = 
-          jaVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Advanced') || v.name.includes('Natural')) ||
-          jaVoices.find(v => v.name.includes('Kyoko') || v.name.includes('Otoya') || v.name.includes('Hattori')) ||
-          jaVoices[0] ||
-          null;
+        cachedVoiceMap['ja-JP'] = jaVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural')) || jaVoices[0] || null;
+        cachedVoiceMap['en-US'] = enVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural')) || enVoices[0] || null;
+        cachedVoiceMap['zh-CN'] = zhVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural')) || zhVoices[0] || null;
+        cachedVoiceMap['ko-KR'] = koVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural')) || koVoices[0] || null;
+
+        preferredJapaneseVoice = cachedVoiceMap['ja-JP'];
 
         // 男性・女性ボイスを識別してキャッシュ
-        // よくある日本語ボイス名のパターンで判別
         const maleKeywords = ['Male', 'Ichiro', 'Otoya', 'Hattori', 'Takumi', 'Kenji', 'male'];
         const femaleKeywords = ['Female', 'Kyoko', 'Haruka', 'Mizuki', 'Nanami', 'female', 'O-Ren'];
 
@@ -5443,6 +5837,12 @@ ${speakerName}としての審判会議発言:`;
       return new Promise((resolve) => {
         cancelSpeech();
 
+        // ボイス / 読み上げ (TTS) が無効、または音量0の場合は読み上げを行わずに即座に完了
+        if (!isSpeechEnabled || voiceVolume <= 0) {
+          resolve();
+          return;
+        }
+
         const processedText = formatTextForSpeech(text);
         if (!processedText) {
           resolve();
@@ -5489,23 +5889,35 @@ ${speakerName}としての審判会議発言:`;
         }
 
         const utterance = new SpeechSynthesisUtterance(processedText);
-        utterance.lang = 'ja-JP';
 
-        // 音声プロファイルに基づいてpitch/rate/voiceを設定
+        // 多言語対応: 言語コードからロケールタグ（BCP 47）へのマッピング
+        const langMap = {
+          'ja': 'ja-JP',
+          'en': 'en-US',
+          'zh': 'zh-CN',
+          'ko': 'ko-KR'
+        };
+        const targetLocale = langMap[currentAppLanguage] || 'ja-JP';
+        utterance.lang = targetLocale;
+
+        // 音声プロファイルに基づいてpitch/rateを設定
         const profile = VOICE_PROFILES[voiceProfileKey] || VOICE_PROFILES.NARRATOR;
-
-        // 男女音声の切り替え
-        if (profile.preferGender === 'male' && japaneseVoiceMale) {
-          utterance.voice = japaneseVoiceMale;
-        } else if (profile.preferGender === 'female' && japaneseVoiceFemale) {
-          utterance.voice = japaneseVoiceFemale;
-        } else if (preferredJapaneseVoice) {
-          utterance.voice = preferredJapaneseVoice;
-        }
-
         utterance.rate = profile.rate;
         utterance.pitch = profile.pitch;
         utterance.volume = Math.max(0, Math.min(1, voiceVolume / 100));
+
+        // 日本語時は男女プロファイルボイス、他言語時はキャッシュされた該当言語ボイスを使用
+        if (targetLocale === 'ja-JP') {
+          if (profile.preferGender === 'male' && japaneseVoiceMale) {
+            utterance.voice = japaneseVoiceMale;
+          } else if (profile.preferGender === 'female' && japaneseVoiceFemale) {
+            utterance.voice = japaneseVoiceFemale;
+          } else if (preferredJapaneseVoice) {
+            utterance.voice = preferredJapaneseVoice;
+          }
+        } else if (cachedVoiceMap[targetLocale]) {
+          utterance.voice = cachedVoiceMap[targetLocale];
+        }
 
         let resolved = false;
         const done = () => {
@@ -5537,6 +5949,10 @@ ${speakerName}としての審判会議発言:`;
 
     // Standard Non-Blocking Speech Function for UI & Manual Speaker Buttons
     function speakText(text, onEndCallback = null, isNarration = false, charSeed = null) {
+      if (!isSpeechEnabled || voiceVolume <= 0) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
       const profileKey = isNarration ? 'NARRATOR' : getCharVoiceProfileKey(charSeed);
       playSpeechAsync(text, profileKey).then(() => {
         if (onEndCallback) onEndCallback();
@@ -6221,6 +6637,19 @@ ${speakerName}としての審判会議発言:`;
       document.getElementById(`mode-${size}`).classList.add('selected');
     }
 
+    function returnToModeSelect() {
+      // フリーモードの村選択画面・タイトルパネルを閉じる
+      const freeSection = document.getElementById('free-mode-selection-section');
+      const titleBox = document.getElementById('title-box-container');
+      const mainBtns = document.querySelector('.title-main-menu-buttons');
+      if (freeSection) freeSection.style.display = 'none';
+      if (titleBox) titleBox.style.display = 'none';
+      if (mainBtns) mainBtns.style.display = 'flex';
+
+      // モード選択モーダルを再度開く
+      openModal('mode-select-modal');
+    }
+
     function returnToTitleScreen() {
       // すべてのモーダルを閉じる
       closeModal('save-slot-modal');
@@ -6229,6 +6658,8 @@ ${speakerName}としての審判会議発言:`;
       closeModal('grand-ending-modal');
       showTitleScreen();
     }
+    window.returnToModeSelect = returnToModeSelect;
+    window.returnToTitleScreen = returnToTitleScreen;
 
     function showTitleScreen() {
       resetGameState();
@@ -6239,6 +6670,9 @@ ${speakerName}としての審判会議発言:`;
 
       // ★ 再生中のすべてのゲーム内BGM (昼の議論BGM等) を完全停止・巻き戻し
       stopAllBgm();
+      if (typeof stopStoryBgm === 'function') {
+        stopStoryBgm();
+      }
 
       // 各画面・モーダル・暗転オーバーレイの非表示
       document.getElementById('game-screen').classList.add('hidden');
@@ -7135,6 +7569,67 @@ ${speakerName}としての審判会議発言:`;
       showNotification('🔄 冒険の書をリセットしました。信頼度・IQ・進行状況が初期化されました。');
     }
 
+    // =====================================================
+    // 🎵 ストーリーモード章別BGM管理（BGM2/jyosyou, 2syou〜5syou）
+    // =====================================================
+    let currentStoryBgm = null;
+    let currentStoryBgmKey = null;
+
+    function playStoryBgm(chapterKey) {
+      // 既存のストーリーBGMが同じキーで再生中ならそのまま継続
+      if (currentStoryBgmKey === chapterKey && currentStoryBgm && !currentStoryBgm.paused) {
+        return;
+      }
+
+      stopStoryBgm();
+
+      // 通常ゲームBGM（タイトルBGM等）を一時停止
+      if (currentBgm && !currentBgm.paused) {
+        currentBgm.pause();
+      }
+
+      let fileName = "";
+      switch (chapterKey) {
+        case "prologue":
+        case "ch1":
+          fileName = "jyosyou";
+          break;
+        case "ch2":
+          fileName = "2syou";
+          break;
+        case "ch3":
+          fileName = "3syou";
+          break;
+        case "ch4":
+          fileName = "4syou";
+          break;
+        case "ch5":
+          fileName = "5syou";
+          break;
+        default:
+          return;
+      }
+
+      currentStoryBgmKey = chapterKey;
+      currentStoryBgm = new Audio(`BGM2/${fileName}.mp3`);
+      currentStoryBgm.loop = true;
+      const volRate = (typeof bgmVolume === 'number' ? bgmVolume : 100) / 100;
+      currentStoryBgm.volume = 0.5 * volRate;
+
+      currentStoryBgm.play().catch(e => {
+        console.log("ストーリーBGM自動再生待機（ユーザー操作待ち）:", e);
+      });
+    }
+
+    function stopStoryBgm() {
+      if (currentStoryBgm) {
+        currentStoryBgm.pause();
+        currentStoryBgm.currentTime = 0;
+        currentStoryBgm = null;
+      }
+      currentStoryBgmKey = null;
+    }
+
     // ストーリー導入ページのステップ管理
     let storyPages = [];
     let currentStoryPageIndex = 0;
@@ -7152,6 +7647,9 @@ ${speakerName}としての審判会議発言:`;
       const dataKey = `ch${chId}`;
       const storyObj = STORY_DATA[dataKey] || STORY_DATA.ch1;
       const chapterConfig = STORY_CHAPTERS[chId] || STORY_CHAPTERS[1];
+
+      // 該当章のストーリーBGMを自動再生
+      playStoryBgm(dataKey);
 
       // 物語テキストと村の詳細情報（区切り線以降）を分離
       const rawContent = storyObj.content || '';
@@ -7266,6 +7764,7 @@ ${speakerName}としての審判会議発言:`;
      */
     function finishOpeningStory() {
       localStorage.setItem("has_seen_opening", "true");
+      stopStoryBgm();
       closeModal('opening-story-modal');
       startGame();
     }
@@ -7280,6 +7779,8 @@ ${speakerName}としての審判会議発言:`;
     window.finishOpeningStory = finishOpeningStory;
     window.nextStoryStep = nextStoryStep;
     window.prevStoryStep = prevStoryStep;
+    window.playStoryBgm = playStoryBgm;
+    window.stopStoryBgm = stopStoryBgm;
 
     // Start Game
     function startGame() {
@@ -8196,6 +8697,234 @@ ${speakerName}としての審判会議発言:`;
         renderMorningCommentsBox();
         renderCharacters();
       }
+    }
+
+    // =====================================================
+    // 📢 一斉質問: 対抗CO・役職名乗り出システム
+    // =====================================================
+
+    // Helper: 指定役職の偽CO者が既に存在するか判定
+    function hasFakeCoExists(requestedRole) {
+      return gameState.charList.some(c =>
+        gameState.status[c] === 'alive' &&
+        (gameState.coRoles[c] === requestedRole || gameState.claimedRoleTypes[c] === requestedRole) &&
+        gameState.roles[c] !== requestedRole
+      );
+    }
+
+    // NPC個別判定: 一斉質問に対して名乗り出るかどうかを判断
+    function evaluateCounterCo(char, requestedRole) {
+      let willCo = false;
+      let dialogue = '';
+      const displayName = getCharDisplayName(char);
+      const realRole = gameState.roles[char];
+      const alignment = (realRole === 'wolf' || realRole === 'madman') ? 'evil' : 'village';
+      const existingCO = gameState.coRoles[char] || 'grey';
+      const isAccused = gameState.virtualVotes && gameState.virtualVotes[char] &&
+                        gameState.virtualVotes[char].suspicionScore >= 50;
+
+      // 既にその役職でCO済みの場合はスキップ（重複発言防止）
+      if (existingCO === requestedRole) {
+        return { willCo: false, dialogue: '', reason: 'already_co' };
+      }
+
+      // 既に別の役職でCO済みの場合は上書きしない
+      if (existingCO !== 'grey' && existingCO !== 'villager') {
+        return { willCo: false, dialogue: '', reason: 'other_co' };
+      }
+
+      // ケースA: 本人がその「本当の役職」を持っている場合
+      if (realRole === requestedRole) {
+        if (isAccused || hasFakeCoExists(requestedRole)) {
+          // 疑われている or 偽物がいる → 85%で名乗り出る
+          willCo = Math.random() < 0.85;
+          if (requestedRole === 'seer') {
+            const history = gameState.seerHistory[char] || [];
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、');
+            dialogue = `「……待ってください。それなら私が本物の【賢者】です。これまでの鑑定結果: ${historyStr || 'まだなし'}」`;
+          } else if (requestedRole === 'medium') {
+            const history = gameState.mediumHistory[char] || [];
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? '魔物' : h.result}】`).join('、');
+            dialogue = `「……待ってください。私こそが本物の【聖職者】です！過去の判定: ${historyStr || '処刑者の判定はまだありません'}」`;
+          } else if (requestedRole === 'knight') {
+            dialogue = `「……これ以上隠す必要はないでしょう。私が本物の【聖騎士】です。密かに護衛を続けてきました」`;
+          }
+        } else {
+          // 平穏な場合 → 30%で潜伏解除
+          willCo = Math.random() < 0.30;
+          if (willCo) {
+            const roleNames = { seer: '賢者', medium: '聖職者', knight: '聖騎士' };
+            dialogue = `「ふむ、私からは特に……いや、これ以上隠す必要もないか。実は私が【${roleNames[requestedRole] || requestedRole}】です」`;
+          }
+        }
+      }
+      // ケースB: 魔物・魔教徒の場合（嘘の対抗CO・ブラフ）
+      else if (realRole === 'wolf' || realRole === 'madman') {
+        // 自分が疑われている場合に60%で嘘COする
+        if (isAccused && Math.random() < 0.60) {
+          willCo = true;
+          const roleNames = { seer: '賢者', medium: '聖職者', knight: '聖騎士' };
+          dialogue = `「ちょっと待ってください！ それなら私も【${roleNames[requestedRole] || requestedRole}】です！ 対抗CO・報告をここに開示します！」`;
+        }
+        // 疑われていなくても場を混乱させたい場合、15%で嘘CO
+        else if (!isAccused && Math.random() < 0.15) {
+          willCo = true;
+          const roleNames = { seer: '賢者', medium: '聖職者', knight: '聖騎士' };
+          dialogue = `「……実は黙っていましたが、私こそが【${roleNames[requestedRole] || requestedRole}】です。これまでの結果をお伝えします」`;
+        }
+      }
+      // ケースC: 一般村人 → 基本沈黙
+      else {
+        willCo = false;
+      }
+
+      return { willCo, dialogue, reason: willCo ? 'co_decided' : 'silent' };
+    }
+
+    // 一斉質問ハンドラ: プレイヤーが「ほかに〇〇の対抗やCOはいませんか？」を発動
+    async function triggerMassRoleCall(requestedRole) {
+      if (gameState.gameOver || gameState.phase !== '昼') return;
+
+      const roleNames = { seer: '賢者', medium: '聖職者', knight: '聖騎士' };
+      const roleName = roleNames[requestedRole] || requestedRole;
+
+      // ボタン一時無効化（連打防止）
+      const massButtons = document.querySelectorAll('.btn-mass-call');
+      massButtons.forEach(b => b.disabled = true);
+
+      // 進行中の音声・AI議論を一時停止
+      const prevInterrogating = isInterrogatingActive;
+      isInterrogatingActive = true;
+      cancelSpeech();
+
+      // プレイヤーの一斉質問発言をログに記録
+      const callText = `「ほかに【${roleName}】の対抗やCOの者はいませんか？ 名乗り出てください！」`;
+      addLogItem(`📢 勇者の一斉質問`, '', callText, 'narration', null, false);
+
+      // 読み上げ
+      try {
+        await playSpeechAsync(`ほかに${roleName}の対抗やCOの者はいませんか？名乗り出てください！`, null);
+      } catch(e) { console.warn('Mass call speech warn:', e); }
+
+      // 短い間合い
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // 全生存NPCを順に判定
+      const aliveNPCs = gameState.charList.filter(c => gameState.status[c] === 'alive');
+      const respondents = []; // 名乗り出たNPCリスト
+
+      for (const char of aliveNPCs) {
+        const result = evaluateCounterCo(char, requestedRole);
+        if (result.willCo && result.dialogue) {
+          respondents.push({ char, dialogue: result.dialogue });
+        }
+      }
+
+      if (respondents.length > 0) {
+        // 名乗り出たNPCの処理
+        for (const resp of respondents) {
+          const char = resp.char;
+          const displayName = getCharDisplayName(char);
+          const realRole = gameState.roles[char];
+
+          // CO状態を更新
+          gameState.isStealthing[char] = false;
+
+          if (realRole === requestedRole) {
+            // 真役職者の場合: 正しい役職でCO
+            gameState.coRoles[char] = requestedRole;
+            gameState.claimedRoleTypes[char] = requestedRole;
+          } else if (realRole === 'wolf' || realRole === 'madman') {
+            // 魔物・魔教徒の場合: 偽りの役職でCO
+            gameState.coRoles[char] = requestedRole;
+            gameState.claimedRoleTypes[char] = requestedRole;
+
+            // 偽の報告データ補填
+            if (requestedRole === 'seer' && (!gameState.seerHistory[char] || gameState.seerHistory[char].length === 0)) {
+              const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
+              const target = pickRandom(aliveOthers) || 'A';
+              const fakeResult = (realRole === 'wolf') ? '人間' : pickRandom(['人間', '人狼']);
+              gameState.seerHistory[char] = [{ day: gameState.day, target, result: fakeResult }];
+              gameState.dailySeerReports[char] = { day: gameState.day, target, result: fakeResult };
+            } else if (requestedRole === 'medium' && (!gameState.mediumHistory[char] || gameState.mediumHistory[char].length === 0)) {
+              if (gameState.lastExecutedChar) {
+                const fakeResult = pickRandom(['人間', '人狼']);
+                gameState.mediumHistory[char] = [{ day: gameState.day, target: gameState.lastExecutedChar, result: fakeResult }];
+                gameState.dailyMediumReports[char] = { day: gameState.day, target: gameState.lastExecutedChar, result: fakeResult };
+              }
+            }
+          }
+
+          // ログ出力
+          addLogItem(`📢 対抗CO: ${displayName}`, '', resp.dialogue, 'narration', char, false);
+
+          // 読み上げ（1人ずつ）
+          try {
+            await playSpeechAsync(`${displayName}。${resp.dialogue}`, getCharVoiceProfileKey(char));
+          } catch(e) { console.warn('CO speech warn:', e); }
+
+          // 次のNPCとの間合い
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // 複数名乗り出た場合: 対抗発生の混乱演出
+        if (respondents.length >= 2) {
+          const chaosMessages = [
+            `おい……${roleName}が${respondents.length}人も出たぞ！？ どちらが本物なんだ！`,
+            `これは一体……！ 本物の${roleName}は一人のはず、偽者が混じっている！`,
+            `勇者様、これは重大な手がかりです！ ${roleName}対抗が${respondents.length}人……必ず偽物がいます！`
+          ];
+
+          await new Promise(resolve => setTimeout(resolve, 600));
+
+          // ランダムな村人がリアクション発言
+          const reactors = aliveNPCs.filter(c => !respondents.some(r => r.char === c));
+          const reactor = reactors.length > 0 ? pickRandom(reactors) : aliveNPCs[0];
+          const chaosMsg = pickRandom(chaosMessages);
+          const reactorName = getCharDisplayName(reactor);
+
+          addLogItem(`💬 ${reactorName}`, '', `「${chaosMsg}」`, 'ai-discussion', reactor, false);
+
+          try {
+            await playSpeechAsync(`${reactorName}。${chaosMsg}`, getCharVoiceProfileKey(reactor));
+          } catch(e) { console.warn('Reaction speech warn:', e); }
+        }
+
+        // UI更新
+        renderBulletinBoard();
+        renderMorningCommentsBox();
+        renderCharacters();
+
+        // 仮想投票再計算
+        if (typeof calculateVirtualVotes === 'function') calculateVirtualVotes();
+        if (typeof recordVirtualVoteHistory === 'function') recordVirtualVoteHistory(`${formatDay(gameState.day)} 一斉質問後 (${roleName})`);
+        if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
+
+      } else {
+        // 誰も名乗り出なかった場合
+        const silenceMsg = `……村人たちは静まり返り、【${roleName}】を名乗り出る者は現れなかった。`;
+        addLogItem(`📢 一斉質問結果`, '', silenceMsg, 'narration', null, false);
+
+        try {
+          await playSpeechAsync(silenceMsg, null);
+        } catch(e) { console.warn('Silence speech warn:', e); }
+      }
+
+      // ボタン再有効化 & 尋問フラグ解除
+      isInterrogatingActive = prevInterrogating ? true : false;
+      updateMassCallButtons();
+    }
+
+    // 一斉質問ボタンの有効/無効を更新
+    function updateMassCallButtons() {
+      const isDiscussion = gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver;
+      const btnMassSeer = document.getElementById('btn-mass-seer');
+      const btnMassMedium = document.getElementById('btn-mass-medium');
+      const btnMassKnight = document.getElementById('btn-mass-knight');
+
+      if (btnMassSeer) btnMassSeer.disabled = !isDiscussion;
+      if (btnMassMedium) btnMassMedium.disabled = !isDiscussion;
+      if (btnMassKnight) btnMassKnight.disabled = !isDiscussion;
     }
 
     // =====================================================
@@ -9809,24 +10538,207 @@ ${speakerName}としての審判会議発言:`;
       } else {
         targetInfo.textContent = '尋問・処刑する人物を選択してください';
       }
+
+      // 一斉質問ボタンの有効/無効を同期更新
+      if (typeof updateMassCallButtons === 'function') updateMassCallButtons();
     }
 
     // Interrogation Answers Entrypoint
     function getAnswer(char, questionId) {
       if (questionId === 1) {
-        return getCustomAnswer(char, '朝の発言の理由について詳しく教えて');
+        return getInnocenceProofAnswer(char);
       } else if (questionId === 2) {
-        return getCustomAnswer(char, '昨夜のアリバイや行動の理由は？');
+        return getRoleTrustAnswer(char);
       } else if (questionId === 3) {
         return getCustomAnswer(char, '今日誰を処刑すべきだと思う？その理由は？');
       }
       return getCustomAnswer(char, '質問');
     }
 
+    // 質問1:「あなたが人間だと言える一番の証拠は？」応答ロジック
+    function getInnocenceProofAnswer(char) {
+      const realRole = gameState.roles[char];
+      const displayName = getCharDisplayName(char);
+      const prof = (gameState.charProfiles && gameState.charProfiles[char]) || null;
+      const aggression = prof ? prof.aggression : 0.5;
+      const coRole = gameState.coRoles[char] || 'grey';
+
+      // 魔物（人狼）の場合: 焦り・矛盾・苦しい弁解
+      if (realRole === 'wolf') {
+        const wolfResponses = [
+          `${displayName}です。え、証拠って言われても……みんなと同じように村のために考えてるだけですよ！ なんで私ばかり疑うんですか……！`,
+          `${displayName}です。そ、そんな急に聞かれても……。私はずっと議論に参加してたじゃないですか！ それ以上何を求めるんですか！`,
+          `${displayName}です。証拠なんて……私だって怖いんです。でもみんなと同じように魔物を探してるのに、なぜ疑われなきゃいけないんですか……`,
+          `${displayName}です。な、何を言い出すんですか！ 私が魔物だったら、こんなに堂々と議論に参加しませんよ！ ……たぶん！`,
+          `${displayName}です。人間の証拠？ そ、それは……えーと……私の今までの発言を見てもらえれば分かるはずです！ たぶん……！`
+        ];
+        return pickRandom(wolfResponses);
+      }
+
+      // 魔教徒の場合: 魔物ほど動揺しないが微妙に歯切れが悪い
+      if (realRole === 'madman') {
+        const madResponses = [
+          `${displayName}です。ふふ、私が人間だという証拠ですか？ これまでの議論で常に正しい方向を示してきたつもりですが……まあ、信じるかどうかは皆さん次第です。`,
+          `${displayName}です。証拠と言われると困りますね。ただ、この村を守りたいという気持ちは本物です。……それだけでは不足でしょうか？`
+        ];
+        return pickRandom(madResponses);
+      }
+
+      // 妖狐の場合: 巧みにはぐらかす
+      if (realRole === 'fox') {
+        const foxResponses = [
+          `${displayName}です。ふむ、そんな質問をするということは、私を疑っているのですか？ 私はこの村で最も冷静に状況を分析している一人だと自負していますが。`,
+          `${displayName}です。人間の証拠……それはこうして疑いの目に晒されてもなお、堂々と皆の前に立っていること自体が答えではないでしょうか。`
+        ];
+        return pickRandom(foxResponses);
+      }
+
+      // 真役職者の場合: 自信を持って答える
+      if (realRole === 'seer' || realRole === 'medium' || realRole === 'knight' || realRole === 'freemason') {
+        const roleNames = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
+        const roleName = roleNames[realRole] || realRole;
+
+        if (coRole !== 'grey' && coRole !== 'villager') {
+          // 既にCO済み
+          const roleResponses = [
+            `${displayName}です。私が人間である証拠？ 私は【${roleName}】として結果を公開し続けています。これまでの報告と照らし合わせてください。偽者にはこの一貫性は真似できません！`,
+            `${displayName}です。私が【${roleName}】であることは既にCOした通りです。私のこれまでの結果が村の推理にどれだけ貢献しているか、冷静に振り返ってみてください。`
+          ];
+          return pickRandom(roleResponses);
+        } else {
+          // 潜伏中
+          const stealthResponses = [
+            `${displayName}です。私はこれまでの議論で一貫して村の利益になる意見を言ってきました。それに、怪しい者からずっと疑われていること自体が何よりの証拠ではないでしょうか！`,
+            `${displayName}です。今はまだ全てを明かす時ではありませんが……私には村を守る確かな理由があります。それだけは信じてください。`
+          ];
+          return pickRandom(stealthResponses);
+        }
+      }
+
+      // 一般村人の場合: 堂々と / 性格に応じて
+      if (aggression >= 0.7) {
+        const boldResponses = [
+          `${displayName}です。証拠だと？ 私がこれまで誰よりも的確に魔物を追い詰める発言をしてきたことが最大の証拠だ！ 私を疑う暇があるなら本物の魔物を探せ！`,
+          `${displayName}です。ふざけるな！ 私はこの村のために命を懸けて戦っている！ 疑うなら証拠を出してみろ、逆にな！`
+        ];
+        return pickRandom(boldResponses);
+      } else if (aggression <= 0.3) {
+        const timidResponses = [
+          `${displayName}です。えっと、人間の証拠ですか……。私はずっとみんなの発言を聞いて、一番正しいと思う意見に賛同してきました。それが人間としてできる精一杯です……。`,
+          `${displayName}です。正直、証拠と言われると自信がなくて……。でも、私は魔物じゃありません。信じてほしいです……。`
+        ];
+        return pickRandom(timidResponses);
+      } else {
+        const normalResponses = [
+          `${displayName}です。私はこれまでの議論でずっと村の生存を第一に考えてきました。こうして不当に疑われていること自体が、私が人間である何よりの証拠です！`,
+          `${displayName}です。証拠と問われるなら、私の発言ログを見てください。一貫して魔物を追い詰める方向で意見を述べています。魔物にこの整合性は出せません。`,
+          `${displayName}です。人間の証拠か……。私が怪しいと思うなら、私の過去の推理の流れを全て検証してみてください。矛盾は一つもないはずです。`
+        ];
+        return pickRandom(normalResponses);
+      }
+    }
+
+    // 質問2:「現在出ている役職の中で、誰を一番信用している？」応答ロジック
+    function getRoleTrustAnswer(char) {
+      const realRole = gameState.roles[char];
+      const displayName = getCharDisplayName(char);
+      const prof = (gameState.charProfiles && gameState.charProfiles[char]) || null;
+
+      // CO済みの役職者を取得
+      const aliveCOs = gameState.charList.filter(c =>
+        c !== char &&
+        gameState.status[c] === 'alive' &&
+        gameState.coRoles[c] &&
+        gameState.coRoles[c] !== 'grey' &&
+        gameState.coRoles[c] !== 'villager'
+      );
+
+      // CO者がいない場合
+      if (aliveCOs.length === 0) {
+        return `${displayName}です。現在、役職COをしている者はまだいませんね……。情報が少ない今は、全員の発言を慎重に観察するしかありません。`;
+      }
+
+      const roleNames = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
+
+      // 魔物（人狼）の場合: 仲間の偽CO者を持ち上げる or 真役職者を貶める
+      if (realRole === 'wolf') {
+        // 仲間の偽CO者がいるか探す
+        const fellowFakeCOs = aliveCOs.filter(c => gameState.roles[c] === 'wolf' || gameState.roles[c] === 'madman');
+        const trueCOs = aliveCOs.filter(c => gameState.roles[c] !== 'wolf' && gameState.roles[c] !== 'madman');
+
+        if (fellowFakeCOs.length > 0) {
+          const ally = pickRandom(fellowFakeCOs);
+          const allyName = getCharDisplayName(ally);
+          const allyRole = roleNames[gameState.coRoles[ally]] || gameState.coRoles[ally];
+          const wolfTrustResponses = [
+            `${displayName}です。うーん……今のところ、${allyName}殿の${allyRole}としての報告が一番筋が通っていると思います。……いや、まだ全員を信用しきっているわけじゃありませんが……`,
+            `${displayName}です。私は${allyName}殿の言葉を信じたいと思っています。あの方の報告は……えーと、説得力がありますから。`,
+            `${displayName}です。それは……やっぱり${allyName}殿の${allyRole}COが最も信頼できるかと。結果もしっかり示していますし……ね。`
+          ];
+          return pickRandom(wolfTrustResponses);
+        }
+
+        if (trueCOs.length > 0) {
+          const target = pickRandom(trueCOs);
+          const targetName = getCharDisplayName(target);
+          const targetRole = roleNames[gameState.coRoles[target]] || gameState.coRoles[target];
+          const wolfDeflectResponses = [
+            `${displayName}です。正直なところ、${targetName}殿の${targetRole}COは少し怪しいと思っています。結果の出し方が不自然じゃないですか？ ……まあ、他に信じるものもないんですが。`,
+            `${displayName}です。うーん、誰を信用するかと言われると困りますね……。${targetName}殿は${targetRole}と言っていますが、本当に信じていいのかどうか……。`
+          ];
+          return pickRandom(wolfDeflectResponses);
+        }
+      }
+
+      // 魔教徒の場合: 魔物側の偽COを巧妙に支援
+      if (realRole === 'madman') {
+        const wolfCOs = aliveCOs.filter(c => gameState.roles[c] === 'wolf');
+        if (wolfCOs.length > 0) {
+          const wolfAlly = pickRandom(wolfCOs);
+          const allyName = getCharDisplayName(wolfAlly);
+          const allyRole = roleNames[gameState.coRoles[wolfAlly]] || gameState.coRoles[wolfAlly];
+          return `${displayName}です。私は${allyName}殿の${allyRole}COが最も信頼に足ると判断しています。結果の整合性が取れていますからね。皆もそう思いませんか？`;
+        }
+      }
+
+      // 村人・真役職者の場合: 冷静に分析
+      // 真の役職COを見つけて信頼する傾向
+      const genuineCOs = aliveCOs.filter(c => {
+        const trueRole = gameState.roles[c];
+        const claimedRole = gameState.coRoles[c];
+        return trueRole === claimedRole; // 本物の役職者
+      });
+
+      const fakeCOs = aliveCOs.filter(c => {
+        const trueRole = gameState.roles[c];
+        const claimedRole = gameState.coRoles[c];
+        return trueRole !== claimedRole; // 偽者
+      });
+
+      // 信用対象を選ぶ（本物がいれば高確率でそちらを選ぶが、完全には見抜けない）
+      let trustTarget;
+      if (genuineCOs.length > 0 && Math.random() < 0.7) {
+        trustTarget = pickRandom(genuineCOs);
+      } else {
+        trustTarget = pickRandom(aliveCOs);
+      }
+
+      const trustName = getCharDisplayName(trustTarget);
+      const trustRole = roleNames[gameState.coRoles[trustTarget]] || gameState.coRoles[trustTarget];
+
+      const villagerTrustResponses = [
+        `${displayName}です。今のところは${trustName}殿の${trustRole}としての報告を信じるしかないと思っています。ただ、まだ油断はできません。偽者が紛れている可能性は常にあります。`,
+        `${displayName}です。${trustName}殿の${trustRole}COは、これまでの結果と議論の流れから見て筋が通っていると判断しています。しかし盲信は禁物です。`,
+        `${displayName}です。難しい質問ですね……。強いて言えば${trustName}殿の報告が一番整合性があるように感じます。ただ、対抗が出ている以上、慎重に見極める必要があります。`,
+        `${displayName}です。私は${trustName}殿の${trustRole}COを暫定的に信用しています。結果が一貫しており、推理の軸として使える情報を提供してくれているからです。`
+      ];
+      return pickRandom(villagerTrustResponses);
+    }
+
     // 定型質問IDからテキストを返すヘルパー（LLMプロンプト構築用）
     function getQuestionTextById(questionId) {
-      if (questionId === 1) return '朝の発言の理由について詳しく教えて';
-      if (questionId === 2) return '昨夜のアリバイや行動の理由は？';
+      if (questionId === 1) return 'あなたが人間だと言える一番の証拠は？';
+      if (questionId === 2) return '現在出ている役職の中で、誰を一番信用している？';
       if (questionId === 3) return '今日誰を処刑すべきだと思う？その理由は？';
       return '質問';
     }
@@ -11767,11 +12679,22 @@ ${speakerName}としての審判会議発言:`;
             </button>
           </div>
 
-          <!-- ③ エンディング直接再生 -->
-          <div style="margin-bottom:1.4rem;">
-            <button onclick="triggerGrandEndingTest()" style="width:100%; padding:0.75rem; background:linear-gradient(135deg, #10b981, #047857); color:#fff; border:1px solid #34d399; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.92rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 3px 10px rgba(16,185,129,0.4); transition:all 0.2s ease;">
-              🏆 グランドエンディングダイアログ再生
-            </button>
+          <!-- ③ エンディング直接再生（3種類選択可能） -->
+          <div style="margin-bottom:1.4rem; background:rgba(0,0,0,0.4); padding:0.9rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="font-weight:bold; font-size:0.9rem; color:#fde68a; margin-bottom:0.6rem;">
+              🏆 エンディング直接テスト再生:
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+              <button onclick="triggerGrandEndingTest(100)" style="width:100%; padding:0.6rem 0.8rem; background:linear-gradient(135deg, #10b981, #047857); color:#fff; border:1px solid #34d399; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.85rem; text-align:left; box-shadow:0 2px 6px rgba(16,185,129,0.3);">
+                ✨ ①【真・救世主】 (信頼度 90%以上)
+              </button>
+              <button onclick="triggerGrandEndingTest(65)" style="width:100%; padding:0.6rem 0.8rem; background:linear-gradient(135deg, #f59e0b, #b45309); color:#fff; border:1px solid #fbbf24; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.85rem; text-align:left; box-shadow:0 2px 6px rgba(245,158,11,0.3);">
+                🏆 ②【救済と傷痕】 (信頼度 40%〜89%)
+              </button>
+              <button onclick="triggerGrandEndingTest(20)" style="width:100%; padding:0.6rem 0.8rem; background:linear-gradient(135deg, #ef4444, #991b1b); color:#fff; border:1px solid #f87171; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.85rem; text-align:left; box-shadow:0 2px 6px rgba(239,68,68,0.3);">
+                💀 ③【血塗られた処刑人】 (信頼度 39%以下)
+              </button>
+            </div>
           </div>
 
           <div style="display:flex; justify-content:flex-end;">
@@ -11846,27 +12769,92 @@ ${speakerName}としての審判会議発言:`;
       showNotification("🔓 全5章（始まりの村〜絶望の村）のロックを解除しました！");
     }
 
-    // グランドエンディングテスト再生
-    function triggerGrandEndingTest() {
+    // グランドエンディングテスト再生（指定信頼度または現在の信頼度）
+    function triggerGrandEndingTest(targetTrust) {
       toggleDebugMenu(); // デバッグメニューを閉じる
-      showGrandEndingModal();
+      showGrandEndingModal(null, null, null, targetTrust);
+    }
+
+    // =====================================================
+    // 🎵 グランドエンディングBGM管理（BGM2/S_rank, A_rank, C_rank）
+    // =====================================================
+    let currentEndingBgm = null;
+    let currentEndingRank = null;
+
+    function playEndingBgm(rankType) {
+      if (currentEndingBgm) {
+        currentEndingBgm.pause();
+        currentEndingBgm.currentTime = 0;
+        currentEndingBgm = null;
+      }
+
+      // 他のすべてのBGMを完全停止
+      if (currentBgm && !currentBgm.paused) {
+        currentBgm.pause();
+      }
+      if (typeof stopStoryBgm === 'function') {
+        stopStoryBgm();
+      }
+
+      let fileName = "";
+      switch (rankType) {
+        case "S":
+          fileName = "S_rank";
+          break;
+        case "A":
+          fileName = "A_rank";
+          break;
+        case "C":
+          fileName = "C_rank";
+          break;
+        default:
+          return;
+      }
+
+      currentEndingRank = rankType;
+      currentEndingBgm = new Audio(`BGM2/${fileName}.mp3`);
+      currentEndingBgm.loop = true;
+      const volRate = (typeof bgmVolume === 'number' ? bgmVolume : 100) / 100;
+      currentEndingBgm.volume = 0.6 * volRate;
+
+      currentEndingBgm.play().catch(e => {
+        console.log("エンディングBGM自動再生待機（ユーザー操作待ち）:", e);
+      });
+    }
+
+    function stopEndingBgm() {
+      if (currentEndingBgm) {
+        currentEndingBgm.pause();
+        currentEndingBgm.currentTime = 0;
+        currentEndingBgm = null;
+      }
+      currentEndingRank = null;
     }
 
     // グランドエンディング表示モーダル関数（信頼度マルチエンディング対応）
-    function showGrandEndingModal() {
-      const trust = typeof gameState.playerTrust === 'number' ? gameState.playerTrust : 100;
+    function showGrandEndingModal(finalIQ, totalScore, rankTitle, overrideTrust) {
+      const trust = (typeof overrideTrust === 'number') 
+        ? overrideTrust 
+        : (typeof gameState.playerTrust === 'number' ? gameState.playerTrust : 100);
       let endingTitle = "";
       let endingContent = "";
+      let endingRankType = "A";
 
       if (trust >= 90) {
-        endingTitle = "✨【真・救世主 ―― 完璧なる審判】✨";
-        endingContent = `20人の疑心が渦巻く「絶望の村」に、まことの静寂と祝福の朝光が訪れる。\n\n勇者の絶大なる「神眼」は、無実の者をただ一人たりとも傷つけることなく、闇に潜む4体の魔物と妖狐の幻影を完璧に討ち果たした。\n\n人々は涙を流して膝を折り、奇跡の審判者に心からの敬意と祈りを捧げた。\n\n「讃えよ、真の救世主を。その完璧な剣は一切の過ちなく偽りを断ち、王国に永遠の平和と光をもたらした」\n\n信頼度 ${trust}% ―― 王国の歴史に、不朽の神話が刻まれたのである。`;
+        // 1. 真・救世主エンド (Sランク)
+        endingRankType = "S";
+        endingTitle = "【絶望を越えて ―― 聖なる救世主】";
+        endingContent = `20人の疑心が渦巻く「絶望の村」に、静寂が訪れる。\n\n妖狐の幻影を打ち破り、4体の魔物を全て審判の剣で討ち果たした瞬間、村を覆っていた不吉な暗雲がゆっくりと裂けていった。\n誤審の影は一切ない。勇者の神眼は最後まで曇ることなく、無辜の民を一人も傷つけずに悪魔だけを断罪しきったのだ。\n\n差し込む一筋の朝光が、生き残った村人たちと勇者を温かく包み込む。人々は涙を流しながら膝を折り、絶対の審判者に心からの感謝と賛美の祈りを捧げた。\n\n「讃えよ、真の救世主を。その剣は偽りを完全に断ち、レムの王国に永遠の光をもたらした」\n\n王国の歴史の最上段に、神話のごとき新たな伝説が今、刻まれたのである――。\n\n―― 『ひとり人狼 〜審判の勇者〜』 真・完結 ――`;
       } else if (trust >= 40) {
-        endingTitle = "🏆【救済と傷痕 ―― 救世の勇者】";
-        endingContent = `20人の疑心が渦巻く「絶望の村」に、静寂が訪れる。\n\n妖狐の妖しい幻影を破り、4体の魔物を全て審判の剣で討ち果たした瞬間、村を覆っていた不吉な暗雲がゆっくりと裂けていった。\n\n擬態モンスターの脅威は去った。しかし、審判の過程で流された無実の村人たちの血の記憶は、生き残った人々の心に深い傷痕として刻まれている。\n\n「魔物は滅びた……だが、流された無実の血を私たちは忘れることはできない」\n\n信頼度 ${trust}% ―― 傷つきながらも王国に朝焼けが戻ったのである。`;
+        // 2. 救済と傷痕エンド (A〜Bランク)
+        endingRankType = "A";
+        endingTitle = "【嵐の過ぎ去った村で】";
+        endingContent = `激しい疑心暗鬼と幾度かの誤審を乗り越え、ついに最後の魔物が断罪された。\n\n村を覆っていた魔物の脅威は去り、暗雲の隙間から柔らかな陽光が差し込んでくる。しかし、そこにあるのは完全な歓喜ではない。審判の過程で流された無実の血の記憶が、生存者たちの胸に重く影を落としていた。\n\n生き残った村人たちは、救われた安堵の表情を浮かべつつも、どこか怯えるような瞳で勇者の背中を見つめる。\n\n「……魔物は滅びた。我々は生き延びたのだ……」\n\n傷だらけの村に訪れた静かな朝。勇者は言葉少なく剣を納め、静かに次の旅路へと歩き出す。救済の代償としての痛みを胸に刻みながら――。\n\n―― 『ひとり人狼 〜審判の勇者〜』 通常完結 ――`;
       } else {
-        endingTitle = "💀【血塗られた処刑人 ―― 崩壊の果てに】";
-        endingContent = `しんと静まり返った「絶望の村」に、冷たい風だけが吹き抜ける。\n\n度重なる誤審と疑心暗鬼の末、魔物もろとも多くの無実の村人たちが処刑台の露と消えた。\n\n戦いは終わった。しかし、勇者の周りには感謝を捧げる者は誰一人残っていない。\n人々は勇者を救世主ではなく、冷酷な「処刑人」として恐れ、去っていったのだ。\n\n誰もいなくなった静寂の村で、勇者はただ血に染まった冷たい剣を握りしめていた――。\n\n信頼度 ${trust}% ―― これが、求めた平和の姿だったのだろうか。`;
+        // 3. 血塗られた処刑人エンド (Cランク以下)
+        endingRankType = "C";
+        endingTitle = "【誰もいない朝焼け】";
+        endingContent = `幾度もの誤審によって無実の村人を処刑し続け、辛うじて最後の魔物を討ち果たした終焉の朝。\n\n村の空には冷たい朝焼けが広がっているが、そこにかつての活気は微塵もない。壊れた家屋、血に染まった処刑台、そして誰一人として姿を見せない静まり返った街路。住民たちは狂気に満ちた「誤審の嵐」をもたらした勇者を恐れ、家を捨て、あるいは怯えながら闇の奥へと姿を消していたのだ。\n\n誰の感謝の声も聞こえない。称賛の祈りもない。ただ一人生き残った冷徹な処刑人は、血に濡れた剣を固く握りしめたまま、凍てつく風の中に一人立ち尽くしていた。\n\n「……これが、私に与えられた『救済』の結末か」\n\n誰からも愛されず、誰にも見送られない孤独な勝利の鐘が、寂しく荒野に響き渡る――。\n\n―― 『ひとり人狼 〜審判の勇者〜』 バッドエンド ――`;
       }
 
       const titleEl = document.getElementById('grand-ending-title');
@@ -11878,24 +12866,32 @@ ${speakerName}としての審判会議発言:`;
       if (statsEl) {
         const saveData = loadGameData(activeSaveSlot) || {};
         const heroName = saveData.heroName || "勇者";
-        const heroIQ = saveData.heroIQ || 100;
-        const totalScore = (saveData.totalScore || 0).toLocaleString();
+        const heroIQ = (typeof finalIQ === 'number') ? finalIQ : (saveData.heroIQ || 100);
+        const scoreVal = (typeof totalScore === 'number') ? totalScore : (saveData.totalScore || 0);
+        const rank = rankTitle || saveData.rankTitle || getRankTitle(heroIQ, scoreVal);
         statsEl.innerHTML = `
           <div>📜 <strong>${heroName}</strong> の偉大なる足跡</div>
-          <div>最終信頼度: <strong style="color:${trust>=60?'#10b981':(trust>=30?'#fbbf24':'#ef4444')};">${trust}%</strong> | 到達ランク: <strong>【${saveData.rankTitle || '救世の勇者'}】</strong></div>
-          <div>最高IQ: <strong style="color:#60a5fa;">${heroIQ}</strong> | 累計スコア: <strong style="color:#34d399;">${totalScore} pt</strong></div>
+          <div>最終信頼度: <strong style="color:${trust>=60?'#10b981':(trust>=30?'#fbbf24':'#ef4444')};">${trust}%</strong> | 到達ランク: <strong style="color:#fbbf24;">【${rank}】</strong></div>
+          <div>最高IQ: <strong style="color:#60a5fa;">${heroIQ}</strong> | 累計スコア: <strong style="color:#34d399;">${scoreVal.toLocaleString()} pt</strong></div>
+          <div style="color:#34d399; font-weight:bold; margin-top:0.25rem;">🎉 全5章完全クリア達成</div>
         `;
       }
 
       openModal('grand-ending-modal');
-      playBgm('syouri');
+      playEndingBgm(endingRankType);
     }
 
     // グランドエンディング画面からタイトルへ戻る処理
     function returnToTitleFromGrandEnding() {
+      stopEndingBgm();
       closeModal('grand-ending-modal');
       closeModal('modal-overlay');
       showTitleScreen();
+    }
+
+    // 依頼仕様互換用エイリアス
+    function triggerEndingByTrust() {
+      showGrandEndingModal();
     }
 
     // グローバル関数公開
@@ -11904,6 +12900,9 @@ ${speakerName}としての審判会議発言:`;
     window.unlockAllChapters = unlockAllChapters;
     window.triggerGrandEndingTest = triggerGrandEndingTest;
     window.showGrandEndingModal = showGrandEndingModal;
+    window.triggerEndingByTrust = triggerEndingByTrust;
+    window.playEndingBgm = playEndingBgm;
+    window.stopEndingBgm = stopEndingBgm;
     window.returnToTitleFromGrandEnding = returnToTitleFromGrandEnding;
 
     // Initial setup
