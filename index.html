@@ -8819,19 +8819,41 @@ ${speakerName}としての審判会議発言:`;
           let result = '人間';
 
           if (realRole === 'seer') {
-            // 真賢者: 初日はグレー、2日目以降は議論誘導者・怪しい灰（グレー）優先
-            let bestTarget = candidates[0];
+            // 真賢者: グレー優先・白確定者除外ロジック
+            // 1. 他の真・偽賢者からの白出し結果、および共有者など確白対象の収集
+            const whiteResults = typeof getSeerWhiteResults === 'function' ? getSeerWhiteResults() : [];
+            const whiteTargets = whiteResults.map(w => w.target);
+
+            // 2. 完全なグレー（未判定かつ役職COなし/村人CO）の候補を抽出
+            const grayCandidates = candidates.filter(c => {
+              const isWhiteOut = whiteTargets.includes(c) || gameState.coRoles[c] === 'freemason';
+              const hasCoRole = gameState.coRoles[c] && gameState.coRoles[c] !== 'villager';
+              return !isWhiteOut && !hasCoRole;
+            });
+
+            // 3. 対象プールの決定（グレー候補があれば優先、なければ白出し以外、最終フォールバックはcandidates）
+            let targetPool = grayCandidates;
+            if (targetPool.length === 0) {
+              const nonWhiteCandidates = candidates.filter(c => !whiteTargets.includes(c) && gameState.coRoles[c] !== 'freemason');
+              targetPool = nonWhiteCandidates.length > 0 ? nonWhiteCandidates : candidates;
+            }
+
+            // 4. プール内から疑われ度（仮想投票の疑心度や妖狐呪殺狙い）を加味して最高スコアの対象を選択
+            let bestTarget = targetPool[0];
             let maxScore = -999;
-            candidates.forEach(c => {
+            targetPool.forEach(c => {
               let score = Math.random() * 10;
-              const coRole = gameState.coRoles[c];
-              if (!coRole || coRole === 'villager') score += 50; // グレー優先
-              if (gameState.roles[c] === 'fox') score += 40;     // 呪殺狙い
+              // 仮想投票での疑われ度（suspicionScore）があれば加算して怪しいグレーを優先
+              if (gameState.virtualVotes && gameState.virtualVotes[c] && gameState.virtualVotes[c].suspicionScore) {
+                score += (gameState.virtualVotes[c].suspicionScore / 2);
+              }
+              if (gameState.roles[c] === 'fox') score += 40; // 呪殺狙い
               if (score > maxScore) {
                 maxScore = score;
                 bestTarget = c;
               }
             });
+
             target = bestTarget;
             result = gameState.roles[target] === 'wolf' ? '人狼' : '人間';
 
@@ -11823,7 +11845,7 @@ ${speakerName}としての審判会議発言:`;
       } else if (questionId === 2) {
         return getRoleTrustAnswer(char);
       } else if (questionId === 3) {
-        return getCustomAnswer(char, '今日誰を処刑すべきだと思う？その理由は？');
+        return getPurgeTargetAnswer(char);
       }
       return getCustomAnswer(char, '質問');
     }
@@ -12006,6 +12028,147 @@ ${speakerName}としての審判会議発言:`;
         `${displayName}です。私は${trustName}殿の${trustRole}COを暫定的に信用しています。結果が一貫しており、推理の軸として使える情報を提供してくれているからです。`
       ];
       return pickRandom(villagerTrustResponses);
+    }
+
+    // 質問3:「今日誰を浄化すべきだと思う？」応答ロジック
+    function getPurgeTargetAnswer(char) {
+      const realRole = gameState.roles[char];
+      const displayName = getCharDisplayName(char);
+      const prof = (gameState.charProfiles && gameState.charProfiles[char]) || null;
+      const aggression = prof ? prof.aggression : 0.5;
+
+      // 仮想投票データから本人の投票先を取得
+      const myVote = (gameState.virtualVotes && gameState.virtualVotes[char]) ? gameState.virtualVotes[char] : null;
+      const myVoteTarget = myVote ? myVote.target : null;
+      const myVoteReason = myVote ? myVote.reason : '';
+
+      // 生存中の他者リスト
+      const aliveOthers = (gameState.charList || []).filter(c => c !== char && gameState.status && gameState.status[c] === 'alive');
+
+      // 投票先の表示名を取得
+      let voteTargetName = '';
+      if (myVoteTarget && aliveOthers.includes(myVoteTarget)) {
+        voteTargetName = getCharDisplayName(myVoteTarget);
+      }
+
+      // 魔物（人狼）の場合: 村人を誘導して味方を守る
+      if (realRole === 'wolf') {
+        const nonWolfAlive = aliveOthers.filter(c => gameState.roles[c] !== 'wolf');
+        const dangerousTargets = nonWolfAlive.filter(c => gameState.roles[c] === 'seer' || gameState.roles[c] === 'knight');
+        let suggestedTarget;
+        if (dangerousTargets.length > 0) {
+          suggestedTarget = pickRandom(dangerousTargets);
+        } else if (nonWolfAlive.length > 0) {
+          suggestedTarget = pickRandom(nonWolfAlive);
+        } else if (aliveOthers.length > 0) {
+          suggestedTarget = pickRandom(aliveOthers);
+        }
+        if (suggestedTarget) {
+          const targetName = getCharDisplayName(suggestedTarget);
+          const wolfResponses = [
+            `${displayName}です。私は……${targetName}殿が怪しいと思います。発言がどこか不自然で、核心を避けている気がするんです。……みんなはどう思いますか？`,
+            `${displayName}です。う、うーん……難しいですが、${targetName}殿の言動に引っかかる部分があります。あの方の発言をもう一度よく確認してみてください……。`,
+            `${displayName}です。正直に言うと、${targetName}殿を浄化の候補に挙げたいです。えーと、理由は……発言の整合性が取れていないように見えるからです！ ……たぶん。`,
+            `${displayName}です。今日の浄化ですか……。${targetName}殿の最近の発言を振り返ると、村のためというより自分を守ることに必死な印象を受けました。気のせいでしょうか……。`
+          ];
+          return pickRandom(wolfResponses);
+        }
+      }
+
+      // 魔教徒の場合: 村人を処刑に誘導（魔物を避ける）
+      if (realRole === 'madman') {
+        const nonWolfAlive = aliveOthers.filter(c => gameState.roles[c] !== 'wolf');
+        const suggestedTarget = nonWolfAlive.length > 0 ? pickRandom(nonWolfAlive) : (aliveOthers.length > 0 ? pickRandom(aliveOthers) : null);
+        if (suggestedTarget) {
+          const targetName = getCharDisplayName(suggestedTarget);
+          const madResponses = [
+            `${displayName}です。冷静に分析した結果、${targetName}殿が最も魔物の可能性が高いと考えます。発言パターンが典型的な潜伏型ですね。皆さんもそう思いませんか？`,
+            `${displayName}です。${targetName}殿を浄化すべきだと思います。論理的に考えて、あの方の行動は村人としては不自然すぎます。`
+          ];
+          return pickRandom(madResponses);
+        }
+      }
+
+      // 妖狐の場合: 自分に火の粉が来ないよう巧みに誘導
+      if (realRole === 'fox') {
+        const suggestedTarget = aliveOthers.length > 0 ? pickRandom(aliveOthers) : null;
+        if (suggestedTarget) {
+          const targetName = getCharDisplayName(suggestedTarget);
+          const foxResponses = [
+            `${displayName}です。ふむ……私の見立てでは${targetName}殿が最も怪しい。議論の流れを見ていると、巧みに本質をすり替えている節がありますね。`,
+            `${displayName}です。今日の浄化候補としては${targetName}殿を推します。もっとも、私の直感に過ぎませんが……この直感はなかなか外れませんよ。`
+          ];
+          return pickRandom(foxResponses);
+        }
+      }
+
+      // 真賢者の場合: 黒出しした人物がいればそれを推す
+      if (realRole === 'seer') {
+        const seerHistory = (gameState.seerHistory && gameState.seerHistory[char]) || [];
+        const blackResults = seerHistory.filter(h => h.result === '人狼' && gameState.status[h.target] === 'alive');
+        if (blackResults.length > 0) {
+          const blackTarget = blackResults[blackResults.length - 1];
+          const targetName = getCharDisplayName(blackTarget.target);
+          return `${displayName}です。賢者として断言します。${targetName}殿は私の鑑定で【魔物】と出ています！ 今日こそ確実に浄化すべきです！ 村の未来のために、どうか私の言葉を信じてください！`;
+        }
+        if (voteTargetName) {
+          return `${displayName}です。賢者として盤面を精査した結果、${voteTargetName}殿が最も疑わしいと考えています。まだ確定黒ではありませんが、発言の矛盾点と投票先の不一致が気になります。`;
+        }
+      }
+
+      // 聖職者の場合
+      if (realRole === 'medium') {
+        const mediumHistory = (gameState.mediumHistory && gameState.mediumHistory[char]) || [];
+        if (mediumHistory.length > 0) {
+          const lastResult = mediumHistory[mediumHistory.length - 1];
+          const wasWolf = lastResult.result === '人狼';
+          if (wasWolf && voteTargetName) {
+            return `${displayName}です。聖職者として報告します。昨日浄化された方は魔物でした。つまり魔物はまだ潜んでいます。そして今、最も怪しいのは${voteTargetName}殿だと考えています。`;
+          } else if (!wasWolf && voteTargetName) {
+            return `${displayName}です。聖職者として報告します。昨日浄化された方は人間でした……。同じ過ちを繰り返さぬよう、今日は${voteTargetName}殿を慎重に検討すべきです。`;
+          }
+        }
+      }
+
+      // 聖騎士の場合
+      if (realRole === 'knight') {
+        if (voteTargetName) {
+          return `${displayName}です。聖騎士の立場から言えば、${voteTargetName}殿の行動に不審な点があります。護衛先の判断にも関わる重要な局面です。慎重に、しかし決断的に浄化を進めるべきです。`;
+        }
+      }
+
+      // 一般村人（投票先が決まっている場合）
+      if (voteTargetName) {
+        if (aggression >= 0.7) {
+          const boldResponses = [
+            `${displayName}です。${voteTargetName}殿だ！ あいつの発言は明らかに怪しい！ ${myVoteReason || '議論を攪乱しているようにしか見えない'}。今日こそ浄化して村を守るぞ！`,
+            `${displayName}です。迷うな！ ${voteTargetName}殿を浄化すべきだ！ ${myVoteReason || 'あの不自然な態度を見れば一目瞭然だろう'}！ 村の命がかかってるんだぞ！`
+          ];
+          return pickRandom(boldResponses);
+        } else if (aggression <= 0.3) {
+          const timidResponses = [
+            `${displayName}です。えっと……私は${voteTargetName}殿が少し気になっています……。${myVoteReason || '発言があまりにも当たり障りなくて、何か隠しているような気がして'}……。でも、みんなの意見も聞きたいです。`,
+            `${displayName}です。正直自信はないですが……${voteTargetName}殿の発言に違和感を覚えました。${myVoteReason || '核心の議論を避けているように見えて'}……。間違っていたらごめんなさい。`
+          ];
+          return pickRandom(timidResponses);
+        } else {
+          const normalResponses = [
+            `${displayName}です。私は${voteTargetName}殿を浄化候補として推します。${myVoteReason || '発言の整合性に疑問が残るため'}です。ただし、他の方の意見も踏まえて最終判断をすべきだと考えています。`,
+            `${displayName}です。現時点では${voteTargetName}殿が最も怪しいと感じています。${myVoteReason || '議論の中で矛盾した発言が見られたから'}です。慎重に見極めましょう。`,
+            `${displayName}です。昨日の発言を振り返ると、${voteTargetName}殿の行動に不自然な点があります。今日の浄化はこの方を中心に議論すべきではないでしょうか。`
+          ];
+          return pickRandom(normalResponses);
+        }
+      }
+
+      // 投票先が未定の場合のフォールバック
+      if (aggression >= 0.7) {
+        return `${displayName}です。まだ確信は持てないが……全員の発言をもう一度洗い直す必要がある！ 魔物は必ずボロを出す、それを見逃すな！`;
+      } else if (aggression <= 0.3) {
+        return `${displayName}です。正直、まだ誰を浄化すべきか決められていません……。もう少しみんなの意見を聞いてから判断したいです。間違った浄化だけは避けたくて……。`;
+      } else {
+        return `${displayName}です。現時点では確実な浄化候補の判断がついていません。慎重に議論を重ね、全員の発言と投票の整合性を見極めてから結論を出すべきだと考えています。`;
+      }
     }
 
     // 定型質問IDからテキストを返すヘルパー（LLMプロンプト構築用）
@@ -12287,15 +12450,22 @@ ${speakerName}としての審判会議発言:`;
       const char = gameState.selectedChar;
       const targetDisplayName = getCharDisplayName(char);
 
-      // 回答テキストの生成（LLMハイブリッド：LLM優先→ローカルフォールバック）
+      // 回答テキストの生成
       let answerText = '';
       const effectiveQuestion = questionId ? getQuestionTextById(questionId) : questionText;
+      const isPresetQuestion = questionId && questionId >= 1 && questionId <= 3;
 
       // ★ 信頼度ペナルティ: 20% 以下の場合、30%の確率で証言拒否
       const currentTrust = typeof gameState.playerTrust === 'number' ? gameState.playerTrust : 100;
       if (currentTrust <= 20 && Math.random() < 0.3 && typeof TRUST_REFUSAL_MESSAGES !== 'undefined') {
         answerText = pickRandom(TRUST_REFUSAL_MESSAGES);
+      } else if (isPresetQuestion) {
+        // ★ 定型質問1〜3は常に専用ローカルハンドラーを使用（LLMバイパス）
+        // 各質問に対応する専用の役職別・性格別回答ロジックを確実に実行する
+        answerText = getAnswer(char, questionId);
+        console.log(`[Preset Q${questionId}] 定型質問の専用ハンドラーで回答を生成しました (${char})`);
       } else {
+        // 自由入力質問：LLMハイブリッド（LLM優先→ローカルフォールバック）
         if (useLLMMode && effectiveQuestion) {
           try {
             const llmPrompt = buildQuestionPrompt(char, effectiveQuestion);
@@ -12311,11 +12481,7 @@ ${speakerName}としての審判会議発言:`;
 
         // LLM失敗時またはLLMモードOFF時のローカルフォールバック
         if (!answerText) {
-          if (questionId) {
-            answerText = getAnswer(char, questionId);
-          } else {
-            answerText = getCustomAnswer(char, questionText);
-          }
+          answerText = getCustomAnswer(char, questionText);
         }
       }
       const formattedAnswer = formatSpeechMessage(char, answerText);
