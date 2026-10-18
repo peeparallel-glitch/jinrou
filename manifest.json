@@ -1,6 +1,6 @@
 {
-  "name": "ひとり人狼 -人狼推理-",
-  "short_name": "ひとり人狼",
+  "name": "ぼっち人狼 -人狼推理-",
+  "short_name": "ぼっち人狼",
   "start_url": "./index.html",
   "display": "fullscreen",
   "orientation": "any",
