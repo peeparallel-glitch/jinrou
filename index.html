@@ -3027,6 +3027,110 @@
       font-weight: normal;
       opacity: 0.85;
     }
+
+    /* ========== エンドロール スクロールアニメーション ========== */
+    @keyframes endroll-scroll {
+      from { top: 100vh; }
+      to   { top: -9999px; } /* JS側で動的上書きするため実際には使われない */
+    }
+    #endroll-content {
+      top: 100vh; /* 初期位置は画面外下（JS側でアニメーション開始） */
+    }
+    #endroll-content .endroll-title {
+      font-size: 2rem;
+      letter-spacing: 0.35em;
+      color: #f5c97a;
+      margin-bottom: 4rem;
+      font-weight: bold;
+      text-shadow: 0 0 24px rgba(220,160,60,0.6);
+    }
+    #endroll-content .endroll-section {
+      font-size: 1.05rem;
+      color: #a08060;
+      letter-spacing: 0.25em;
+      margin-top: 3.5rem;
+      margin-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(160,120,60,0.35);
+      padding-bottom: 0.4rem;
+    }
+    #endroll-content .endroll-name {
+      font-size: 1.3rem;
+      color: #e8d4a8;
+      letter-spacing: 0.2em;
+      margin: 0.5rem 0;
+    }
+    #endroll-content .endroll-spacer {
+      height: 6rem;
+    }
+    #endroll-content .endroll-fin {
+      font-size: 2.4rem;
+      letter-spacing: 0.6em;
+      color: #f5c97a;
+      margin-top: 6rem;
+      text-shadow: 0 0 30px rgba(220,160,60,0.7);
+    }
+    #endroll-content .endroll-thanks {
+      font-size: 1.15rem;
+      color: #c8a870;
+      letter-spacing: 0.35em;
+      margin-top: 3rem;
+      margin-bottom: 12rem;
+    }
+
+    /* ========== 信頼度0 ゲームオーバー演出 ========== */
+    #trust-gameover-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 10000030;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .trust-gameover-title {
+      font-family: 'Yu Mincho', 'Hiragino Mincho ProN', 'Georgia', serif;
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: #ef4444;
+      letter-spacing: 0.3em;
+      text-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(185, 28, 28, 0.6);
+      margin-bottom: 1.2rem;
+      text-align: center;
+    }
+    .trust-gameover-sub {
+      font-family: 'Yu Mincho', 'Hiragino Mincho ProN', 'Georgia', serif;
+      font-size: 1.2rem;
+      color: #fca5a5;
+      letter-spacing: 0.2em;
+      margin-bottom: 2.5rem;
+      text-align: center;
+      line-height: 1.8;
+    }
+    .trust-gameover-btn {
+      background: linear-gradient(135deg, rgba(185, 28, 28, 0.9), rgba(127, 29, 29, 0.95));
+      color: #fff;
+      border: 1px solid #ef4444;
+      border-radius: 24px;
+      padding: 0.75rem 2.2rem;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(239, 68, 68, 0.4);
+      letter-spacing: 0.15em;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .trust-gameover-btn:hover {
+      transform: scale(1.04);
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.95), rgba(153, 27, 27, 1));
+    }
   </style>
 <body>
   <!-- 🩸 誤審テロップ演出用オーバーレイ -->
@@ -3040,6 +3144,35 @@
       <source src="MOVE/syokei.mp4" type="video/mp4">
     </video>
     <button class="execution-video-skip-btn" onclick="skipExecutionVideo()">スキップ ⏭</button>
+  </div>
+
+  <!-- 🎬 ストーリーカットシーン動画用オーバーレイ -->
+  <div id="story-video-overlay" class="execution-video-overlay">
+    <video id="story-video-player" playsinline preload="auto"></video>
+    <button class="execution-video-skip-btn" onclick="skipStoryVideo()">スキップ ⏭</button>
+  </div>
+
+  <!-- 🎬 真エンディング幕間動画用オーバーレイ -->
+  <div id="ending-video-overlay" class="execution-video-overlay" style="z-index: 10000010; display: none;">
+    <video id="ending-video-player" playsinline preload="auto" style="width:100%;height:100%;object-fit:contain;background:#000;"></video>
+    <button class="execution-video-skip-btn" onclick="skipEndingVideo()">スキップ ⏭</button>
+  </div>
+
+  <!-- 🎞️ エンドロールオーバーレイ -->
+  <div id="endroll-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:10000005; overflow:hidden; opacity:1; transition:opacity 1.2s ease;">
+    <div id="endroll-content" style="position:absolute; left:50%; transform:translateX(-50%); width:min(680px,90vw); text-align:center; color:#d4b896; font-family:'Yu Mincho','Hiragino Mincho ProN','Georgia',serif; white-space:pre-line;">
+    </div>
+    <button onclick="skipEndroll()" style="position:fixed; bottom:2rem; right:2rem; background:rgba(60,40,10,0.7); color:#d4b896; border:1px solid #78350f; border-radius:20px; padding:0.5rem 1.4rem; font-size:0.88rem; cursor:pointer; z-index:10000021; letter-spacing:0.1em;">スキップ ⏭</button>
+  </div>
+
+  <!-- 💀 信頼度0 ゲームオーバーオーバーレイ -->
+  <div id="trust-gameover-overlay" style="display: none;" onclick="returnToTitleFromTrustGameOver()">
+    <div class="trust-gameover-title">GAME OVER</div>
+    <div class="trust-gameover-sub">
+      信頼を完全に失った勇者は、民の反乱により追放された……<br>
+      審判の旅はここで幕を閉じた。
+    </div>
+    <button class="trust-gameover-btn" onclick="event.stopPropagation(); returnToTitleFromTrustGameOver()">🏠 タイトルへ戻る</button>
   </div>
 
   <!-- Toast Notification Container -->
@@ -3074,9 +3207,14 @@
 
   <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
   <div id="splash-screen" onclick="handleSplashTap(event)" ontouchstart="handleSplashTap(event)">
-    <button class="splash-settings-btn" id="splash-settings-btn" onclick="event.stopPropagation(); openModal('settings-modal');" ontouchstart="event.stopPropagation(); openModal('settings-modal');" title="設定">
-      ⚙ 設定
-    </button>
+    <div style="position: absolute; top: 1.2rem; right: 1.2rem; display: flex; gap: 0.6rem; z-index: 10001;">
+      <button class="btn" style="background: linear-gradient(135deg, #10b981, #047857); color: #fff; border: 2px solid #34d399; font-weight: bold; font-size: 0.85rem; padding: 0.45rem 0.85rem; border-radius: 20px; box-shadow: 0 0 12px rgba(16,185,129,0.6); cursor: pointer;" onclick="event.stopPropagation(); triggerGrandEndingTest(100);" ontouchstart="event.stopPropagation(); triggerGrandEndingTest(100);">
+        👑 真ED(7画面)テスト
+      </button>
+      <button class="splash-settings-btn" id="splash-settings-btn" style="position: static;" onclick="event.stopPropagation(); openModal('settings-modal');" ontouchstart="event.stopPropagation(); openModal('settings-modal');" title="設定">
+        ⚙ 設定
+      </button>
+    </div>
     <div class="splash-start-text">
       TAP TO START
     </div>
@@ -3110,6 +3248,9 @@
         <button id="opening-story-btn" class="btn-start-game" onclick="nextStoryStep()" style="flex: 1; font-size: 1.05rem; padding: 0.75rem; margin-top: 0;">
           次へ進む ▶
         </button>
+        <button id="opening-story-debug-clear-btn" class="btn" onclick="debugInstantClearChapter(currentStoryChapter)" style="display: none; background: linear-gradient(135deg, #10b981, #047857); color: #fff; border: 1px solid #34d399; font-weight: bold; font-size: 0.95rem; padding: 0.75rem 1rem; box-shadow: 0 0 10px rgba(16,185,129,0.5);" title="この章を即時勝利クリアする">
+          ⚡ 即時クリア
+        </button>
       </div>
     </div>
   </div>
@@ -3119,11 +3260,12 @@
     <div class="title-box" id="title-box-container" style="display: none;">
       <h1 class="main-title">ぼっち人狼<br><span class="sub-title">〜審判の勇者〜</span></h1>
 
-      <!-- Sub Header Buttons (遊び方・ランク・設定) -->
-      <div class="title-sub-buttons" style="margin-bottom: 0.8rem;">
+      <!-- Sub Header Buttons (遊び方・ランク・設定・真EDテスト) -->
+      <div class="title-sub-buttons" style="margin-bottom: 0.8rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
         <button class="btn-title-sub" onclick="openModal('how-to-play-modal')">📖 遊び方</button>
         <button class="btn-title-sub" onclick="openRankModal()">🏆 勇者ランク</button>
         <button class="btn-title-sub" onclick="openModal('settings-modal')">⚙ 設定</button>
+        <button class="btn-title-sub" style="background: linear-gradient(135deg, #10b981, #047857); border: 2px solid #34d399; color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(16,185,129,0.5);" onclick="triggerGrandEndingTest(100)">👑 真EDテスト (全7画面)</button>
       </div>
 
       <!-- Title Screen Main Action Buttons -->
@@ -3267,7 +3409,6 @@
       <div class="header-buttons">
         <button class="btn-header-icon" onclick="openModal('how-to-play-modal')" title="遊び方">📖 遊び方</button>
         <button class="btn-header-icon" onclick="openRankModal()" title="ランク">🏆 ランク</button>
-        <button class="btn-header-icon" onclick="openSaveModal()" title="冒険の書">📜 冒険の書</button>
         <button class="btn-header-icon" onclick="openModal('settings-modal')" title="設定">⚙ 設定</button>
         <button class="btn-title-mini" onclick="showTitleScreen()">タイトルへ</button>
       </div>
@@ -3924,6 +4065,24 @@
     </div>
   </div>
 
+  <!-- TRUE ENDING FULLSCREEN OVERLAY (全画面 真エンディング 7画面タイプライター) -->
+  <div id="true-ending-fullscreen" class="screen hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000000; background: #000; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2.5rem 1.5rem; box-sizing: border-box; cursor: pointer; user-select: none;">
+    <!-- 背景用コンテナ（ED_img.jpg そのままの鮮やかな明るさで全画面表示） -->
+    <div id="true-ending-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('IMG/ED_img.jpg') center center / cover no-repeat; z-index: 1; pointer-events: none;"></div>
+    
+    <!-- 全画面テキスト表示コンテナ（外枠なし・極太黒文字） -->
+    <div style="position: relative; z-index: 2; width: 100%; max-width: 1040px; min-height: 280px; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; margin: 0 auto; padding: 1rem;">
+      <div id="true-ending-fullscreen-text" style="font-family: 'Yu Mincho', 'Hiragino Mincho ProN', 'BIZ UDPMincho', 'HGS明朝E', 'Georgia', serif; font-size: 2.15rem; line-height: 2.35; color: #000000; -webkit-text-stroke: 1.2px #000000; white-space: pre-wrap; letter-spacing: 0.08em; font-weight: 900; width: 100%; box-sizing: border-box; text-align: center;"></div>
+    </div>
+
+    <!-- ページインジケーター & 操作UI（非表示: タップ/自動進行のみ） -->
+    <div style="display:none;">
+      <div id="true-ending-step-indicator">1 / 7</div>
+      <button id="true-ending-advance-btn">次へ進む ▶</button>
+      <div id="true-ending-hint"></div>
+    </div>
+  </div>
+
   <!-- GRAND ENDING MODAL -->
   <div id="grand-ending-modal" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 650px; background: linear-gradient(145deg, #1c1917, #292524); border: 3px solid #fbbf24; box-shadow: 0 0 35px rgba(251, 191, 36, 0.4); text-align: center; padding: 1.5rem;">
@@ -4477,17 +4636,31 @@ ${speakerName}としての審判会議発言:`;
       "迷走する勇者": { en: "Wandering Hero", fr: "Héros Égaré", zh: "迷茫的勇者", ko: "방황하는 용사" }
     };
 
-    function translateRankTitle(rawTitle, lang) {
+    function normalizeRankKey(rawTitle) {
       if (!rawTitle) return "";
-      const currentLang = lang || currentAppLanguage || 'ja';
-      if (currentLang === 'ja') return rawTitle;
-      const match = RANK_TITLE_I18N[rawTitle];
-      if (match && match[currentLang]) return match[currentLang];
+      if (RANK_TITLE_I18N[rawTitle]) return rawTitle;
+      for (const [jaKey, trans] of Object.entries(RANK_TITLE_I18N)) {
+        for (const val of Object.values(trans)) {
+          if (typeof val === 'string' && val.toLowerCase() === rawTitle.toLowerCase()) {
+            return jaKey;
+          }
+        }
+      }
       return rawTitle;
     }
 
+    function translateRankTitle(rawTitle, lang) {
+      if (!rawTitle) return "";
+      const currentLang = lang || currentAppLanguage || 'ja';
+      const jaKey = normalizeRankKey(rawTitle);
+      if (currentLang === 'ja') return jaKey;
+      const match = RANK_TITLE_I18N[jaKey];
+      if (match && match[currentLang]) return match[currentLang];
+      return jaKey || rawTitle;
+    }
+
     /**
-     * 称号判定関数
+     * 称号判定関数（内部値は日本語キーで保持し、言語指定がある場合のみ翻訳）
      */
     function getRankTitle(iq, score, lang) {
       let title = "迷走する勇者";
@@ -4495,7 +4668,7 @@ ${speakerName}としての審判会議発言:`;
       else if (iq >= 140) title = "至高の審判官";
       else if (iq >= 120) title = "名探偵勇者";
       else if (iq >= 90)  title = "新米審判者";
-      return translateRankTitle(title, lang);
+      return lang ? translateRankTitle(title, lang) : title;
     }
 
     /**
@@ -4569,7 +4742,10 @@ ${speakerName}としての審判会議発言:`;
 
       if (isPrologue) {
         const mHero = rawSummary.match(/\[(.*?)\]/);
-        const hero = mHero ? mHero[1] : (lang === 'en' ? 'Hero' : (lang === 'fr' ? 'Héros' : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者'))));
+        let hero = mHero ? mHero[1] : '';
+        const _heroDefaults = ['勇者', 'Hero', 'Héros', '용사'];
+        const currentDefaultHero = lang === 'en' ? 'Hero' : (lang === 'fr' ? 'Héros' : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者')));
+        if (!hero || _heroDefaults.includes(hero)) hero = currentDefaultHero;
         if (lang === 'en') return `Prologue: The Hero of Judgment [${hero}] gathered the villagers and began the quest to expose the hidden imposters.`;
         if (lang === 'fr') return `Prologue : Le Héros du Jugement [${hero}] a rassemblé les villageois et a entamé sa quête pour démasquer les imposteurs.`;
         if (lang === 'zh') return `序章：审判勇者 [${hero}] 召集村民，踏上揭露伪装者的冒险之路。`;
@@ -4583,7 +4759,10 @@ ${speakerName}としての審判会議発言:`;
         const mCh = rawSummary.match(/(?:第(\d+)章|Chapter\s*(\d+)|Chapitre\s*(\d+)|제(\d+)장)/i);
         const ch = mCh ? (mCh[1] || mCh[2] || mCh[3] || mCh[4] || '1') : '1';
         const mVictim = rawSummary.match(/\[(.*?)\]/);
-        const victim = mVictim ? mVictim[1] : (lang === 'en' ? 'Villager' : (lang === 'fr' ? 'Villageois' : '村人'));
+        let victim = mVictim ? mVictim[1] : '';
+        const _victimDefaults = ['村人', 'Villager', 'Villageois', '村民', '마을사람'];
+        const currentDefaultVictim = lang === 'en' ? 'Villager' : (lang === 'fr' ? 'Villageois' : (lang === 'zh' ? '村民' : (lang === 'ko' ? '마을사람' : '村人')));
+        if (!victim || _victimDefaults.includes(victim)) victim = currentDefaultVictim;
         if (lang === 'en') return `Chapter ${ch}: The hero passed judgment on [${victim}], and silence fell upon the village.`;
         if (lang === 'fr') return `Chapitre ${ch} : Le héros a rendu son jugement sur [${victim}], et le silence est retombé sur le village.`;
         if (lang === 'zh') return `第${ch}章：勇者对 [${victim}] 做出了审判，村庄回归了宁静。`;
@@ -4695,8 +4874,8 @@ ${speakerName}としての審判会議発言:`;
       data.heroIQ = Math.min(200, Math.max(50, currentIQ + iqChange));
       data.totalScore = Math.max(0, currentScore + scoreGained);
       data.rankTitle = getRankTitle(data.heroIQ, data.totalScore);
-      // ★ 信頼度の永続化（勝利時のみ保存 — ゲームオーバー時は保存しない）
-      if (gameResult.isVictory && typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') {
+      // ★ 信頼度の永続化（全章共通で維持）
+      if (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') {
         data.playerTrust = gameState.playerTrust;
       }
       data.updatedAt = new Date().toLocaleString("ja-JP");
@@ -4769,7 +4948,7 @@ ${speakerName}としての審判会議発言:`;
         slotId: bookId,
         bookTitle: BOOK_NAMES[bookId] || `冒険の書 第${bookId}巻`,
         updatedAt: new Date().toLocaleString("ja-JP"),
-        heroName: gameStateData.heroName || "勇者",
+        heroName: gameStateData.heroName || (lang === 'en' ? 'Hero' : (lang === 'fr' ? 'Héros' : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者')))),
         heroIQ: heroIQ,
         totalScore: totalScore,
         playerTrust: playerTrust,
@@ -4843,6 +5022,27 @@ ${speakerName}としての審判会議発言:`;
     function autoSaveCurrentGame() {
       if (!gameState || !gameState.charList || gameState.gameOver) return;
       saveGameData(activeSaveSlot, gameState, true); // isAutoSave = true
+    }
+
+    /**
+     * アクティブな冒険の書の信頼度のみを即時保存・永続化
+     */
+    function saveActiveBookTrust(trustVal) {
+      if (!activeSaveSlot) return;
+      const targetTrust = (typeof trustVal === 'number') ? trustVal : (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number' ? gameState.playerTrust : null);
+      if (typeof targetTrust !== 'number') return;
+      const data = loadGameData(activeSaveSlot);
+      if (data) {
+        data.playerTrust = targetTrust;
+        if (data.gameState) {
+          data.gameState.playerTrust = targetTrust;
+        }
+        try {
+          localStorage.setItem(BOOK_KEY_PREFIX + activeSaveSlot, JSON.stringify(data));
+        } catch (e) {
+          console.error(`冒険の書 第${activeSaveSlot}巻 信頼度保存エラー:`, e);
+        }
+      }
     }
 
     /**
@@ -5002,7 +5202,7 @@ ${speakerName}としての審判会議発言:`;
             slotId: i,
             isEmpty: false,
             title: `『${bookName}』 ${defaultProg}`,
-            detail: `${(lang === 'en' || lang === 'fr') ? (lang === 'fr' ? 'Héros' : 'Hero') : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者'))}: ${data.heroName || defaultHero} | ${(lang === 'en' || lang === 'fr') ? (lang === 'fr' ? 'Vivants' : 'Alive') : (lang === 'zh' ? '幸存' : (lang === 'ko' ? '생존' : '生存'))}: ${data.aliveCount} | ${data.updatedAt}`,
+            detail: `${(lang === 'en' || lang === 'fr') ? (lang === 'fr' ? 'Héros' : 'Hero') : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者'))}: ${(() => { const _jd = ['勇者','Hero','Héros','용사']; return (data.heroName && !_jd.includes(data.heroName)) ? data.heroName : defaultHero; })()} | ${(lang === 'en' || lang === 'fr') ? (lang === 'fr' ? 'Vivants' : 'Alive') : (lang === 'zh' ? '幸存' : (lang === 'ko' ? '생존' : '生存'))}: ${data.aliveCount} | ${data.updatedAt}`,
             summary: savedSummary,
             raw: data
           });
@@ -5102,6 +5302,9 @@ ${speakerName}としての審判会議発言:`;
           const defeated = raw.monstersDefeated || 0;
           const victims = raw.innocentVictims || 0;
           const defaultHero = lang === 'en' ? 'Hero' : (lang === 'fr' ? 'Héros' : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者')));
+          // 旧言語で保存された "勇者" / "용사" / "Hero" 等のデフォルト名を現在の言語に正規化して表示
+          const _jaDefaults = ['勇者', 'Hero', 'Héros', '용사'];
+          const _rawHeroName = raw.heroName && !_jaDefaults.includes(raw.heroName) ? raw.heroName : defaultHero;
 
           const unitDefeated = (lang === 'en' || lang === 'fr') ? '' : (lang === 'zh' ? '只' : (lang === 'ko' ? '마리' : '体'));
           const unitVictims = (lang === 'en' || lang === 'fr') ? '' : (lang === 'zh' ? '次' : (lang === 'ko' ? '회' : '回'));
@@ -5112,7 +5315,7 @@ ${speakerName}としての審判会議発言:`;
             </div>
             
             <div style="font-size:0.85rem; color:#fef08a; display:flex; flex-wrap:wrap; gap:0.6rem 1.2rem; margin-bottom:0.4rem; background:rgba(0,0,0,0.35); padding:0.5rem 0.7rem; border-radius:6px; border:1px solid rgba(251, 191, 36, 0.25);">
-              <div>${lblHeroName}: <strong>${raw.heroName || defaultHero}</strong></div>
+              <div>${lblHeroName}: <strong>${_rawHeroName}</strong></div>
               <div>${lblTitle}: <span style="color:#fbbf24; font-weight:bold; background:rgba(251, 191, 36, 0.15); padding:0.1rem 0.4rem; border-radius:4px; border:1px solid rgba(251, 191, 36, 0.3);">【 ${rankTitle} 】</span></div>
               <div>${lblIQ}: <strong style="color:#60a5fa; font-size:0.95rem;">${heroIQ}</strong></div>
               <div>${lblTotalScore}: <strong style="color:#34d399; font-size:0.95rem;">${score} pt</strong></div>
@@ -6599,11 +6802,10 @@ ${speakerName}としての審判会議発言:`;
 
       // ゲーム画面ヘッダーアイコンボタン（タイトル画面と共通/個別）
       const gameHeaderButtons = document.querySelectorAll('#game-screen header .btn-header-icon');
-      if (gameHeaderButtons.length >= 4) {
+      if (gameHeaderButtons.length >= 3) {
         gameHeaderButtons[0].textContent = t.header_how_to_play;
         gameHeaderButtons[1].textContent = t.header_rank;
-        gameHeaderButtons[2].textContent = t.header_save;
-        gameHeaderButtons[3].textContent = t.header_settings;
+        gameHeaderButtons[2].textContent = t.header_settings;
       }
 
       // Page 2: 確定情報・過去ログ・思考整理・一時停止ボタン
@@ -6816,8 +7018,10 @@ ${speakerName}としての審判会議発言:`;
       if (mislynchTextEl && t.mislynch_banner) mislynchTextEl.textContent = t.mislynch_banner;
 
       // 動画スキップボタン
-      const videoSkipBtn = document.querySelector('.execution-video-skip-btn');
-      if (videoSkipBtn && t.btn_skip_video) videoSkipBtn.textContent = t.btn_skip_video;
+      const videoSkipBtns = document.querySelectorAll('.execution-video-skip-btn');
+      if (videoSkipBtns && t.btn_skip_video) {
+        videoSkipBtns.forEach(btn => btn.textContent = t.btn_skip_video);
+      }
 
       // トースト通知
       const toastMsgEl = document.getElementById('toast-message');
@@ -7733,6 +7937,9 @@ ${speakerName}としての審判会議発言:`;
       }
       if (typeof stopEndingBgm === 'function') {
         stopEndingBgm();
+      }
+      if (typeof stopGameOverBgm === 'function') {
+        stopGameOverBgm();
       }
     }
 
@@ -8894,6 +9101,9 @@ ${speakerName}としての審判会議発言:`;
     window.returnToTitleScreen = returnToTitleScreen;
 
     function showTitleScreen() {
+      if (typeof stopGrandEndingTypewriter === 'function') {
+        stopGrandEndingTypewriter();
+      }
       resetGameState();
       renderVillageStats();
       updateMainMenuUI();
@@ -9060,11 +9270,22 @@ ${speakerName}としての審判会議発言:`;
       renderCharacters();
       selectCharacter(gameState.selectedChar);
 
+      const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
+      const t = I18N_TRANSLATIONS[lang] || I18N_TRANSLATIONS.ja;
       const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const decisionLogText = '議論を終了し、処刑決断に入ります。処刑対象を選択するか、処刑を見送ってください。';
+
+      const decisionLogMap = {
+        ja: '議論を終了し、処刑決断に入ります。処刑対象を選択するか、処刑を見送ってください。',
+        en: 'The debate has concluded. It is time for judgment. Select a target to execute or choose to spare them.',
+        fr: 'Le débat est clos. L\'heure du jugement est venue. Choisissez un villageois à exécuter ou décidez d\'épargner le village.',
+        zh: '讨论结束，进入审判决断阶段。请选择处决目标，或选择放弃处决。',
+        ko: '논의를 종료하고 처형 결단에 들어갑니다. 처형 대상을 선택하거나 처형을 넘겨주십시오.'
+      };
+      const decisionLogText = decisionLogMap[lang] || decisionLogMap.ja;
       const speechMsg = `${getDaySpeechText(gameState.day)}…… ${decisionLogText}`;
 
-      addLogItem('ナレーション', '', decisionLogText, 'narration', null, false);
+      const narrationTitle = t.narration_speaker || (lang === 'fr' ? 'Narration' : (lang === 'en' ? 'Narration' : 'ナレーション'));
+      addLogItem(narrationTitle, '', decisionLogText, 'narration', null, false);
 
       // ナレーション読み上げ完了（onend）を待機
       await playSpeechAsync(speechMsg);
@@ -9344,6 +9565,13 @@ ${speakerName}としての審判会議発言:`;
         "입을 열었다간 내일의 희생양이 될 뿐… 아무것도 말하지 않겠소!",
         "책임을 전가하기 위해 날 이용하려는 건가? 대답할 가치도 없소.",
         "죄 없는 자를 제물로 바쳐놓고, 뻔뻔스럽게도 질문을 던지다니……!"
+      ],
+      fr: [
+        "……Je n'ai rien à te dire. Tu vas encore exécuter un innocent, n'est-ce pas ?",
+        "Œil divin ou pas, plus personne dans ce village ne croit au jugement du Héros !",
+        "Si j'ouvre la bouche, je serai le sacrifice de demain... Je ne dirai rien du tout !",
+        "Tu cherches un bouc émissaire pour rejeter ta faute ? Tu ne mérites aucune réponse.",
+        "Après avoir fait couler le sang d'un innocent, comment oses-tu encore m'interroger ainsi... !"
       ]
     };
 
@@ -9408,6 +9636,9 @@ ${speakerName}としての審判会議発言:`;
       const diff = gameState.playerTrust - oldTrust;
       renderTrustUI(diff);
       checkTrustEvents();
+      if (typeof saveActiveBookTrust === 'function') {
+        saveActiveBookTrust(gameState.playerTrust);
+      }
     }
 
     // ★ ネタバレ防止: 処刑直後は結果を即時反映せず、保留スタックに追加
@@ -9453,6 +9684,9 @@ ${speakerName}としての審判会議発言:`;
 
       renderTrustUI();
       checkTrustEvents();
+      if (typeof saveActiveBookTrust === 'function') {
+        saveActiveBookTrust(gameState.playerTrust);
+      }
     }
 
     // 信頼度UI・ゲージ描画および通知ポップアップ演出
@@ -9503,50 +9737,110 @@ ${speakerName}としての審判会議発言:`;
       }
     }
 
-    // ① 信頼度 0% : 誤審クーデター（即ゲームオーバー）
+    // =====================================================
+    // 💀 ゲームオーバー専用BGM管理（BGM2/GAME_OV.mp3）
+    // =====================================================
+    let currentGameOverBgm = null;
+
+    function playGameOverBgm() {
+      stopGameOverBgm();
+      try {
+        currentGameOverBgm = new Audio('BGM2/GAME_OV.mp3');
+        currentGameOverBgm.loop = true;
+        const volRate = (typeof bgmVolume === 'number' ? bgmVolume : 100) / 100;
+        currentGameOverBgm.volume = 0.55 * volRate;
+        currentGameOverBgm.play().catch(e => {
+          console.log('GameOver BGM Play Error (Waiting for User Interaction):', e);
+        });
+      } catch (e) {
+        console.error('GameOver BGM error:', e);
+      }
+    }
+
+    function stopGameOverBgm() {
+      if (currentGameOverBgm) {
+        currentGameOverBgm.pause();
+        currentGameOverBgm.currentTime = 0;
+        currentGameOverBgm = null;
+      }
+    }
+
+    // ① 信頼度 0% : 誤審クーデター（GAME_OVムービー再生 → GAME OVER表記 → タイトルへ戻る）
     async function triggerCoupDetat() {
       stopAllTimers();
       cancelSpeech();
       gameState.gameOver = true;
 
-      playBgm('haiboku');
+      // 議論を完全に終了
+      aiDiscussionActive = false;
+      gameState.subPhase = 'gameover';
 
-      const modal = document.getElementById('modal-overlay');
-      const title = document.getElementById('modal-title');
-      const body = document.getElementById('modal-body');
-      const resultCard = document.getElementById('modal-result-card');
+      // 既存モーダルを閉じる
+      closeModal('modal-overlay');
+      closeModal('result-modal');
+      closeModal('grand-ending-modal');
 
-      if (title) {
-        title.textContent = '⛓️【民の反逆】クーデター発生！';
-        title.className = 'modal-title lose';
-      }
-      if (resultCard) {
-        resultCard.innerHTML = `
-          <div style="background: rgba(185, 28, 28, 0.3); border: 2px solid #ef4444; border-radius: 12px; padding: 1.2rem; text-align: center; box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);">
-            <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">⛓️💥🗡️</div>
-            <div style="font-size: 1.2rem; font-weight: bold; color: #ef4444; margin-bottom: 0.6rem;">【民の反逆】 勇者拘束</div>
-            <div style="font-size: 0.88rem; color: #fecaca; line-height: 1.6; text-align: left; background: rgba(0,0,0,0.4); padding: 0.8rem 1rem; border-radius: 8px;">
-              信頼を完全に失った勇者は、狂気に駆られた村人たちによって逆に拘束され、処刑台へと送られた……<br><br>
-              度重なる誤審により村の絆は崩壊し、反乱が勃発しました。
-            </div>
-          </div>
-        `;
-      }
-      if (body) {
-        body.textContent = '信頼度が0%になり、民の反逆により審判会議が強制終了しました。';
+      // BGM一時停止
+      stopAllBgm();
+      if (typeof stopStoryBgm === 'function') {
+        stopStoryBgm();
       }
 
-      const actionBtnsContainer = document.querySelector('.result-action-buttons');
-      if (actionBtnsContainer) {
-        actionBtnsContainer.innerHTML = `
-          <button class="btn-result-action btn-result-restart" onclick="startGame()">🔄 もう一度プレイ</button>
-          <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">🏠 タイトルへ</button>
-        `;
+      // 音声とログでゲームオーバーのアナウンス
+      const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
+      const announceTextMap = {
+        ja: '民の信頼度が0になりました。誤審の責任を問われ、ゲームオーバーとなります。',
+        en: 'The villagers\' trust has reached 0. You are held responsible for the wrongful execution. Game Over.',
+        fr: 'La confiance des villageois est tombee a 0. Vous etes tenu responsable de l\'erreur de jugement. Fin de partie.',
+        zh: '村民的信任度已归零。因审判失误追究责任，游戏结束。',
+        ko: '주민들의 신뢰도가 0이 되었습니다. 오심에 대한 책임을 물어 게임 오버됩니다.'
+      };
+      const announceMsg = announceTextMap[lang] || announceTextMap['ja'];
+      addLogItem('💀 GAME OVER', '', announceMsg, 'system', null, false);
+      showNotification(`💀 ${announceMsg}`);
+      await playSpeechAsync(announceMsg);
+
+      // 少し余韻を置いてからムービーへ
+      await new Promise(r => setTimeout(r, 600));
+
+      // ★ ゲームオーバー専用BGM (BGM2/GAME_OV.mp3) を開始（ムービー〜ゲームオーバー画面で継続再生）
+      playGameOverBgm();
+
+      // GAME_OV ムービーを再生（フェードアウトなしで即座にGAME OVER画面へ切り替え）
+      if (typeof playEndingVideoAsync === 'function') {
+        await playEndingVideoAsync(['MOVE/GAME_OV.mp4', 'MOVE/GAME_OV.avi'], { fadeOut: 0 });
       }
 
-      if (modal) modal.classList.remove('hidden');
+      // ムービー終了直後、議論画面や背景が一切見えないよう即座にGAME OVER画面を表示
+      const goOverlay = document.getElementById('trust-gameover-overlay');
+      if (goOverlay) {
+        goOverlay.style.transition = '';
+        goOverlay.style.opacity = '1';
+        goOverlay.style.display = 'flex';
+      } else {
+        // フォールバック
+        showTitleScreen();
+      }
+    }
 
-      await playSpeechAsync('民の反逆！信頼を完全に失った勇者は、村人たちによって拘束され、処刑台へと送られた……');
+    // 信頼度0ゲームオーバー画面からタイトル画面へ戻る
+    function returnToTitleFromTrustGameOver() {
+      // ゲームオーバーBGMを停止
+      stopGameOverBgm();
+
+      // タイトル画面とスプラッシュ画面を背面に先に配置・準備し、ゲーム画面（議論画面）を即座に隠す
+      showTitleScreen();
+
+      // GAME OVER 画面を最前面からタイトル画面に向けてフェードアウト
+      const goOverlay = document.getElementById('trust-gameover-overlay');
+      if (goOverlay) {
+        goOverlay.style.transition = 'opacity 0.8s ease';
+        goOverlay.style.opacity = '0';
+        setTimeout(() => {
+          goOverlay.style.display = 'none';
+          goOverlay.style.transition = '';
+        }, 800);
+      }
     }
 
     function resetGameState() {
@@ -9592,6 +9886,15 @@ ${speakerName}としての審判会議発言:`;
         if (textEl) textEl.textContent = '';
       }
 
+      // 冒険の書（アクティブスロット）から信頼度を引き継ぐ（未設定時は100）
+      let preservedTrust = 100;
+      if (typeof activeSaveSlot !== 'undefined' && typeof loadGameData === 'function') {
+        const slotData = loadGameData(activeSaveSlot);
+        if (slotData && typeof slotData.playerTrust === 'number') {
+          preservedTrust = slotData.playerTrust;
+        }
+      }
+
       // Reset gameState object
       gameState = {
         villageSize: 6,
@@ -9609,7 +9912,7 @@ ${speakerName}としての審判会議発言:`;
         lastExecutedRole: null,
         mislynchProcessedDay: 0,
         heroDistrustLevel: 0,
-        playerTrust: 100,
+        playerTrust: preservedTrust,
         pendingTrustUpdates: [],
         roles: {},
         coRoles: {},
@@ -9926,12 +10229,15 @@ ${speakerName}としての審判会議発言:`;
       // 新規スロットの場合、初期データを自動生成して保存
       const existingData = loadGameData(activeSaveSlot);
       if (!existingData || typeof existingData !== 'object' || Object.keys(existingData).length === 0) {
+        const _initLang = currentAppLanguage || 'ja';
+        const _defaultHeroName = _initLang === 'en' ? 'Hero' : (_initLang === 'fr' ? 'Héros' : (_initLang === 'zh' ? '勇者' : (_initLang === 'ko' ? '용사' : '勇者')));
         saveGameData(activeSaveSlot, {
-          heroName: "勇者",
+          heroName: _defaultHeroName,
           currentChapter: 1,
           unlockChapter: 1,
           heroIQ: 100,
           totalScore: 0,
+          playerTrust: 100,
           rankTitle: "新米審判者",
           clearedVillages: 0,
           monstersDefeated: 0,
@@ -10035,7 +10341,7 @@ ${speakerName}としての審判会議発言:`;
 
       if (headerEl) {
         headerEl.innerHTML = `
-          <div>📜 <strong>${bookName}</strong> | ${heroLabel}: <strong>${saveData.heroName || defaultHero}</strong></div>
+          <div>📜 <strong>${bookName}</strong> | ${heroLabel}: <strong>${(() => { const _jd = ['勇者','Hero','Héros','용사']; return (saveData.heroName && !_jd.includes(saveData.heroName)) ? saveData.heroName : defaultHero; })()}</strong></div>
           <div>【${rankTitle}】 ${trustLabel}: <strong style="color:${currentTrust>=60?'#10b981':(currentTrust>=30?'#fbbf24':'#ef4444')};">${currentTrust}%</strong> | ${heroIqLabel}: <strong style="color:#60a5fa;">${heroIQ}</strong> | ${scoreLabel}: <strong style="color:#34d399;">${score} pt</strong></div>
         `;
       }
@@ -10071,6 +10377,10 @@ ${speakerName}としての審判会議発言:`;
         const deployBtnText = lang === 'en' ? 'Deploy' : (lang === 'fr' ? 'Déployer' : (lang === 'zh' ? '出击' : (lang === 'ko' ? '출격' : '出撃')));
         const sealedBtnText = lang === 'en' ? '🔒 Sealed' : (lang === 'fr' ? '🔒 Scellé' : (lang === 'zh' ? '🔒 封印' : (lang === 'ko' ? '🔒 봉인' : '🔒 封印')));
 
+        const clearDebugBtnHTML = debugStoryClearMode 
+          ? `<button class="btn" style="background: linear-gradient(135deg, #10b981, #047857); color: #fff; border: 1px solid #34d399; padding: 0.5rem 0.8rem; font-weight: bold; font-size: 0.82rem; box-shadow: 0 0 10px rgba(16,185,129,0.5);" onclick="debugInstantClearChapter(${chId})" title="この章を即時勝利クリアする">⚡ クリア</button>`
+          : '';
+
         card.innerHTML = `
           <div style="text-align: left;">
             <div style="font-size: 1.05rem; font-weight: bold; color: ${titleColor};">
@@ -10084,7 +10394,8 @@ ${speakerName}としての審判会議発言:`;
               ${reqLabel}: ${ch.unlockReq}
             </div>
           </div>
-          <div>
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            ${clearDebugBtnHTML}
             ${isUnlocked 
               ? `<button class="btn btn-primary" style="padding: 0.5rem 0.9rem; font-weight: bold;" onclick="startStoryChapter(${chId})">${deployBtnText}</button>`
               : `<button class="btn btn-secondary" style="padding: 0.5rem 0.9rem;" disabled>${sealedBtnText}</button>`
@@ -10344,6 +10655,11 @@ ${speakerName}としての審判会議発言:`;
           '◀ 前へ戻る')));
         prevBtnEl.style.display = currentStoryPageIndex > 0 ? 'inline-block' : 'none';
       }
+
+      const debugClearBtnEl = document.getElementById('opening-story-debug-clear-btn');
+      if (debugClearBtnEl) {
+        debugClearBtnEl.style.display = debugStoryClearMode ? 'inline-block' : 'none';
+      }
     }
 
     /**
@@ -10351,8 +10667,16 @@ ${speakerName}としての審判会議発言:`;
      */
     function nextStoryStep() {
       if (currentStoryPageIndex < storyPages.length - 1) {
-        currentStoryPageIndex++;
-        renderStoryPage();
+        // 第1章の序章ページ（index 0）から進む時、開幕カットシーンを再生
+        if (currentPlayMode === 'story' && currentStoryChapter === 1 && currentStoryPageIndex === 0) {
+          playStoryVideoAsync('MOVE/kaimaku.mp4').then(() => {
+            currentStoryPageIndex++;
+            renderStoryPage();
+          });
+        } else {
+          currentStoryPageIndex++;
+          renderStoryPage();
+        }
       } else {
         finishOpeningStory();
       }
@@ -10393,7 +10717,15 @@ ${speakerName}としての審判会議発言:`;
       localStorage.setItem("has_seen_opening", "true");
       stopStoryBgm();
       closeModal('opening-story-modal');
-      startGame();
+
+      // ストーリーモードの場合、扉開放カットシーンを再生してからゲーム開始
+      if (currentPlayMode === 'story') {
+        playStoryVideoAsync('MOVE/tobiraopen.mp4').then(() => {
+          startGame();
+        });
+      } else {
+        startGame();
+      }
     }
 
     // Global exports
@@ -10742,8 +11074,23 @@ ${speakerName}としての審判会議発言:`;
       // CakeShop Report
       const cakeChar = gameState.charList.find(c => gameState.roles[c] === 'cakeShop');
       if (cakeChar && gameState.status[cakeChar] === 'alive') {
-        const cakeText = '「今朝もおいしい焼きたてケーキが焼き上がりました！」';
-        addLogItem('🍰 ケーキ屋より', '', cakeText, 'baker', null, false);
+        const cakeTextMap = {
+          ja: '「今朝もおいしい焼きたてケーキが焼き上がりました！」',
+          en: '"A freshly baked cake is ready again this morning!"',
+          fr: '« Un gâteau fraîchement cuit est encore prêt ce matin ! »',
+          zh: '「今天早上又烤出了美味的新鲜蛋糕！」',
+          ko: '「오늘 아침에도 맛있는 갓 구운 케이크가 나왔습니다！」'
+        };
+        const cakeTitleMap = {
+          ja: '🍰 ケーキ屋より',
+          en: '🍰 From the Cake Shop',
+          fr: '🍰 De la Pâtisserie',
+          zh: '🍰 来自蛋糕店',
+          ko: '🍰 케이크 가게에서'
+        };
+        const cakeText = cakeTextMap[currentAppLanguage] || cakeTextMap['ja'];
+        const cakeTitle = cakeTitleMap[currentAppLanguage] || cakeTitleMap['ja'];
+        addLogItem(cakeTitle, '', cakeText, 'baker', null, false);
         await playSpeechAsync(`${getDaySpeechText(1)}…… ${cakeText}`);
       }
 
@@ -10757,7 +11104,7 @@ ${speakerName}としての審判会議発言:`;
 
       gameState.phase = '昼';
       calculateVirtualVotes();
-      const morningStrD1 = { ja: '朝', en: 'Morning', zh: '清晨', ko: '아침' }[currentAppLanguage] || '朝';
+      const morningStrD1 = { ja: '朝', en: 'Morning', zh: '清晨', ko: '아침', fr: 'Matin' }[currentAppLanguage] || '朝';
       recordVirtualVoteHistory(`${formatDay(1)} ${morningStrD1}`);
       renderVoteHistoryPage();
       renderStatus();
@@ -10779,6 +11126,12 @@ ${speakerName}としての審判会議発言:`;
       return new Promise(resolve => {
         const overlay = document.getElementById('mislynch-banner-overlay');
         if (!overlay) { resolve(); return; }
+        const lang = currentAppLanguage || 'ja';
+        const t = (typeof I18N_TRANSLATIONS !== 'undefined' && I18N_TRANSLATIONS[lang]) ? I18N_TRANSLATIONS[lang] : {};
+        const textEl = overlay.querySelector('.mislynch-banner-text');
+        if (textEl && t.mislynch_banner) {
+          textEl.textContent = t.mislynch_banner;
+        }
         overlay.classList.add('active');
         setTimeout(() => {
           overlay.classList.remove('active');
@@ -10787,39 +11140,169 @@ ${speakerName}としての審判会議発言:`;
       });
     }
 
-    // ★ 誤処刑発覚時NPC発言テンプレート（5カテゴリ×4パターン = 全20パターン）
+    // ★ 誤処刑発覚時NPC発言テンプレート（5カテゴリ×4パターン = 全20パターン、多言語対応）
     // {executedName} = 処刑された人物名, {npcName} = 発言中に言及する別NPC名
     const MIS_EXECUTION_DIALOGUES = {
-      criticism: [
-        "お告げだの神眼だのと言いながら、結果はどうだ！ 勇者様、あんたが指図したから無実の者が死んだんだぞ！",
-        "私たちの命を預かっているはずの勇者様が、一番最初に村人を殺してどうするんです！ 次も外したら、もうあんたの言うことは信じないからな！",
-        "……なあ。勇者ってのは本当に村を守るために来たのか？ それとも、私たちを面白半分で処刑台に送って楽しんでるだけなんじゃないのか……？",
-        "血の匂いが鼻をつく……昨日の処刑は完全な誤りだった。勇者様、あんたのその剣、本当に魔物を斬るためにあるのか？"
-      ],
-      despair: [
-        "嘘だと言ってくれ……{executedName}は昨日まで笑って畑を手伝ってくれてたんだぞ……！ なんで、なんでそんな人が魔物として殺されなきゃいけないんだよ……！",
-        "父さんは……私の父さんはただの村人だったんだ！ それなのに、勇者様のせいで……もう二度と帰ってこないんだ……！",
-        "{executedName}殿は村で一番親切な人だった。そんな人が魔物なわけなかったんだ……。私のせいで、私があの時庇ってやれなかったから……！",
-        "誰も信じない。誰が味方で、誰が私を裏切って処刑台送りにしようとしているのか……もうこの村には誰も信用できる人間なんていない！"
-      ],
-      fear: [
-        "次は私だ……！ 次は私の番だ！ 何も喋ってないのに、適当な理由をつけられて明日には首を撥ねられるんだ……いやだ、殺されたくない！",
-        "もう怖くて発言なんてできない……！ 下手に意見を言うと『怪しい』って言われて勇者様に処刑される。黙っていた方が生き残れるのか……？",
-        "狂ってる、この村は全員狂っちまったんだ！ 無実の人間を生贄にして、次は誰を差し出すかって怯えながら暮らすなんて……もう地獄だ！",
-        "門を開けてくれ！ ここにいたら魔物に喰われる前に、勇者様の誤審で全員殺される！ 外の森の方がよっぽど安全だ！"
-      ],
-      conflict: [
-        "おい{npcName}！ お前、昨日しきりに『あいつが怪しい』って誘導してたろ！ お前が勇者様を騙したから、あんな間違いが起きたんだ！",
-        "なんだと！？ 私を疑うのか！ それならお前だって、昨日の議論の時妙に静かだったじゃないか！ お前こそ魔物の手先なんじゃないのかよ！",
-        "やめろ！ こうやって仲間同士で疑い合って言い争うのが、魔物の思う壺なんだよ！ ……でも、お前らの目をみていると、もう誰も人間には見えない……！",
-        "昨日の誤審で無実の人が死んだんだ。だったら、次の処刑は『誤った情報を流した奴』を全員で選んで責任を取らせるべきだ！"
-      ],
-      provoke: [
-        "おや、おや……。昨日の威勢はどこへ行ったんです？ 勇者様を信じた結果がこれですか。無残なものですね",
-        "勇者様、責任重大ですね。あなたのその『神眼』とやらは、もう完全に曇っちまったみたいだ。次の審判も外したら、村人全員があんたに牙を剥きますよ",
-        "みんな落ち着けって……！ ほら、そうやって怯えて疑い合ってる隙に、本当の魔物が後ろで笑ってるんだぜ？ ……まあ、それが誰だかは言わないでおくがな",
-        "もう手遅れさ。間違えて人間を殺した瞬間から、この村の絆は二度と元には戻らない。さあ、次は誰を血祭りにあげて安心する気だ？"
-      ]
+      criticism: {
+        ja: [
+          "お告げだの神眼だのと言いながら、結果はどうだ！ 勇者様、あんたが指図したから無実の者が死んだんだぞ！",
+          "私たちの命を預かっているはずの勇者様が、一番最初に村人を殺してどうするんです！ 次も外したら、もうあんたの言うことは信じないからな！",
+          "……なあ。勇者ってのは本当に村を守るために来たのか？ それとも、私たちを面白半分で処刑台に送って楽しんでるだけなんじゃないのか……？",
+          "血の匂いが鼻をつく……昨日の処刑は完全な誤りだった。勇者様、あんたのその剣、本当に魔物を斬るためにあるのか？"
+        ],
+        en: [
+          "You spoke of divine revelation and the Holy Eye, yet behold the outcome! Sir Hero, an innocent soul lies dead by your command!",
+          "A Hero entrusted with our lives begins by slaying one of our own! If you err once more, no one will heed your words again!",
+          "...Tell me, did this 'Hero' truly come to deliver our village? Or are you merely relishing sending us to the gallows for sport...?",
+          "The stench of blood chokes the air... Yesterday's execution was a grave error. Sir Hero, is that blade truly forged to slay beasts?"
+        ],
+        fr: [
+          "Vous parliez de révélation divine et d'Œil Sacré, mais regardez le résultat ! Messire Héros, un innocent a péri sous vos ordres !",
+          "Le Héros censé protéger nos vies commence par exécuter un villageois ! Si vous vous trompez encore, plus personne ne vous fera confiance !",
+          "…Dites-moi. Ce Héros est-il vraiment venu pour sauver notre village ? Ou prenez-vous simplement plaisir à nous envoyer à l'échafaud pour vous amuser… ?",
+          "L'odeur du sang emplit l'air… L'exécution d'hier était une grave erreur. Messire Héros, cette épée sert-elle réellement à pourfendre les monstres ?"
+        ],
+        zh: [
+          "口口声声什么神明启示、真理神眼，结果又是如何！勇者大人，正因你的指点，无辜之人方才惨死！",
+          "托付了全村性命的勇者，竟率先斩杀了清白村民！若下次再有差池，便再无人信服你的言语！",
+          "……我说，这位勇者当真是为守护村庄而来？抑或只是把我们推上断头台以作取乐之用……？",
+          "刺鼻的血腥味挥之不去……昨天的处决错得彻底。勇者大人，你手中之剑，当真是为斩灭魔物而挥动的吗？"
+        ],
+        ko: [
+          "신의 계시니 혜안이니 떠벌리더니 결과가 이 꼴이란 말이오! 용사님, 당신의 지시 탓에 무고한 이가 목숨을 잃었소!",
+          "우리의 목숨을 짊어졌다던 용사님이 처음부터 마을사람을 죽여서 어쩌자는 겁니까! 다음에도 빗나간다면 다시는 당신을 믿지 않겠소!",
+          "……이보시오. 저 용사는 진정 마을을 구하러 온 것이 맞소? 그저 우리를 처형대로 보내며 재미를 보는 것은 아니냔 말이오……?",
+          "피비린내가 코를 찌르는구려…… 어제의 처형은 명백한 과오였소. 용사님, 그 검은 진정 마물을 베기 위해 쥐고 있는 것이 맞소?"
+        ]
+      },
+      despair: {
+        ja: [
+          "嘘だと言ってくれ……{executedName}は昨日まで笑って畑を手伝ってくれてたんだぞ……！ なんで、なんでそんな人が魔物として殺されなきゃいけないんだよ……！",
+          "父さんは……私の父さんはただの村人だったんだ！ それなのに、勇者様のせいで……もう二度と帰ってこないんだ……！",
+          "{executedName}殿は村で一番親切な人だった。そんな人が魔物なわけなかったんだ……。私のせいで、私があの時庇ってやれなかったから……！",
+          "誰も信じない。誰が味方で、誰が私を裏切って処刑台送りにしようとしているのか……もうこの村には誰も信用できる人間なんていない！"
+        ],
+        en: [
+          "Tell me this is an illusion... {executedName} was smiling and tilling the fields with us only yesterday...! Why must such a gentle soul be slain as a fiend...?!",
+          "My kin was just a humble villager! And yet, by the Hero's judgment... they shall never return to our hearth again...!",
+          "{executedName} was the kindest soul in our village. There was no way they were a monster... If only I had shielded them...!",
+          "I trust no one anymore. Who is a friend, and who plots to deliver me to the scaffold...? There is no longer a soul worthy of trust in this village!"
+        ],
+        fr: [
+          "Dites-moi que c'est un cauchemar… {executedName} souriait et travaillait aux champs avec nous hier encore… ! Pourquoi une telle personne a-t-elle dû être tuée comme un monstre… ?!",
+          "Mon proche n'était qu'un simple villageois ! Et pourtant, à cause du jugement du Héros… il ne reviendra plus jamais… !",
+          "{executedName} était la personne la plus bienveillante de notre village. Il était impossible qu'elle soit un monstre… Si seulement j'avais pu la défendre… !",
+          "Je ne fais plus confiance à personne. Qui est un allié, et qui complote pour m'envoyer à l'échafaud… ? Il n'y a plus âme qui vive digne de confiance dans ce village !"
+        ],
+        zh: [
+          "快告诉我这不是真的……{executedName}昨日还在田里笑着帮工啊……！为何、为何这等良善之人偏要被当作妖魔处死……？！",
+          "那可是我的至亲，只是个本分的村民啊！如今却因勇者之过……再也回不来了……！",
+          "{executedName}分明是村中最良善之人，绝无可能是妖魔……全怪我，若我当时能挺身力保……！",
+          "我谁也不信了。谁是同道，谁又在暗谋将我送上刑台……此村之中已然再无任何可信之人！"
+        ],
+        ko: [
+          "거짓말이라고 해 주시오…… {executedName} 님은 어제까지만 해도 웃으며 밭일을 도와주었단 말이오……! 어찌 그런 선량한 분이 마물로 몰려 죽어야 한단 말이오……!",
+          "내 가족은 그저 평범한 마을사람이었소! 그런데 용사님 때문에…… 다시는 돌아올 수 없게 되었단 말이오……!",
+          "{executedName} 님은 마을에서 가장 따뜻한 분이었소. 그런 분이 마물일 리 없었거늘…… 그 자리에서 감싸주지 못한 제 탓이오……!",
+          "이제 아무도 믿지 않겠소. 누가 아군이고, 누가 나를 모함해 처형대로 보내려 하는지…… 이 마을에는 믿을 수 있는 자가 단 한 명도 없소!"
+        ]
+      },
+      fear: {
+        ja: [
+          "次は私だ……！ 次は私の番だ！ 何も喋ってないのに、適当な理由をつけられて明日には首を撥ねられるんだ……いやだ、殺されたくない！",
+          "もう怖くて発言なんてできない……！ 下手に意見を言うと『怪しい』って言われて勇者様に処刑される。黙っていた方が生き残れるのか……？",
+          "狂ってる、この村は全員狂っちまったんだ！ 無実の人間を生贄にして、次は誰を差し出すかって怯えながら暮らすなんて……もう地獄だ！",
+          "門を開けてくれ！ ここにいたら魔物に喰われる前に、勇者様の誤審で全員殺される！ 外の森の方がよっぽど安全だ！"
+        ],
+        en: [
+          "I am next...! It will be me next! Even in silence, some flimsy pretense will see my head roll upon the morrow... No, I do not wish to perish!",
+          "Terror seals my lips...! Voice an opinion, and one is branded 'suspicious' and purged by the Hero. Is silence the sole shield for survival...?",
+          "Madness! Every soul here has surrendered to frenzy! Living in dread, offering innocents as tribute—this is naught but the abyss!",
+          "Unbar the gates! Stay here, and the Hero's false verdicts will slaughter us all ere a monster even strikes! The dark forest is far safer!"
+        ],
+        fr: [
+          "Je suis le prochain… ! Ce sera mon tour demain ! Même en restant silencieux, un prétexte futile suffira à me faire décapiter… Non, je refuse de mourir !",
+          "La terreur me paralyse, je n'ose plus parler… ! Exprimer une opinion suffit pour être jugé 'suspect' et exécuté par le Héros. Le silence est-il le seul moyen de survivre… ?",
+          "C'est de la folie, tout le monde a perdu la raison ! Offrir des innocents en sacrifice et trembler en se demandant qui sera le prochain… C'est un véritable enfer !",
+          "Ouvrez les portes ! Si nous restons ici, les erreurs du Héros nous massacreront tous avant même que les monstres n'attaquent ! La forêt sauvage est bien plus sûre !"
+        ],
+        zh: [
+          "下一个就是我了……！轮到我了！纵使闭口不言，明日也会被安上莫须有之名斩首……不要，我不想死！",
+          "我已吓得不敢再置一词……！稍吐只言片语便会被指为『嫌疑』遭勇者处决。难道唯有噤声方能苟活……？",
+          "疯了，这村里所有人都疯魔了！将无辜之人充作祭品，日夜惶恐下一个该将谁献出……这已然是人间炼狱！",
+          "快开门！留在此地，尚未被妖魔吞噬，便先被勇者的错判斩尽杀绝了！外面的深林倒比这儿安全得多！"
+        ],
+        ko: [
+          "다음은 나야……! 내 차례라고! 아무 말도 하지 않았는데 적당한 핑계로 내일 목이 잘릴 거야…… 싫어, 죽고 싶지 않아!",
+          "무서워서 입도 뗄 수 없소……! 어설프게 의견을 냈다간 '의심스럽다'며 용사에게 처형당하고 말 터. 침묵만이 살아남는 길이란 말이오……?",
+          "미쳤어, 이 마을 사람들은 모조리 미쳐버렸어! 결백한 사람을 제물로 바치며 다음엔 누구 차례냐며 떨며 지내다니…… 지옥이 따로 없소!",
+          "성문을 열어주시오! 여기 머물다간 마물에게 물리기 전에 용사의 오판으로 다 몰살당할 판이오! 바깥 숲이 차라리 백배는 안전하겠소!"
+        ]
+      },
+      conflict: {
+        ja: [
+          "おい{npcName}！ お前、昨日しきりに『あいつが怪しい』って誘導してたろ！ お前が勇者様を騙したから、あんな間違いが起きたんだ！",
+          "なんだと！？ 私を疑うのか！ それならお前だって、昨日の議論の時妙に静かだったじゃないか！ お前こそ魔物の手先なんじゃないのかよ！",
+          "やめろ！ こうやって仲間同士で疑い合って言い争うのが、魔物の思う壺なんだよ！ ……でも、お前らの目をみていると、もう誰も人間には見えない……！",
+          "昨日の誤審で無実の人が死んだんだ。だったら、次の処刑は『誤った情報を流した奴』を全員で選んで責任を取らせるべきだ！"
+        ],
+        en: [
+          "Hey, {npcName}! You persistently steered the suspicion onto them yesterday! You misled the Hero, and that was why such a tragedy came to pass!",
+          "What did you say?! You dare doubt me?! You yourself were eerily silent throughout yesterday's trial! Are you not the fiend's accomplice?!",
+          "Cease this! Turning on each other in suspicion and discord is precisely what the monsters desire! ...Yet, looking into your eyes, none of you seem human to me anymore...!",
+          "An innocent perished in yesterday's wrongful judgment. Then for the next judgment, we must unite to hold whoever spread false deceit fully accountable!"
+        ],
+        fr: [
+          "Hé, {npcName} ! Hier, tu n'as cessé d'orienter les soupçons vers cette personne ! C'est toi qui as trompé le Héros, provoquant une telle tragédie !",
+          "Quoi ?! Tu oses me soupçonner ! Et toi alors, tu étais étrangement silencieux pendant le débat d'hier ! Ne serais-tu pas le complice des monstres ?!",
+          "Arrêtez ! Nous entre-déchirer et nous soupçonner les uns les autres, c'est exactement ce que veulent les monstres ! …Pourtant, en regardant vos yeux, plus personne ne me semble humain… !",
+          "Un innocent est mort lors de l'erreur d'hier. Pour le prochain jugement, nous devrions tous désigner celui qui a répandu de fausses informations et lui faire payer !"
+        ],
+        zh: [
+          "喂，{npcName}！你昨日不住地诱导众人『那人可疑』吧！正是你蒙蔽了勇者大人，才铸成如此大错！",
+          "你说什么？！竟敢怀疑我！那你在昨日辩论时不是也出奇地沉默吗！你才是妖魔的爪牙吧！",
+          "住手！这般同室操戈、互相猜忌，正中妖魔下怀！……可是，看着诸位的眼睛，我已觉得谁都不像人类了……！",
+          "昨日的错判害死了无辜之人。既如此，下次处决理当由全员揪出『散布虚妄之徒』，令其以命偿责！"
+        ],
+        ko: [
+          "이봐, {npcName}! 자네 어제 줄기차게 '저 자가 수상하다'며 몰아가지 않았나! 자네가 용사를 속였기에 이런 참극이 벌어진 걸세!",
+          "뭐라고?! 날 의심하는 겐가! 그렇다면 자네야말로 어제 논의 내내 묘하게 조용하지 않았나! 자네야말로 마물의 앞잡이가 아닌가!",
+          "그만두시오! 이렇게 동료들끼리 불신하며 다투는 것이야말로 마물이 바라 마지않는 바요! ……하지만 여러분의 눈을 보고 있자니, 누구 하나 인간으로 보이지 않는구려……!",
+          "어제의 오심으로 무고한 이가 죽었소. 그렇다면 다음 처형은 '거짓 정보를 퍼뜨린 자'를 가려내 반드시 책임을 물어야 마땅하오!"
+        ]
+      },
+      provoke: {
+        ja: [
+          "おや、おや……。昨日の威勢はどこへ行ったんです？ 勇者様を信じた結果がこれですか。無残なものですね",
+          "勇者様、責任重大ですね。あなたのその『神眼』とやらは、もう完全に曇っちまったみたいだ。次の審判も外したら、村人全員があんたに牙を剥きますよ",
+          "みんな落ち着けって……！ ほら、そうやって怯えて疑い合ってる隙に、本当の魔物が後ろで笑ってるんだぜ？ ……まあ、それが誰だかは言わないでおくがな",
+          "もう手遅れさ。間違えて人間を殺した瞬間から、この村の絆は二度と元には戻らない。さあ、次は誰を血祭りにあげて安心する気だ？"
+        ],
+        en: [
+          "My, my... Whither has yesterday's fiery conviction fled? Is this the fruit of your faith in the Hero? What a pathetic spectacle.",
+          "A grave burden rests upon you, Sir Hero. It appears that 'Holy Eye' of yours has grown thoroughly clouded. Err once more, and all the village will bare their fangs at you.",
+          "Calm yourselves, everyone...! Look, while you cower and tear at one another, the true beasts are sneering behind your backs. ...Though I shan't say who that is, of course.",
+          "It is already too late. The moment an innocent human was slain by error, the bond of this village was shattered beyond repair. Now then, who will you offer up next for your peace of mind?"
+        ],
+        fr: [
+          "Tiens, tiens… Où est passée la belle assurance d'hier ? Est-ce là le résultat de votre foi aveugle en ce Héros ? Quel spectacle pitoyable.",
+          "Messire Héros, la responsabilité est écrasante. Votre prétendu 'Œil Divin' semble s'être complètement embrumé. Échouez encore une fois, et tous les villageois vous sauteront à la gorge.",
+          "Du calme, tout le monde… ! Regardez, pendant que vous tremblez et vous suspectez mutuellement, les véritables monstres ricanent dans votre dos. …Bien sûr, je ne dirai pas de qui il s'agit.",
+          "Il est déjà trop tard. Dès l'instant où un innocent a été tué par erreur, le lien unissant ce village a été brisé à jamais. Alors, qui offrirez-vous en pâture la prochaine fois pour vous rassurer ?"
+        ],
+        zh: [
+          "哎呀呀……昨日那股威风劲儿都去哪儿了？盲信勇者的结局便是这般吗？当真惨不忍睹呢。",
+          "勇者大人，责任沉重啊。你那所谓的『神眼』看来已然彻底蒙尘了。若是下回审判再次落空，全村之人恐怕都要对你反戈相向了。",
+          "诸位稍安勿躁嘛……瞧瞧，就在你们吓得互相猜疑的当口，真正的妖魔正在背后嗤笑呢。……至于是谁，在下可不会多嘴呢。",
+          "大局已晚矣。自错杀同胞的那一刻起，此村的羁绊便再无复合之日。那么，接下来你们又打算将谁推上血祭台来换取片刻安心呢？"
+        ],
+        ko: [
+          "이런, 이런…… 어제의 기세는 다 어디로 갔소? 용사를 굳게 믿은 결말이 고작 이것이라니, 참으로 비참하구려.",
+          "용사님, 책임이 막중하군요. 당신의 그 '신의 눈'이라는 것도 완전히 흐려진 모양이오. 다음 심판마저 빗나간다면 마을사람 모두가 당신에게 칼을 겨눌 것이오.",
+          "다들 진정들 하라고……! 보란 듯이 두려움에 떨며 서로를 의심하는 틈에, 진짜 마물은 뒤에서 비웃고 있지 않은가? ……뭐, 그게 누구인지는 굳이 말하지 않겠지만.",
+          "이미 늦었소. 실수로 인간을 죽인 순간부터 이 마을의 유대는 두 번 다시 돌아오지 않소. 자, 다음엔 누구를 피의 제물로 삼아 안도할 작정이시오?"
+        ]
+      }
     };
 
     // カテゴリ別の絵文字・CSSクラス設定
@@ -10907,7 +11390,9 @@ ${speakerName}としての審判会議発言:`;
         const speaker = speakers[i];
         const speakerName = getCharDisplayName(speaker);
         const category = assignments[i];
-        const pool = MIS_EXECUTION_DIALOGUES[category];
+        const lang = currentAppLanguage || 'ja';
+        const categoryObj = MIS_EXECUTION_DIALOGUES[category] || {};
+        const pool = categoryObj[lang] || categoryObj.ja || [];
         const meta = MISLYNCH_CATEGORY_META[category];
 
         // 重複しないセリフを選択
@@ -10931,7 +11416,15 @@ ${speakerName}としての審判会議発言:`;
       resolvePendingTrustForChar(gameState.lastExecutedChar);
 
       // ★ 通知表示
-      showNotification('⚠️ 誤審により村人の信頼が低下しました……');
+      const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
+      const mislynchNoticeMap = {
+        ja: '⚠️ 誤審により村人の信頼が低下しました……',
+        en: '⚠️ The villagers\' trust has dropped due to a wrongful judgment...',
+        fr: '⚠️ La confiance des villageois a diminué suite à une erreur de jugement...',
+        zh: '⚠️ 由于错误审判，村民的信任度下降了……',
+        ko: '⚠️ 잘못된 심판으로 인해 주민들의 신뢰가 하락했습니다……'
+      };
+      showNotification(mislynchNoticeMap[lang] || mislynchNoticeMap['ja']);
     }
 
     // Step 2: Post-Unblind Morning Phase Process
@@ -10945,41 +11438,103 @@ ${speakerName}としての審判会議発言:`;
       gameState.dailyMediumReports = {};
       gameState.morningComments = {};
 
+      const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
+      const t = (typeof I18N_TRANSLATIONS !== 'undefined' && I18N_TRANSLATIONS[lang]) ? I18N_TRANSLATIONS[lang] : (I18N_TRANSLATIONS ? I18N_TRANSLATIONS['ja'] : {});
+
       const victims = gameState.lastNightVictims || [];
       let victimText = '';
+      const dayStr = formatDay(gameState.day);
+
       if (victims.length === 0) {
-        victimText = `${formatDay(gameState.day)}の朝…… 昨夜の魔物の襲撃被害はありませんでした。全員無事です。`;
+        const noVictimMap = {
+          ja: `${dayStr}の朝…… 昨夜の魔物の襲撃被害はありませんでした。全員無事です。`,
+          en: `Morning of ${dayStr}... There were no monster attacks last night. Everyone is safe.`,
+          fr: `Matin du ${dayStr}... Il n'y a pas eu d'attaque de monstres la nuit dernière. Tout le monde est sain et sauf.`,
+          zh: `${dayStr}的早晨…… 昨夜无人遭受魔物袭击。所有人都安全无虞。`,
+          ko: `${dayStr}의 아침…… 어젯밤 마물의 습격 피해는 없었습니다. 모두 무사합니다.`
+        };
+        victimText = noVictimMap[lang] || noVictimMap['ja'];
       } else if (victims.length === 1) {
         const victimName = getCharDisplayName(victims[0]);
-        victimText = `${formatDay(gameState.day)}の朝…… 悲鳴が響き渡った…… ${victimName} が魔物の犠牲となった。`;
+        const oneVictimMap = {
+          ja: `${dayStr}の朝…… 悲鳴が響き渡った…… ${victimName} が魔物の犠牲となった。`,
+          en: `Morning of ${dayStr}... A scream echoed through the village... ${victimName} has fallen victim to the monsters.`,
+          fr: `Matin du ${dayStr}... Un cri a retenti dans le village... ${victimName} a été victime des monstres.`,
+          zh: `${dayStr}的早晨…… 一声惨叫划破黑暗…… ${victimName} 成了魔物的牺牲品。`,
+          ko: `${dayStr}의 아침…… 비명이 울려 퍼졌다…… ${victimName} 이(가) 마물의 희생자가 되었습니다.`
+        };
+        victimText = oneVictimMap[lang] || oneVictimMap['ja'];
       } else if (victims.length >= 2) {
-        const victimNames = victims.map(v => getCharDisplayName(v)).join(' と ');
-        victimText = `${formatDay(gameState.day)}の朝…… 悲鳴が響き渡った…… ${victimNames} が魔物の犠牲となった。`;
+        const joinWord = { ja: ' と ', en: ' and ', fr: ' et ', zh: ' 与 ', ko: ' 와 ' };
+        const victimNames = victims.map(v => getCharDisplayName(v)).join(joinWord[lang] || ' と ');
+        const multiVictimMap = {
+          ja: `${dayStr}の朝…… 悲鳴が響き渡った…… ${victimNames} が魔物の犠牲となった。`,
+          en: `Morning of ${dayStr}... Screams echoed through the village... ${victimNames} have fallen victim to the monsters.`,
+          fr: `Matin du ${dayStr}... Des cris ont retenti dans le village... ${victimNames} ont été victimes des monstres.`,
+          zh: `${dayStr}的早晨…… 数声惨叫划破黑暗…… ${victimNames} 成了魔物的牺牲品。`,
+          ko: `${dayStr}의 아침…… 비명이 울려 퍼졌다…… ${victimNames} 이(가) 마물의 희생자가 되었습니다.`
+        };
+        victimText = multiVictimMap[lang] || multiVictimMap['ja'];
       }
 
       const timeLimitText = getFormattedDiscussionTimeText();
-      const dateText = `${formatDay(gameState.day)} (${gameState.phase})`;
-      const morningNewsText = `${victimText} 審判会議を開始します。村の中に潜む『擬態モンスター』の発言の矛盾を見抜いてください。制限時間は${timeLimitText}です。`;
+      const morningNewsMap = {
+        ja: `${victimText} 審判会議を開始します。村の中に潜む『擬態モンスター』の発言の矛盾を見抜いてください。制限時間は${timeLimitText}です。`,
+        en: `${victimText} The Tribunal begins. Expose the contradictions of the 'Disguised Monsters' lurking within the village. Time limit: ${timeLimitText}.`,
+        fr: `${victimText} Le Tribunal commence. Démasquez les contradictions des 'Monstres Déguisés' qui se cachent dans le village. Temps imparti : ${timeLimitText}.`,
+        zh: `${victimText} 审判会议开始。请揭露潜伏在村中的『擬态魔物』发言中的矛盾。限时：${timeLimitText}。`,
+        ko: `${victimText} 심판 회의를 시작합니다. 마을 안에 숨어든 '변장한 마물'의 발언 모순을 간파하세요. 제한 시간: ${timeLimitText}.`
+      };
+      const morningNewsText = morningNewsMap[lang] || morningNewsMap['ja'];
 
-      addLogItem('ナレーション', '', morningNewsText, 'narration', null, false);
-      
-
+      const narrationTitle = t.narration_speaker || 'ナレーション';
+      addLogItem(narrationTitle, '', morningNewsText, 'narration', null, false);
 
       await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${morningNewsText}`);
 
       // Baker Report
       const bakerChar = gameState.charList.find(c => gameState.roles[c] === 'baker');
       if (bakerChar && gameState.status[bakerChar] === 'alive') {
-        const bakerText = '「今朝もおいしい焼きたてパンが焼き上がりました！」';
-        addLogItem('🍞 パン屋より', '', bakerText, 'baker', null, false);
+        const bakerTextMap = {
+          ja: '「今朝もおいしい焼きたてパンが焼き上がりました！」',
+          en: '"Freshly baked bread is ready again this morning!"',
+          fr: '« Du pain fraîchement cuit est encore prêt ce matin ! »',
+          zh: '「今天早上又烤出了美味的新鲜面包！」',
+          ko: '「오늘 아침에도 맛있는 갓 구운 빵이 나왔습니다！」'
+        };
+        const bakerTitleMap = {
+          ja: '🍞 パン屋より',
+          en: '🍞 From the Baker',
+          fr: '🍞 Du Boulanger',
+          zh: '🍞 来自面包店',
+          ko: '🍞 빵집에서'
+        };
+        const bakerText = bakerTextMap[lang] || bakerTextMap['ja'];
+        const bakerTitle = bakerTitleMap[lang] || bakerTitleMap['ja'];
+        addLogItem(bakerTitle, '', bakerText, 'baker', null, false);
         await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${bakerText}`);
       }
 
       // CakeShop Report
       const cakeChar = gameState.charList.find(c => gameState.roles[c] === 'cakeShop');
       if (cakeChar && gameState.status[cakeChar] === 'alive') {
-        const cakeText = '「今朝もおいしい焼きたてケーキが焼き上がりました！」';
-        addLogItem('🍰 ケーキ屋より', '', cakeText, 'baker', null, false);
+        const cakeTextMap = {
+          ja: '「今朝もおいしい焼きたてケーキが焼き上がりました！」',
+          en: '"A freshly baked cake is ready again this morning!"',
+          fr: '« Un gâteau fraîchement cuit est encore prêt ce matin ! »',
+          zh: '「今天早上又烤出了美味的新鲜蛋糕！」',
+          ko: '「오늘 아침에도 맛있는 갓 구운 케이크가 나왔습니다！」'
+        };
+        const cakeTitleMap = {
+          ja: '🍰 ケーキ屋より',
+          en: '🍰 From the Cake Shop',
+          fr: '🍰 De la Pâtisserie',
+          zh: '🍰 来自蛋糕店',
+          ko: '🍰 케이크 가게에서'
+        };
+        const cakeText = cakeTextMap[lang] || cakeTextMap['ja'];
+        const cakeTitle = cakeTitleMap[lang] || cakeTitleMap['ja'];
+        addLogItem(cakeTitle, '', cakeText, 'baker', null, false);
         await playSpeechAsync(`${getDaySpeechText(gameState.day)}…… ${cakeText}`);
       }
 
@@ -10987,10 +11542,12 @@ ${speakerName}としての審判会議発言:`;
       evaluateStealthCOTriggers();
       generateMorningComments();
       await triggerMorningRoleReports();
+      if (gameState.gameOver) return;
 
       // ★ 誤処刑演出（2日目以降、前日に人間を処刑していた場合に発動）
       if (gameState.day >= 2) {
         await processMislynchConsequences();
+        if (gameState.gameOver) return;
       }
 
       // ★ 朝の報告から昼の議論への遷移（フェードなしで即座にUIを更新）
@@ -10999,7 +11556,7 @@ ${speakerName}としての審判会議発言:`;
 
       gameState.phase = '昼';
       calculateVirtualVotes();
-      const morningStrDX = { ja: '朝', en: 'Morning', zh: '清晨', ko: '아침' }[currentAppLanguage] || '朝';
+      const morningStrDX = { ja: '朝', en: 'Morning', zh: '清晨', ko: '朝', fr: 'Matin' }[currentAppLanguage] || '朝';
       recordVirtualVoteHistory(`${formatDay(gameState.day)} ${morningStrDX}`);
       renderVoteHistoryPage();
       renderStatus();
@@ -11009,7 +11566,9 @@ ${speakerName}としての審判会議発言:`;
       // ★ 毎朝開戦時のオートセーブ
       autoSaveCurrentGame();
 
-      startDiscussionTimer();
+      if (!gameState.gameOver) {
+        startDiscussionTimer();
+      }
     }
 
     // Ability Calculations & History Archive
@@ -11448,10 +12007,11 @@ ${speakerName}としての審判会議発言:`;
       let coText = '';
       if (roleType === 'seer') {
         const history = gameState.seerHistory[char] || [];
-        const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join('、 ');
+        const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join(lang === 'fr' ? ', ' : '、 ');
         const coDict = {
           ja: `「私は賢者です！これまでの全鑑定結果を開示します。 ${historyStr}」`,
           en: `"I am the true Sage! I reveal all my inspection results thus far: ${historyStr}"`,
+          fr: `« Je suis le Voyant ! Je révèle l'ensemble de mes inspections à ce jour : ${historyStr} »`,
           zh: `“吾乃真正的贤者！特此公布迄今所有查验结果：${historyStr}”`,
           ko: `「제가 바로 진짜 현자입니다! 지금까지의 모든 감정 결과를 공개합니다. ${historyStr}」`
         };
@@ -11463,16 +12023,18 @@ ${speakerName}としての審判会議発言:`;
           const coDict = {
             ja: `「【聖職者CO】昨日処刑された ${getCharDisplayName(rep.target)} さんの鑑定結果は【${resStr}】でした！」`,
             en: `"[Cleric Claim] The inspection result for yesterday's executed ${getCharDisplayName(rep.target)} was [${resStr}]!"`,
+            fr: `« [Revendication Médium] L'inspection de ${getCharDisplayName(rep.target)}, exécuté hier, a révélé : [${resStr}] ! »`,
             zh: `“【圣职者现身】昨日被处决的 ${getCharDisplayName(rep.target)} 之真身乃是【${resStr}】！”`,
             ko: `「【성직자 선언】어제 처형된 ${getCharDisplayName(rep.target)} 님의 영매 결과는 【${resStr}】이었습니다!」`
           };
           coText = coDict[lang] || coDict.ja;
         } else {
           const history = gameState.mediumHistory[char] || [];
-          const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join('、 ');
+          const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마物' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join(lang === 'fr' ? ', ' : '、 ');
           const coDict = {
             ja: `「私は聖職者です！過去の全鑑定結果を一括報告します。 ${historyStr}」`,
             en: `"I am the Cleric! I hereby report all past spiritual results: ${historyStr}"`,
+            fr: `« Je suis le Médium ! Voici le rapport de toutes mes visions passées : ${historyStr} »`,
             zh: `“在下乃圣职者！特此呈报过往所有灵媒结果：${historyStr}”`,
             ko: `「저는 성직자입니다! 과거의 모든 영매 결과를 일괄 보고합니다. ${historyStr}」`
           };
@@ -11482,13 +12044,14 @@ ${speakerName}としての審判会議発言:`;
         const coDict = {
           ja: `「【聖騎士CO】私は本物の【聖騎士】です！魔物の襲撃から村人を防衛していました。私を処刑しないでください！」`,
           en: `"[Holy Knight Claim] I am the true Holy Knight! I have shielded villagers from demonic strikes. Condemn me not!"`,
+          fr: `« [Revendication Chevalier] Je suis le véritable Chevalier ! J'ai protégé nos gens des assauts des monstres. Ne m'exécutez pas ! »`,
           zh: `“【圣骑士现身】吾乃如假包换的圣骑士！一直在暗中护卫村民免遭魔物毒手。切莫处决于我！”`,
           ko: `「【성기사 선언】제가 진짜 성기사입니다! 마물의 습격으로부터 마을 사람들을 지키고 있었습니다. 저를 처형하지 마십시오!」`
         };
         coText = coDict[lang] || coDict.ja;
       }
 
-      const logPrefix = { ja: '📢 役職CO: ', en: '📢 Role Claim: ', zh: '📢 声明身份: ', ko: '📢 직업 선언: ' }[lang] || '📢 役職CO: ';
+      const logPrefix = { ja: '📢 役職CO: ', en: '📢 Role Claim: ', fr: '📢 Revendication de Rôle : ', zh: '📢 声明身份: ', ko: '📢 직업 선언: ' }[lang] || '📢 役職CO: ';
       addLogItem(`${logPrefix}${getCharDisplayName(char)}`, '', coText, 'narration', char, false);
     }
 
@@ -11538,9 +12101,9 @@ ${speakerName}としての審判会議発言:`;
       }
 
       const roleNamesI18n = {
-        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자' },
-        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자' },
-        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사' }
+        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자', fr: 'Voyant' },
+        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자', fr: 'Médium' },
+        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사', fr: 'Chevalier' }
       };
       const rName = (roleNamesI18n[requestedRole] && roleNamesI18n[requestedRole][lang]) || requestedRole;
 
@@ -11551,20 +12114,22 @@ ${speakerName}としての審判会議発言:`;
           willCo = Math.random() < 0.85;
           if (requestedRole === 'seer') {
             const history = gameState.seerHistory[char] || [];
-            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join('、');
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join(lang === 'fr' ? ', ' : '、');
             const dMap = {
               ja: `「……待ってください。それなら私が本物の【賢者】です。これまでの鑑定結果: ${historyStr || 'まだなし'}」`,
               en: `"...Hold! In that case, I am the true [Sage]! Past inspections: ${historyStr || 'None yet'}"`,
+              fr: `« ...Attendez ! En ce cas, c'est moi le véritable [Voyant] ! Mes inspections passées : ${historyStr || 'Aucune pour l\'instant'} »`,
               zh: `“……且慢！既然如此，我才是真正的【贤者】！过往查验结果：${historyStr || '尚无'}”`,
               ko: `「……잠깐 기다려 주십시오. 그렇다면 제가 진짜 【현자】입니다. 지금까지의 감정 결과: ${historyStr || '아직 없음'}」`
             };
             dialogue = dMap[lang] || dMap.ja;
           } else if (requestedRole === 'medium') {
             const history = gameState.mediumHistory[char] || [];
-            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join('、');
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join(lang === 'fr' ? ', ' : '、');
             const dMap = {
               ja: `「……待ってください。私こそが本物の【聖職者】です！過去の判定: ${historyStr || '処刑者の判定はまだありません'}」`,
               en: `"...Hold! I alone am the genuine [Cleric]! Past judgment: ${historyStr || 'No executed souls examined yet'}"`,
+              fr: `« ...Attendez ! C'est moi le véritable [Médium] ! Jugements passés : ${historyStr || 'Aucune âme exécutée examinée'} »`,
               zh: `“……且慢！在下才是真正的【圣职者】！过往判定：${historyStr || '尚无处决者判定'}”`,
               ko: `「……잠깐 기다리시오. 저야말로 진짜 【성직자】입니다! 과거 판정: ${historyStr || '처형자의 판정은 아직 없음'}」`
             };
@@ -11573,6 +12138,7 @@ ${speakerName}としての審判会議発言:`;
             const dMap = {
               ja: `「……これ以上隠す必要はないでしょう。私が本物の【聖騎士】です。密かに護衛を続けてきました」`,
               en: `"...There is no further need to hide. I am the true [Holy Knight]. I have protected our brethren from the shadows."`,
+              fr: `« ...Il n'est plus besoin de se cacher. Je suis le véritable [Chevalier]. J'ai protégé nos compagnons dans l'ombre. »`,
               zh: `“……已无需再行隐匿。吾乃真正的【圣骑士】。始终在暗处默默守卫村民。”`,
               ko: `「……더 이상 숨길 필요가 없겠군요. 제가 진짜 【성기사】입니다. 은밀히 호위를 계속해 왔습니다」`
             };
@@ -11585,6 +12151,7 @@ ${speakerName}としての審判会議発言:`;
             const dMap = {
               ja: `「ふむ、私からは特に……いや、これ以上隠す必要もないか。実は私が【${rName}】です」`,
               en: `"Hm, I had naught to say... but no, there is no need to keep secrets. In truth, I am the [${rName}]."`,
+              fr: `« Hum, je n'avais rien à ajouter... mais non, plus besoin de secret. En vérité, c'est moi le [${rName}]. »`,
               zh: `“唔，某本无多言……不过，此时亦无需隐瞒。实不相瞒，我便是【${rName}】。”`,
               ko: `「흠, 저는 딱히…… 아니, 더 숨길 이유도 없겠군요. 사실 제가 【${rName}】입니다」`
             };
@@ -11600,6 +12167,7 @@ ${speakerName}としての審判会議発言:`;
           const dMap = {
             ja: `「ちょっと待ってください！ それなら私も【${rName}】です！ 対抗CO・報告をここに開示します！」`,
             en: `"Wait a moment! If so, then I too am the [${rName}]! Here is my counter-claim and revelation!"`,
+            fr: `« Un instant ! Dans ce cas, moi aussi je suis le [${rName}] ! Voici ma contre-revendication ! »`,
             zh: `“且慢！既然如此，我也是【${rName}】！在此提出对立声明与汇报！”`,
             ko: `「잠깐 기다리시오! 그렇다면 나 역시 【${rName}】이오! 대항 선언과 보고를 여기에 밝히겠소!」`
           };
@@ -11611,6 +12179,7 @@ ${speakerName}としての審判会議発言:`;
           const dMap = {
             ja: `「……実は黙っていましたが、私こそが【${rName}】です。これまでの結果をお伝えします」`,
             en: `"...I held my tongue until now, but I am the [${rName}]. Let me share what I have seen."`,
+            fr: `« ...Je gardais le silence jusqu'alors, mais c'est moi le [${rName}]. Laissez-moi vous révéler ce que j'ai vu. »`,
             zh: `“……此前某隐忍不发，实则我才是【${rName}】。容我道出迄今所得结果。”`,
             ko: `「……사실 입을 다물고 있었으나, 저야말로 【${rName}】입니다. 지금까지의 결과를 전해 드리지요」`
           };
@@ -11631,9 +12200,9 @@ ${speakerName}としての審判会議発言:`;
 
       const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
       const roleNamesI18n = {
-        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자' },
-        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자' },
-        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사' }
+        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자', fr: 'Voyant' },
+        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자', fr: 'Médium' },
+        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사', fr: 'Chevalier' }
       };
       const roleName = (roleNamesI18n[requestedRole] && roleNamesI18n[requestedRole][lang]) || requestedRole;
 
@@ -11650,11 +12219,12 @@ ${speakerName}としての審判会議発言:`;
       const callTextMap = {
         ja: `「ほかに【${roleName}】の対抗やCOの者はいませんか？ 名乗り出てください！」`,
         en: `"Is there anyone else claiming to be the [${roleName}]? Step forward and speak!"`,
+        fr: `« Y a-t-il quelqu'un d'autre revendiquant le rôle de [${roleName}] ? Avancez-vous et parlez ! »`,
         zh: `“可还有其他人自认是【${roleName}】并出面指认？速速现身言明！”`,
         ko: `「혹시 다른 【${roleName}】 대항자나 나설 자는 없습니까? 앞으로 나와 밝히십시오!」`
       };
       const callText = callTextMap[lang] || callTextMap.ja;
-      const massLogTitle = { ja: '📢 勇者の一斉質問', en: "📢 Hero's Inquest", zh: '📢 勇者之全员质询', ko: '📢 용사의 일제 질문' }[lang] || '📢 勇者の一斉質問';
+      const massLogTitle = { ja: '📢 勇者の一斉質問', en: "📢 Hero's Inquest", fr: '📢 Enquête Générale du Héros', zh: '📢 勇者之全员质询', ko: '📢 용사의 일제 질문' }[lang] || '📢 勇者の一斉質問';
       addLogItem(massLogTitle, '', callText, 'narration', null, false);
 
       // 読み上げ
@@ -11662,6 +12232,7 @@ ${speakerName}としての審判会議発言:`;
         const speechCallMap = {
           ja: `ほかに${roleName}の対抗やCOの者はいませんか？名乗り出てください！`,
           en: `Is there anyone else claiming to be the ${roleName}? Step forward and speak!`,
+          fr: `Y a-t-il quelqu'un d'autre revendiquant le rôle de ${roleName} ? Avancez-vous et parlez !`,
           zh: `可还有其他人自认是${roleName}？速速现身言明！`,
           ko: `혹시 다른 ${roleName} 대항자는 없습니까? 앞으로 나와 밝히십시오!`
         };
@@ -11718,7 +12289,7 @@ ${speakerName}としての審判会議発言:`;
           }
 
           // ログ出力
-          const counterCoTitle = { ja: `📢 対抗CO: ${displayName}`, en: `📢 Counter Claim: ${displayName}`, zh: `📢 对抗声明: ${displayName}`, ko: `📢 대항 선언: ${displayName}` }[lang] || `📢 対抗CO: ${displayName}`;
+          const counterCoTitle = { ja: `📢 対抗CO: ${displayName}`, en: `📢 Counter Claim: ${displayName}`, fr: `📢 Contre-revendication : ${displayName}`, zh: `📢 对抗声明: ${displayName}`, ko: `📢 대항 선언: ${displayName}` }[lang] || `📢 対抗CO: ${displayName}`;
           addLogItem(counterCoTitle, '', resp.dialogue, 'narration', char, false);
 
           // 読み上げ（1人ずつ）
@@ -11742,6 +12313,11 @@ ${speakerName}としての審判会議発言:`;
               `Heavens... as many as ${respondents.length} claim to be the ${roleName}!? Which one is true?`,
               `What treachery is this...?! There can be but one true ${roleName}; impostors lurk among them!`,
               `Lord Hero, here lies a critical clue! ${respondents.length} claim the role of ${roleName}... false fiends are surely here!`
+            ],
+            fr: [
+              `Ciel... ${respondents.length} personnes revendiquent être le ${roleName} !? Qui dit la vérité !`,
+              `Quelle trahison... ! Il ne peut y avoir qu'un seul vrai ${roleName}, des imposteurs sont parmi nous !`,
+              `Seigneur Héros, voici un indice crucial ! ${respondents.length} se disent ${roleName}... il y a forcément un imposteur !`
             ],
             zh: [
               `天哪……竟有${respondents.length}人自称是【${roleName}】？！究竟孰真孰假！`,
@@ -11779,7 +12355,7 @@ ${speakerName}としての審判会議発言:`;
         // 仮想投票再計算
         if (typeof calculateVirtualVotes === 'function') calculateVirtualVotes();
         if (typeof recordVirtualVoteHistory === 'function') {
-          const massInquestLabel = { ja: '一斉質問後', en: 'Post Inquest', zh: '质询之后', ko: '일제 질문 후' }[currentAppLanguage] || '一斉質問後';
+          const massInquestLabel = { ja: '一斉質問後', en: 'Post Inquest', fr: 'Post-Enquête', zh: '质询之后', ko: '일제 질문 후' }[currentAppLanguage] || '一斉質問後';
           recordVirtualVoteHistory(`${formatDay(gameState.day)} ${massInquestLabel} (${roleName})`);
         }
         if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
@@ -11789,11 +12365,12 @@ ${speakerName}としての審判会議発言:`;
         const silenceMap = {
           ja: `……村人たちは静まり返り、【${roleName}】を名乗り出る者は現れなかった。`,
           en: `...The villagers fell completely silent, and not a single soul came forward as the [${roleName}].`,
+          fr: `...Les villageois gardèrent un silence de plomb, et pas une âme ne se présenta comme [${roleName}].`,
           zh: `……村民们面面相觑、鸦雀无声，无人出面承认自己是【${roleName}】。`,
           ko: `……마을 사람들은 침묵에 휩싸였고, 【${roleName}】(으)로 나서는 자는 아무도 없었다.`
         };
         const silenceMsg = silenceMap[lang] || silenceMap.ja;
-        const silenceLogTitle = { ja: '📢 一斉質問結果', en: '📢 Inquest Result', zh: '📢 质询结果', ko: '📢 일제 질문 결과' }[lang] || '📢 一斉質問結果';
+        const silenceLogTitle = { ja: '📢 一斉質問結果', en: '📢 Inquest Result', fr: '📢 Résultat de l\'enquête', zh: '📢 质询结果', ko: '📢 일제 질문 결과' }[lang] || '📢 一斉質問結果';
         addLogItem(silenceLogTitle, '', silenceMsg, 'narration', null, false);
 
         try {
@@ -12307,7 +12884,8 @@ ${speakerName}としての審判会議発言:`;
                 ja: `「真の賢者として報告します。昨夜は ${getCharDisplayName(rep.target)} さんを鑑定し、結果は【${resStr}】でした。」`,
                 en: `"As the true Sage, I report: last night I inspected ${getCharDisplayName(rep.target)}, and the result was [${resStr}]."`,
                 zh: `“吾作为真贤者特此汇报：昨夜查验了 ${getCharDisplayName(rep.target)}，结果为【${resStr}】。”`,
-                ko: `「진짜 현자로서 보고합니다. 지난밤 ${getCharDisplayName(rep.target)} 님을 감정하였고, 결과는 【${resStr}】이었습니다.」`
+                ko: `「진짜 현자로서 보고합니다. 지난밤 ${getCharDisplayName(rep.target)} 님을 감정하였고, 결과는 【${resStr}】이었습니다.」`,
+                fr: `« En tant que véritable Voyant, je déclare : la nuit dernière, j'ai sondé ${getCharDisplayName(rep.target)}, et le résultat est [${resStr}]. »`
               };
               gameState.morningComments[char] = mDict[lang] || mDict.ja;
             } else {
@@ -12315,7 +12893,8 @@ ${speakerName}としての審判会議発言:`;
                 ja: `「私は本物の賢者です。村を誤処刑から守るため、全力を尽くして真偽を確かめます。」`,
                 en: `"I am the true Sage. To shield our village from wrongful execution, I shall unveil the truth with all my strength."`,
                 zh: `“吾乃真正的贤者。为保村庄免遭误处决，定将竭力验明真伪。”`,
-                ko: `「저는 진짜 현자입니다. 마을이 오처형에 휘둘리지 않도록 전력을 다해 진위를 가리겠습니다.」`
+                ko: `「저는 진짜 현자입니다. 마을이 오처형에 휘둘리지 않도록 전력을 다해 진위를 가리겠습니다.」`,
+                fr: `« Je suis le véritable Voyant. Pour préserver le village d'une erreur judiciaire, j'userai de toutes mes forces pour découvrir la vérité. »`
               };
               gameState.morningComments[char] = mDict[lang] || mDict.ja;
             }
@@ -12332,7 +12911,8 @@ ${speakerName}としての審判会議発言:`;
                 ja: `「聖職結果の報告です！昨日浄化された ${getCharDisplayName(rep.target)} さんの正体は【${resStr}】でした。（全聖職履歴: ${historyStr}）」`,
                 en: `"[Cleric Report] The true nature of ${getCharDisplayName(rep.target)}, purified yesterday, was [${resStr}]! (Full history: ${historyStr})"`,
                 zh: `“圣职查验汇报！昨日被净化的 ${getCharDisplayName(rep.target)} 之真身乃是【${resStr}】！（全灵媒记录：${historyStr}）”`,
-                ko: `「성직 결과 보고입니다! 어제 정화된 ${getCharDisplayName(rep.target)} 님의 정체는 【${resStr}】이었습니다! (전체 영매 이력: ${historyStr})」`
+                ko: `「성직 결과 보고입니다! 어제 정화된 ${getCharDisplayName(rep.target)} 님의 정체는 【${resStr}】이었습니다! (전체 영매 이력: ${historyStr})」`,
+                fr: `« [Rapport du Médium] La vraie nature de ${getCharDisplayName(rep.target)}, purifié hier, était [${resStr}] ! (Historique complet : ${historyStr}) »`
               };
               gameState.morningComments[char] = mDict[lang] || mDict.ja;
             } else {
@@ -12340,17 +12920,19 @@ ${speakerName}としての審判会議発言:`;
                 ja: `「聖職結果を報告します！昨日浄化された ${getCharDisplayName(rep.target)} さんの正体は【${resStr}】でした。」`,
                 en: `"[Cleric Report] The true identity of ${getCharDisplayName(rep.target)}, purified yesterday, was [${resStr}]."`,
                 zh: `“汇报圣职结果！昨日被净化的 ${getCharDisplayName(rep.target)} 之真身乃是【${resStr}】。”`,
-                ko: `「성직 결과를 보고합니다! 어제 정화된 ${getCharDisplayName(rep.target)} 님의 정체는 【${resStr}】이었습니다.」`
+                ko: `「성직 결과를 보고합니다! 어제 정화된 ${getCharDisplayName(rep.target)} 님의 정체는 【${resStr}】이었습니다.」`,
+                fr: `« [Rapport du Médium] La véritable identité de ${getCharDisplayName(rep.target)}, purifié hier, était [${resStr}]. »`
               };
               gameState.morningComments[char] = mDict[lang] || mDict.ja;
             }
           } else if (history.length > 0) {
-            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마物' : '魔物'))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join('、 ');
+            const historyStr = history.map(h => `${formatDay(h.day)}: ${getCharDisplayName(h.target)}【${h.result === '人狼' ? (lang === 'en' ? 'Monster' : (lang === 'fr' ? 'Monstre' : (lang === 'zh' ? '魔物' : (lang === 'ko' ? '마물' : '魔物')))) : (lang === 'en' ? 'Human' : (lang === 'fr' ? 'Humain' : (lang === 'zh' ? '人类' : (lang === 'ko' ? '인간' : '人間'))))}】`).join('、 ');
             const mDict = {
               ja: `「聖職者CO。これまでの聖職結果一覧です。【 ${historyStr} 】」`,
               en: `"[Cleric Claim] All spiritual inquest results to date: [ ${historyStr} ]"`,
               zh: `“【圣职者现身】迄今所有圣职验尸结果一览：【 ${historyStr} 】”`,
-              ko: `「성직자 선언. 지금까지의 성직 결과 목록입니다. 【 ${historyStr} 】」`
+              ko: `「성직자 선언. 지금까지의 성직 결과 목록입니다. 【 ${historyStr} 】」`,
+              fr: `« [Médium CO] Voici l'ensemble des révélations spirituelles jusqu'ici : [ ${historyStr} ] »`
             };
             gameState.morningComments[char] = mDict[lang] || mDict.ja;
           } else {
@@ -12358,7 +12940,8 @@ ${speakerName}としての審判会議発言:`;
               ja: `「私は聖職者です。浄化された人物の真の姿を明らかにしていきます。」`,
               en: `"I am the Cleric. I shall reveal the true forms of those who are purified."`,
               zh: `“在下乃圣职者。定会查明每一位被净化之人的真身。”`,
-              ko: `「저는 성직자입니다. 정화된 자의 참모습을 낱낱이 밝혀내겠습니다.」`
+              ko: `「저는 성직자입니다. 정화된 자의 참모습을 낱낱이 밝혀내겠습니다.」`,
+              fr: `« Je suis le Médium. Je révélerai la véritable nature de ceux qui sont purifiés. »`
             };
             gameState.morningComments[char] = mDict[lang] || mDict.ja;
           }
@@ -12369,7 +12952,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「私たちは【共有者】です（パートナー: ${pName}）。二人とも絶対に人間であることを保証します。」`,
             en: `"We are the [Freemasons] (Partner: ${pName}). I guarantee that both of us are purely human."`,
             zh: `“我们二人乃是【共有者】（同伴：${pName}）。在此断言我等两人皆是纯正人类。”`,
-            ko: `「저희는 【공유자】입니다 (파트너: ${pName}). 두 사람 모두 틀림없는 인간임을 보증합니다.」`
+            ko: `「저희는 【공유자】입니다 (파트너: ${pName}). 두 사람 모두 틀림없는 인간임을 보증합니다.」`,
+            fr: `« Nous sommes les [Frères jurés] (Partenaire : ${pName}). Je garantis que nous sommes tous deux parfaitement humains. »`
           };
           gameState.morningComments[char] = mDict[lang] || mDict.ja;
         } else {
@@ -12378,10 +12962,10 @@ ${speakerName}としての審判会議発言:`;
         }
 
         const coTextDict = {
-          grey: { ja: 'グレー', en: 'Grey', zh: '嫌疑中', ko: '회색' },
-          seer: { ja: '賢者CO', en: 'Sage Claim', zh: '声明贤者', ko: '현자 선언' },
-          medium: { ja: '聖職者CO', en: 'Cleric Claim', zh: '声明圣职者', ko: '성직자 선언' },
-          freemason: { ja: '共有CO', en: 'Mason Claim', zh: '声明共有者', ko: '공유자 선언' }
+          grey: { ja: 'グレー', en: 'Grey', zh: '嫌疑中', ko: '회색', fr: 'Gris' },
+          seer: { ja: '賢者CO', en: 'Sage Claim', zh: '声明贤者', ko: '현자 선언', fr: 'Voyant CO' },
+          medium: { ja: '聖職者CO', en: 'Cleric Claim', zh: '声明圣职者', ko: '성직자 선언', fr: 'Médium CO' },
+          freemason: { ja: '共有CO', en: 'Mason Claim', zh: '声明共有者', ko: '공유자 선언', fr: 'Frère juré CO' }
         };
         const coKey = coRole || 'grey';
         const coText = (coTextDict[coKey] && coTextDict[coKey][lang]) || coTextDict[coKey]?.ja || 'グレー';
@@ -12467,7 +13051,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「ちょっと待って！私を処刑するのは危険すぎます！実は【聖職者】です！${rep && rep.target ? `昨日処刑された ${getCharDisplayName(rep.target)} は【${resStr}】でした！` : ''} 私を吊らないでください！」`,
             en: `"Hold, I beg of you! Executing me is far too perilous! In truth, I am the [Cleric]! ${rep && rep.target ? `Yesterday's executed ${getCharDisplayName(rep.target)} was [${resStr}]!` : ''} Do not execute me!"`,
             zh: `“请稍等！处决我凶险至极！实不相瞒，在下乃是【圣职者】！${rep && rep.target ? `昨日被处决的 ${getCharDisplayName(rep.target)} 实为【${resStr}】！` : ''} 绝不可将我处决！”`,
-            ko: `「잠깐만요! 저를 처형하는 것은 너무 위험합니다! 사실 저는 【성직자】입니다! ${rep && rep.target ? `어제 처형된 ${getCharDisplayName(rep.target)} 님은 【${resStr}】이었습니다!` : ''} 저를 처형하지 마십시오!」`
+            ko: `「잠깐만요! 저를 처형하는 것은 너무 위험합니다! 사실 저는 【성직자】입니다! ${rep && rep.target ? `어제 처형된 ${getCharDisplayName(rep.target)} 님은 【${resStr}】이었습니다!` : ''} 저를 처형하지 마십시오!」`,
+            fr: `« Attendez, de grâce ! M'exécuter serait bien trop périlleux ! En vérité, je suis le [Médium] ! ${rep && rep.target ? `La personne exécutée hier, ${getCharDisplayName(rep.target)}, était [${resStr}] !` : ''} Ne m'exécutez pas ! »`
           };
           coMsg = defMedDict[lang] || defMedDict.ja;
         } else if (realRole === 'knight') {
@@ -12475,7 +13060,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「待ってください！私に票を集めるのは村の破滅です！実は【聖騎士】です！昨夜も密かに護衛を行っていました！私を処刑しないでください！」`,
             en: `"Wait! Casting your votes upon me spells ruin for our village! I am the [Holy Knight]! I stood secret guard through last night's shadows! Do not execute me!"`,
             zh: `“住手！将选票投向我只会招致村庄覆灭！吾实乃【圣骑士】！昨夜亦在暗中护卫村民！万万不可处决我！”`,
-            ko: `「기다려 주십시오! 제게 표를 모으는 것은 마을의 파멸입니다! 사실 저는 【성기사】입니다! 지난밤에도 은밀히 호위를 펼쳤습니다! 저를 처형하지 마십시오!」`
+            ko: `「기다려 주십시오! 제게 표를 모으는 것은 마을의 파멸입니다! 사실 저는 【성기사】입니다! 지난밤에도 은밀히 호위를 펼쳤습니다! 저를 처형하지 마십시오!」`,
+            fr: `« Attendez ! Rassembler vos votes contre moi causera la perte du village ! Je suis le [Chevalier] ! Cette nuit encore, je veillais en secret ! Ne m'exécutez pas ! »`
           };
           coMsg = defKniDict[lang] || defKniDict.ja;
         } else if (realRole === 'freemason') {
@@ -12483,7 +13069,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「落ち着いてください！私は【共有者】です！人間であることが確定しています！私を処刑するのは無駄吊りです！」`,
             en: `"Calm yourselves! I am a [Freemason]! My humanity is beyond doubt! Executing me is a squandered sacrifice!"`,
             zh: `“诸位冷静！在下乃是【共有者】！身份铁定为清白人类！处决我不过是白白断送性命！”`,
-            ko: `「진정하십시오! 저는 【공유자】입니다! 인간임이 확실합니다! 저를 처형하는 것은 헛된 희생일 뿐입니다!」`
+            ko: `「진정하십시오! 저는 【공유자】입니다! 인간임이 확실합니다! 저를 처형하는 것은 헛된 희생일 뿐입니다!」`,
+            fr: `« Calmez-vous ! Je suis un [Frère juré] ! Mon appartenance à l'humanité est certaine ! M'exécuter serait un sacrifice inutile ! »`
           };
           coMsg = defMasDict[lang] || defMasDict.ja;
         }
@@ -12546,7 +13133,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「ここまできたら隠せません！私こそが真の【賢者】です！${historyStr ? `鑑定結果: ${historyStr}` : ''} 対抗のCOは全員偽者です！」`,
             en: `"Since matters have reached this brink, I can hide no longer! I alone am the true [Sage]! ${historyStr ? `Inspection results: ${historyStr}` : ''} All rival claims are false impostors!"`,
             zh: `“事已至此无从再隐！在下才是真正的【贤者】！${historyStr ? `查验明细：${historyStr}` : ''} 对立声称者皆是伪造骗子！”`,
-            ko: `「이 지경에 이르렀으니 숨길 수 없습니다! 저야말로 진짜 【현자】입니다! ${historyStr ? `감정 결과: ${historyStr}` : ''} 대항 선언자들은 모두 가짜입니다!」`
+            ko: `「이 지경에 이르렀으니 숨길 수 없습니다! 저야말로 진짜 【현자】입니다! ${historyStr ? `감정 결과: ${historyStr}` : ''} 대항 선언자들은 모두 가짜입니다!」`,
+            fr: `« Les choses en étant arrivées là, je ne puis plus me cacher ! Je suis l'unique et véritable [Voyant] ! ${historyStr ? `Résultats d'inspection : ${historyStr}` : ''} Tous les autres prétendants sont des imposteurs ! »`
           };
           coMsg = fakeSeerDict[lang] || fakeSeerDict.ja;
         } else if (fakeRole === 'medium') {
@@ -12554,7 +13142,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「待ちなさい！私を吊るならハッキリ言います、私こそが真の【聖職者】です！私を処分すれば村の聖職者視点が途絶えますよ！」`,
             en: `"Stay thine hand! If you intend to hang me, I must speak: I am the true [Cleric]! If I am banished, our village loses its spiritual sight forever!"`,
             zh: `“住手！若要将我处死，我便明言相告，在下才是真正的【圣职者】！若将我处置，村庄的通灵视界将彻底断绝！”`,
-            ko: `「기다리시오! 나를 처형하려 한다면 분명히 말하겠소, 저야말로 진짜 【성직자】요! 나를 처분하면 마을의 성직자 시야가 영영 끊어지고 말 것이오!」`
+            ko: `「기다리시오! 나를 처형하려 한다면 분명히 말하겠소, 저야말로 진짜 【성직자】요! 나를 처분하면 마을의 성직자 시야가 영영 끊어지고 말 것이오!」`,
+            fr: `« Arrêtez ! Si vous voulez me condamner, sachez-le bien : je suis le véritable [Médium] ! Si vous me purifiez, notre village perdra à jamais son regard spirituel ! »`
           };
           coMsg = fakeMedDict[lang] || fakeMedDict.ja;
         } else {
@@ -12562,7 +13151,8 @@ ${speakerName}としての審判会議発言:`;
             ja: `「緊急事態なのでCOします！私は【聖騎士】です！今夜私を処刑すれば、今夜魔物の襲撃を誰一人防げなくなりますよ！」`,
             en: `"In this dire crisis, I reveal myself! I am the [Holy Knight]! Execute me today, and no shield shall stand against the monsters' claws tonight!"`,
             zh: `“危急存亡之际不得不言！吾乃【圣骑士】！若今日处决于我，今夜将无人能阻挡魔物的利爪！”`,
-            ko: `「비상사태이므로 선언합니다! 저는 【성기사】입니다! 오늘 저를 처형한다면, 오늘 밤 마물의 습격을 아무도 막아내지 못할 것입니다!」`
+            ko: `「비상사태이므로 선언합니다! 저는 【성기사】입니다! 오늘 저를 처형한다면, 오늘 밤 마물의 습격을 아무도 막아내지 못할 것입니다!」`,
+            fr: `« Face à cette crise extrême, je me déclare ! Je suis le [Chevalier] ! Si vous m'exécutez aujourd'hui, aucun bouclier ne protégera le village des griffes des monstres cette nuit ! »`
           };
           coMsg = fakeKniDict[lang] || fakeKniDict.ja;
         }
@@ -12606,6 +13196,7 @@ ${speakerName}としての審判会議発言:`;
           const bwTextMap = {
             ja: `ちょっと待ってください！${tName}さんに対して、${bsName}さんは【魔物】、${wsName}さんは【人間】と判定しています！真と偽で完全な白黒破綻が起きていますよ！`,
             en: `Hold on! Concerning ${tName}, ${bsName} judged them a [Monster], while ${wsName} judged them [Human]! A complete contradiction between light and dark has emerged!`,
+            fr: `Attendez un instant ! Concernant ${tName}, ${bsName} le déclare [Monstre], alors que ${wsName} le déclare [Humain] ! Une contradiction flagrante éclate entre le vrai et le faux !`,
             zh: `诸位且慢！针对${tName}，${bsName}断定其为【魔物】，而${wsName}却认定其为【人类】！真伪之间已彻底出现不可调和之黑白破绽！`,
             ko: `잠깐만 기다려 주십시오! ${tName} 님에 대해, ${bsName} 님은 【마물】, ${wsName} 님은 【인간】으로 판정하고 있습니다! 진위 사이에서 완전한 흑백 모순이 일어났습니다!`
           };
@@ -12639,8 +13230,9 @@ ${speakerName}としての審判会議発言:`;
                 const msTextMap = {
                   ja: `待ってください！昨日処刑された${exName}さんについて、聖職者の${mName}さんは【${medResStr}】、賢者の${sName}さんは【${seerResStr}】と鑑定しており整合性が崩れています！`,
                   en: `Wait! Concerning ${exName} executed yesterday, Cleric ${mName} reported [${medResStr}], while Sage ${sName} reported [${seerResStr}]! The logic has shattered!`,
+                  fr: `Attendez ! Concernant ${exName} exécuté hier, le Médium ${mName} a déclaré [${medResStr}], alors que le Voyant ${sName} a déclaré [${seerResStr}] ! La cohérence est rompue !`,
                   zh: `且慢！关于昨日被处决的${exName}，圣职者${mName}断定其为【${medResStr}】，先知${sName}却认定其为【${seerResStr}】，前后供词彻底崩溃破裂！`,
-                  ko: `잠깐 기다려 주십시오! 어제 처형된 ${exName} 님에 대해, 성직자 ${mName} 님은 【${medResStr}】, 현자 ${sName} 님은 【${seerResStr}】(으)로 감정하여 정합성이 완전히 무너졌습니다!`
+                  ko: `잠깐 기다려 주십시오! 어제 처형된 ${exName} 님에 대해, 성직자 ${mName} 님은 【${medResStr}】, 현자 ${sName} 님은 【${seerResStr}】(으)로 감정하여 정합性が完全に무너졌습니다!`.replace('정合性が完全に무너졌습니다!', '정합성이 완전히 무너졌습니다!')
                 };
                 contradictions.push({
                   type: 'medium_seer_conflict',
@@ -12664,6 +13256,7 @@ ${speakerName}としての審判会議発言:`;
         const tripleTextMap = {
           ja: `落ち着いて整理しましょう！賢者COが${names}3人も乱立しています！間違いなく2人以上の偽者（魔物・魔教徒）が紛れ込んでいます！`,
           en: `Calm yourselves and heed this! Three rival claims of Sage have emerged: ${names}! Without question, at least two impostors (monsters or cultists) lurk among them!`,
+          fr: `Gardons notre calme et analysons la situation ! Il y a au moins trois déclarations de Voyant avec ${names} ! À coup sûr, deux imposteurs ou plus (monstres ou fanatiques) se cachent parmi eux !`,
           zh: `诸位稍安勿躁！竟有${names}整整三人同时自称贤者！必有两人以上的假托妖邪（魔物或魔教徒）混迹其中！`,
           ko: `진정하고 정리해 봅시다! 현자 선언이 ${names} 무려 세 명이나 난립하고 있습니다! 틀림없이 두 명 이상의 가짜(마물 혹은 광인)가 숨어 있습니다!`
         };
@@ -13104,6 +13697,7 @@ ${speakerName}としての審判会議発言:`;
         const dict = {
           ja: `私以外にも${otherSeerNames}が賢者COしていて真偽が絞れません。今日は確実に魔物を減らすためにも、セオリー通り【対抗の賢者から処刑】してラインを特定しませんか？`,
           en: `Besides myself, ${otherSeerNames} also claims to be Sage, making truth hard to discern. To ensure we cull a monster today, shall we follow doctrine and [execute among the rival Sages] to expose their lines?`,
+          fr: `En plus de moi, ${otherSeerNames} prétend aussi être Voyant, ce qui rend la vérité difficile à discerner. Pour éliminer un monstre aujourd'hui, suivons la doctrine et [exécutons parmi les Voyants rivaux] pour révéler leurs camps ?`,
           zh: `除我之外，更有${otherSeerNames}声称贤者，真假难辨。为今日稳妥诛灭妖邪，何不依从兵法铁则【从对立贤者中决出处决之人】以验明立场？`,
           ko: `저 외에도 ${otherSeerNames}이(가) 현자 선언을 하여 진위를 가리기 어렵습니다. 오늘 확실히 마물을 줄이기 위해, 정석대로 【대항 현자 중에서 처형】하여 라인을 특정해 보지 않겠습니까?`
         };
@@ -13115,6 +13709,7 @@ ${speakerName}としての審判会議発言:`;
         const dict = {
           ja: `賢者が${seerNames}2人以上出ていて真偽が絞れません。今日は確実に魔物を減らすためにも、セオリー通り【対抗の賢者から処刑】してラインを特定しませんか？`,
           en: `Two or more souls (${seerNames}) claim to be Sage, clouding our sight. To guarantee we purge a monster today, shall we follow doctrine and [execute among rival Sages] to expose their lines?`,
+          fr: `Deux personnes ou plus (${seerNames}) revendiquent être Voyant. Pour garantir d'éliminer un monstre aujourd'hui, exécutons parmi les Voyants rivaux comme le veut la doctrine ?`,
           zh: `贤者之位已有${seerNames}两人以上挺身对立，难辨真伪。为求今日必除妖孽，不如依规【自对立贤者中择一处决】以明辨是非？`,
           ko: `현자가 ${seerNames} 두 명 이상 나타나 진위를 가리기 힘듭니다. 오늘 확실하게 마물을 줄이기 위해서라도, 정석대로 【대항 현자 중에서 처형】하여 판도를 밝혀내지 않겠습니까?`
         };
@@ -13131,6 +13726,7 @@ ${speakerName}としての審判会議発言:`;
         const dict = {
           ja: `私以外にも${otherMedNames}が聖職者COして対抗で並んでいます。偽聖職者による情報攪乱を防ぐため、今日は聖職者対抗枠から精査・処刑することを提案します。`,
           en: `Besides myself, ${otherMedNames} stand as rival Cleric claimants. To stop false clerics from poisoning our counsel, I propose we scrutinize and execute from among the rival Cleric pool today.`,
+          fr: `En plus de moi, ${otherMedNames} se dressent comme Médiums rivaux. Pour empêcher les faux médiums de semer la discorde, je propose d'examiner et d'exécuter parmi les Médiums rivaux aujourd'hui.`,
           zh: `除在下外，尚有${otherMedNames}声称为圣职者并列对抗。为防妖孽扰乱视听，我提议今日从对立圣职者中精审并决意处决。`,
           ko: `저 외에도 ${otherMedNames}이(가) 성직자 선언을 하여 대항 구도가 형성되었습니다. 거짓 성직자의 교란을 막기 위해, 오늘은 성직자 대항자 중에서 면밀히 심사하여 처형할 것을 제안합니다.`
         };
@@ -13142,6 +13738,7 @@ ${speakerName}としての審判会議発言:`;
         const dict = {
           ja: `聖職者が${medNames}対抗で並んでいます。偽聖職者による情報攪乱を防ぐため、今日は聖職者対抗枠から精査・処刑することを提案します。`,
           en: `Multiple claimants (${medNames}) stand as rival Clerics. To prevent false reports from sowing discord, I propose we examine and execute from among the rival Clerics today.`,
+          fr: `Plusieurs personnes (${medNames}) revendiquent être Médium. Pour éviter que de faux rapports ne nous égarent, je propose d'examiner et d'exécuter parmi les Médiums rivaux aujourd'hui.`,
           zh: `圣职者已有${medNames}并立对抗。为免假托者混淆视听，在下建议今日从圣职者对抗名册中严查并择一处刑。`,
           ko: `성직자가 ${medNames} 대항으로 맞서고 있습니다. 가짜 성직자의 정보 교란을 막기 위해, 오늘은 성직자 대항 후보군 중에서 정밀 조사 및 처형할 것을 제안합니다.`
         };
@@ -13154,6 +13751,7 @@ ${speakerName}としての審判会議発言:`;
         const dict = {
           ja: `真役職者を誤保護しつつ潜伏魔物を炙り出すため、今日は役職COしていない【グレーのメンバーの中から選んで】処刑するのが一番安全な進行です。`,
           en: `To shield our true champions while smoking out lurking beasts, executing someone chosen from [the unclaimed Grey pool] is our safest path today.`,
+          fr: `Pour protéger nos véritables champions tout en débusquant les monstres dissimulés, exécuter quelqu'un parmi [les suspects gris sans rôle déclaré] est la voie la plus sûre aujourd'hui.`,
           zh: `既要妥善护卫真正神职，又要揪出潜伏暗处的妖物，今日从尚未声明身份的【灰色疑云人选之中抉择处决】，乃是最为稳妥之策。`,
           ko: `진짜 능력자를 보호하면서 숨은 마물을 밝혀내기 위해, 오늘은 직업을 밝히지 않은 【회색 지대의 인물 중에서 선택하여】 처형하는 것이 가장 안전한 전략입니다.`
         };
@@ -13223,6 +13821,10 @@ ${speakerName}としての審判会議発言:`;
             `Hearken, all of you, and examine the records! The claims of ${logicalTargetName} have fallen into utter ruin! Given that ${logicalDeduction.reason}, our only choice of execution this day is ${logicalTargetName}!`,
             `Pray compose yourselves and look upon the undeniable truth! The words of ${logicalTargetName} are riddled with contradictions! Since ${logicalDeduction.reason}, we must execute ${logicalTargetName} ere we cast doubt on any other!`
           ],
+          fr: [
+            `Examinez les registres, tout le monde ! Les affirmations de ${logicalTargetName} sont totalement incohérentes ! Puisque ${logicalDeduction.reason}, notre seul choix d'exécution aujourd'hui est ${logicalTargetName} !`,
+            `Gardez votre calme et regardez les faits indéniables ! Les propos de ${logicalTargetName} sont truffés de contradictions ! Comme ${logicalDeduction.reason}, nous devons exécuter ${logicalTargetName} avant de douter de quiconque !`
+          ],
           zh: [
             `诸位请速速查验言行记录！${logicalTargetName}的主张已然彻底破绽百出！既然${logicalDeduction.reason}，今日之公决非${logicalTargetName}莫属！`,
             `且请定神纵观确凿事实！${logicalTargetName}之言行自相矛盾！鉴于${logicalDeduction.reason}，在疑心他人之前，理当先行处决${logicalTargetName}！`
@@ -13244,6 +13846,7 @@ ${speakerName}としての審判会議発言:`;
           const wolfCriticalTemplates = {
             ja: `【緊急局面】ここでの間違いは村の即敗北に直結します！怪しさが極めて高い【${logicalTargetName}さん】を吊るしか勝ち筋はありません！`,
             en: `【Crisis】 A misstep here spells the immediate doom of our village! We have no salvation save to execute [${logicalTargetName}], who reeks of utmost suspicion!`,
+            fr: `【Situation Critique】 Une erreur ici signifierait la ruine immédiate de notre village ! Nous n'avons d'autre choix que d'exécuter [${logicalTargetName}], dont la culpabilité est flagrante !`,
             zh: `【紧急局面】此刻若有差池必将致全村立时倾覆！唯有处决嫌疑极重的【${logicalTargetName}】，方有一线生机！`,
             ko: `【긴급 국면】여기서의 실책은 마을의 즉각적인 패배로 직결됩니다! 의혹이 극에 달한 【${logicalTargetName} 님】을 처형하는 것만이 유일한 활로입니다!`
           };
@@ -13252,6 +13855,7 @@ ${speakerName}としての審判会議発言:`;
           const villageWarningTemplates = {
             ja: `【警告】村人の皆さん落ち着いて！今日の処刑で魔物を浄化できないと過半数を握られて敗北が確定します！絶対に【${logicalTargetName}さん】に票を合わせましょう！`,
             en: `【Warning】 Calm yourselves, good villagers! If we fail to cleanse the beast today, the fiends will seize the majority and seal our doom! We must unite our votes upon [${logicalTargetName}]!`,
+            fr: `【Avertissement】 Calmez-vous, villageois ! Si nous ne bannissons pas un monstre aujourd'hui, ils prendront la majorité et notre défaite sera scellée ! Unissons absolument nos votes contre [${logicalTargetName}] !`,
             zh: `【警告】诸位同乡且慢慌乱！今日若不能净化魔物，妖邪便将占据多数，全村必亡！请务必全力将票集中于【${logicalTargetName}】！`,
             ko: `【경고】마을 주민 여러분, 진정하십시오! 오늘의 처형으로 마물을 정화하지 못하면 과반을 빼앗겨 패배가 확정됩니다! 기필코 【${logicalTargetName} 님】께 표를 모아야 합니다!`
           };
@@ -13268,6 +13872,7 @@ ${speakerName}としての審判会議発言:`;
         const deductionTemplates = {
           ja: `これまでの白出し結果とCO盤面を消去法で整理しました。${logicalDeduction.reason}！本日の処刑対象は【${logicalTargetName}さん】で確定させましょう！`,
           en: `I have sifted through the confirmed innocents and all declared roles by process of elimination. ${logicalDeduction.reason}! Let us seal our decision to execute [${logicalTargetName}] this day!`,
+          fr: `J'ai analysé les innocents confirmés et les rôles déclarés par élimination. ${logicalDeduction.reason} ! Confirmons notre décision d'exécuter [${logicalTargetName}] aujourd'hui !`,
           zh: `某以排除之法梳理了过往验白结果与各方明牌局势。${logicalDeduction.reason}！今日处决之目标，理当锁定【${logicalTargetName}】！`,
           ko: `지금까지 드러난 결백 판정과 직업 공표 국면을 소거법으로 정리했습니다. ${logicalDeduction.reason}! 오늘의 처형 대상은 【${logicalTargetName} 님】으로 확정지읍시다!`
         };
@@ -13282,9 +13887,9 @@ ${speakerName}としての審判会議発言:`;
         const coChar = lastItem.char;
         const coName = getCharDisplayName(coChar);
         const roleNames = {
-          seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자' },
-          medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자' },
-          knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사' }
+          seer: { ja: '賢者', en: 'Sage', fr: 'Voyant', zh: '贤者', ko: '현자' },
+          medium: { ja: '聖職者', en: 'Cleric', fr: 'Médium', zh: '圣职者', ko: '성직자' },
+          knight: { ja: '聖騎士', en: 'Holy Knight', fr: 'Chevalier', zh: '圣骑士', ko: '성기사' }
         };
         const rKey = lastItem.coRole === 'seer' ? 'seer' : (lastItem.coRole === 'medium' ? 'medium' : 'knight');
         const coRoleName = (roleNames[rKey] && roleNames[rKey][lang]) || roleNames[rKey].ja;
@@ -13297,6 +13902,10 @@ ${speakerName}としての審判会議発言:`;
           en: [
             `[${coName}] hath proclaimed themselves to be the [${coRoleName}]. Lest this be an eleventh-hour deception, let us weigh the presence of rivals and the veracity of past records.`,
             `The declaration of [${coRoleName}] by [${coName}] shifteth the entire board. We must recalculate the circle of proven innocents and the remaining gray suspects.`
+          ],
+          fr: [
+            `[${coName}] a revendiqué être le [${coRoleName}]. De peur qu'il ne s'agisse d'une tromperie de dernière minute, vérifions la présence de rivaux et la cohérence des déclarations passées.`,
+            `La déclaration de [${coRoleName}] par [${coName}] change toute la situation. Nous devons recalculer le cercle des innocents confirmés et les suspects gris restants.`
           ],
           zh: [
             `【${coName}】已然宣示自身为【${coRoleName}】。为防危急关头的虚伪诈称，必须审慎甄别有无对立现身者及过往言行一致性。`,
@@ -13319,6 +13928,7 @@ ${speakerName}としての審判会議発言:`;
           const selfWhiteTemplates = {
             ja: `賢者の${wSeerName}さんから私は白出しされています。身の潔白は証明されているので、完全グレーの【${logicalTargetName}さん】の発言を精査すべきです。`,
             en: `The Sage ${wSeerName} hath divined my innocence. My purity stands proven, so we must scrutinize the words of [${logicalTargetName}], who remains shrouded in gray doubt.`,
+            fr: `Le Voyant ${wSeerName} a confirmé mon innocence. Ma pureté étant prouvée, nous devons scruter les paroles de [${logicalTargetName}], qui reste enveloppé de soupçons.`,
             zh: `贤者${wSeerName}已占验某为清白之身。既然在下清白已明，理当彻底核查浑身疑云的【${logicalTargetName}】之言辞。`,
             ko: `현자이신 ${wSeerName} 님께서 저의 결백을 밝혀 주셨습니다. 저의 무결함은 증명되었으니, 온전히 의혹에 싸인 【${logicalTargetName} 님】의 발언을 면밀히 따져야 합니다.`
           };
@@ -13327,6 +13937,7 @@ ${speakerName}としての審判会議発言:`;
           const otherWhiteTemplates = {
             ja: `賢者の${wSeerName}さんから${wTargetName}さんに白判定が出ています。確白枠を除外すると、潜伏する擬態モンスターの位置はグレーの【${logicalTargetName}さん】周辺に絞られます。`,
             en: `The Sage ${wSeerName} hath confirmed ${wTargetName} to be innocent. Excluding the proven innocents, the lurkers in mimicry must dwell among the gray suspects like [${logicalTargetName}].`,
+            fr: `Le Voyant ${wSeerName} a confirmé l'innocence de ${wTargetName}. En excluant les innocents avérés, les monstres dissimulés doivent se cacher parmi les suspects gris comme [${logicalTargetName}].`,
             zh: `贤者${wSeerName}已鉴明${wTargetName}确属良善。排除无可置疑的白身之后，潜藏匿迹之妖魔必在灰疑的【${logicalTargetName}】等人周围。`,
             ko: `현자이신 ${wSeerName} 님께서 ${wTargetName} 님께 결백 판정을 내리셨습니다. 무결한 인원을 제외하면, 숨어든 마물의 위치는 의혹 속의 【${logicalTargetName} 님】 부근으로 좁혀집니다.`
           };
@@ -13347,6 +13958,11 @@ ${speakerName}としての審判会議発言:`;
             `Hearing ${otherName}'s counsel, methinks we should broaden our gaze and heed the voting history of ${logicalTargetName}.`,
             `I beseech thee, ${otherName}, couldst thou illuminate the tangible facts and records that support thy claim in greater detail?`
           ],
+          fr: [
+            `Vos propos ont du poids, ${otherName}, mais nous ne pouvons fermer les yeux sur les contradictions dans les dires de ${logicalTargetName}.`,
+            `En écoutant l'avis de ${otherName}, je pense que nous devrions élargir notre regard et surveiller l'historique de vote de ${logicalTargetName}.`,
+            `${otherName}, pourriez-vous partager plus en détail les faits objectifs et les registres appuyant cette affirmation ?`
+          ],
           zh: [
             `${otherName}所言确有一番道理，但${logicalTargetName}言行录中的前后抵触之处亦不容忽视。`,
             `兼听${otherName}之见解，某以为更当拓宽视界，关注${logicalTargetName}迄今为止的投票轨迹。`,
@@ -13366,6 +13982,7 @@ ${speakerName}としての審判会議発言:`;
           const seerGeneralTemplates = {
             ja: `賢者の立場から主張します。生存しているグレー枠の精査とライン判定を最優先して進めましょう。`,
             en: `Speaking from the sacred mantle of the Sage: our utmost priority must be the scrutiny of living gray suspects and their alliances.`,
+            fr: `S'exprimant en tant que Voyant : notre priorité absolue doit être d'examiner les suspects gris encore en vie et leurs alliances.`,
             zh: `某以贤者之身立言：当务之急，必是彻查所有尚存之灰疑之人及其暗中关联。`,
             ko: `현자의 입장에서 밝힙니다. 살아남은 회색지대 인물들의 정밀 조사와 결탁 여부 판단을 최우선으로 진행합시다.`
           };
@@ -13374,14 +13991,16 @@ ${speakerName}としての審判会議発言:`;
           const mediumGeneralTemplates = {
             ja: `聖職者の判定報告を元に、誤処刑を防ぐための着実な議論をつなげていきましょう。`,
             en: `Guided by the divine verdicts of the Cleric, let us forge a steadfast discourse to avert the execution of the innocent.`,
+            fr: `Guidés par les verdicts du Médium, poursuivons un débat solide afin d'éviter l'exécution d'innocents.`,
             zh: `依据圣职者降下之通灵断语，我等理当展开周全推论，以杜绝冤杀良善。`,
-            ko: `성직자의 영시 보고를 나침반 삼아, 무고한 처형を 막기 위한 건실한 논의를 이어갑시다.`
+            ko: `성직자의 영시 보고를 나침반 삼아, 무고한 처형을 막기 위한 건실한 논의를 이어갑시다.`
           };
           msg = mediumGeneralTemplates[lang] || mediumGeneralTemplates.ja;
         } else {
           const generalDiscussionTemplates = {
             ja: `誤処刑を防ぐために客観的なログを再確認しています。【${logicalTargetName}さん】の発言整合性に少し違和感を感じているので意見を聞きたいです。`,
             en: `To safeguard our village against false executions, I am reviewing past records anew. I sense a discordance in the claims of [${logicalTargetName}], and wish to hear thy counsel.`,
+            fr: `Pour éviter les erreurs d'exécution, je réexamine les registres passés. Je ressens une dissonance dans les propos de [${logicalTargetName}], et je souhaite votre avis.`,
             zh: `为免错杀无辜，某正复盘过往言行记录。观【${logicalTargetName}】所言隐有前后不协之处，愿闻诸位高见。`,
             ko: `오심으로 인한 처형을 막고자 지난 기록을 재확인하고 있소. 【${logicalTargetName} 님】의 발언 정합성에 다소 위화감이 느껴져 의견을 묻고자 하오.`
           };
@@ -13393,7 +14012,7 @@ ${speakerName}としての審判会議発言:`;
       // ★ LLMハイブリッド：クリティカルでない発言はLLMで高品質化
       // 防衛CO / 100%確定破綻 / PP警告は即座の反応が必要なためローカルを維持
       // ----------------------------------------------------
-      const isCriticalLocal = isCertain || !!defensiveCO || (checkMustWinCondition().isCritical && (msg.includes('【警告】') || msg.includes('【Warning】') || msg.includes('【경고】')));
+      const isCriticalLocal = isCertain || !!defensiveCO || (checkMustWinCondition().isCritical && (msg.includes('【警告】') || msg.includes('【Warning】') || msg.includes('【Avertissement】') || msg.includes('【경고】')));
       let usedLLM = false;
 
       if (useLLMMode && !isCriticalLocal && msg) {
@@ -13443,6 +14062,7 @@ ${speakerName}としての審判会議発言:`;
           const stubbornSfx = {
             ja: ' 私のこの考えはブレません。',
             en: ' My conviction in this shall not waver.',
+            fr: ' Ma conviction là-dessus ne faiblira pas.',
             zh: ' 某之此念绝不动摇。',
             ko: ' 저의 이 소신은 결코 흔들리지 않소.'
           };
@@ -13480,6 +14100,16 @@ ${speakerName}としての審判会議発言:`;
               `It hath caught my eye that ${randomOtherName} seemeth to shy away from questioning certain persons. Is there cause for such restraint?`,
               `Our dispute reacheth an impasse. Should we not pause and assemble the facts already proven beyond doubt? Dost thou agree, ${randomOtherName}?`,
               `${randomOtherName}, pray enlighten us further regarding the occurrences of yesternight. Didst thou perceive anything untoward?`
+            ],
+            fr: [
+              `…Attendez un instant. ${randomOtherName}, qui soupçonnez-vous le plus dans nos échanges jusqu'ici ? Parlez franchement, je vous prie.`,
+              `Changeons d'angle. Quelqu'un est-il resté particulièrement silencieux aujourd'hui ? Le silence est aussi un indice. Qu'en pensez-vous, ${randomOtherName} ?`,
+              `Je pose la question à tous : désignez la personne la plus suspecte et la raison en un mot ! Pour ma part… mes doutes se portent sur ${randomOtherName}.`,
+              `La tendance des votes de ${randomOtherName} me préoccupe. En analysant ses choix passés, quelque chose devrait se révéler.`,
+              `Franchement : la tournure actuelle du débat manque de preuves tangibles. ${randomOtherName}, pourriez-vous fournir des arguments plus précis ?`,
+              `J'ai remarqué que ${randomOtherName} semble éviter d'interroger certaines personnes précises. Y a-t-il une raison à cela ?`,
+              `Le débat est dans une impasse. Ne devrions-nous pas faire une pause et récapituler les faits certains ? Êtes-vous d'accord, ${randomOtherName} ?`,
+              `${randomOtherName}, parlez-nous un peu plus de ce qui s'est passé la nuit dernière. N'avez-vous rien remarqué d'anormal ?`
             ],
             zh: [
               `……且慢！${randomOtherName}，今日商议至今，阁下心中最为生疑者究竟是谁？还请直言不讳。`,
@@ -13524,7 +14154,7 @@ ${speakerName}としての審判会議発言:`;
       // 防衛CO発生時の仮想投票再計算
       if (defensiveCO) {
         calculateVirtualVotes();
-        const coEventStr = { ja: 'CO発生', en: 'Claim', zh: 'CO发生', ko: 'CO발생' }[currentAppLanguage] || 'CO発生';
+        const coEventStr = { ja: 'CO発生', en: 'Claim', zh: 'CO发生', ko: 'CO발생', fr: 'Revendication' }[currentAppLanguage] || 'CO発生';
         const speakerLabel = getCharDisplayName(speaker);
         recordVirtualVoteHistory(`${formatDay(gameState.day)} ${defensiveCO.role.toUpperCase()} ${coEventStr} (${speakerLabel})`);
         renderVoteHistoryPage();
@@ -13813,10 +14443,10 @@ ${speakerName}としての審判会議発言:`;
       if (!myCo || myCo === 'grey' || myCo === 'villager') return null;
 
       const roleMap = {
-        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자' },
-        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자' },
-        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사' },
-        freemason: { ja: '共有者', en: 'Freemason', zh: '共济会', ko: '공유자' }
+        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자', fr: 'Voyant' },
+        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자', fr: 'Médium' },
+        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사', fr: 'Chevalier' },
+        freemason: { ja: '共有者', en: 'Freemason', zh: '共济会', ko: '공유자', fr: 'Frère juré' }
       };
       const lang = typeof currentAppLanguage !== 'undefined' ? (currentAppLanguage || 'ja') : 'ja';
       const roleName = (roleMap[myCo] && roleMap[myCo][lang]) || (roleMap[myCo] && roleMap[myCo].ja) || myCo;
@@ -15185,7 +15815,7 @@ ${speakerName}としての審判会議発言:`;
       // 4. 仮想投票再計算
       if (typeof calculateVirtualVotes === 'function') calculateVirtualVotes();
       if (typeof recordVirtualVoteHistory === 'function') {
-        const inquestStr = { ja: '尋問後', en: 'Post Interrogation', zh: '审讯之后', ko: '심문 후' }[currentAppLanguage] || '尋問後';
+        const inquestStr = { ja: '尋問後', en: 'Post Interrogation', zh: '审讯之后', ko: '심문 후', fr: 'Post-Enquête' }[currentAppLanguage] || '尋問後';
         recordVirtualVoteHistory(`${formatDay(gameState.day)} ${inquestStr} (${targetDisplayName})`);
       }
       if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
@@ -15710,8 +16340,16 @@ ${speakerName}としての審判会議発言:`;
           const draggedChar = pickRandom(aliveOthers);
           gameState.status[draggedChar] = 'executed';
           const draggedName = getCharDisplayName(draggedChar);
+          const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
+          const nekomataNoticeMap = {
+            ja: `🐱【猫又の報復】処刑された猫又の怨念により、${draggedName} が道連れとなり共に浄化されました！`,
+            en: `🐱 [Nekomata's Revenge] By the curse of the executed Nekomata, ${draggedName} was dragged down and banished together!`,
+            fr: `🐱 [Vengeance du Nekomata] Par la malédiction du Nekomata exécuté, ${draggedName} a été emporté(e) et banni(e) avec lui !`,
+            zh: `🐱【猫又的报复】因被处决的猫又的怨念，${draggedName} 被一同拖入净化！`,
+            ko: `🐱【네코마타의 복수】처형된 네코마타의 원념으로 인해, ${draggedName} 이(가) 함께 정화되었습니다!`
+          };
           setTimeout(() => {
-            showNotification(`🐱【猫又の報復】処刑された猫又の怨念により、${draggedName} が道連れとなり共に浄化されました！`);
+            showNotification(nekomataNoticeMap[lang] || nekomataNoticeMap['ja']);
           }, 1500);
         }
       }
@@ -15720,53 +16358,232 @@ ${speakerName}としての審判会議発言:`;
       switchView(2);
 
       // 遺言退場コメント（※全役職で正体がバレないよう、意図的に曖昧な台詞にする）
+      const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
       const personality = getCharPersonality(char);
       const lastWordsPool = {
-        aggressive: [
-          `ここで処刑？冗談じゃない…本物の魔物はまだこの中にいるぞ！`,
-          `俺を疑うのか？いいだろう…だが明日の朝、後悔するのはお前たちだ。`,
-          `こんな判断で村が守れると思っているのか？甘いな…`,
-          `勝手にしろ。だがこの村は確実に間違った方向へ進んでいる。`,
-          `笑えるな…最も疑うべき人間を見逃しておいて、俺を吊るのか。`,
-          `俺の言葉を信じなかったこと、必ず悔やむことになる。`,
-          `この処刑が正しかったかどうか…明日の朝にわかるだろうさ。`,
-          `好きにしろ。だが忠告しておく…真犯人はまだ笑っているぞ。`
-        ],
-        logical: [
-          `この処刑は論理的に正しいのですか？ログを読み返してください…`,
-          `私の主張は一貫していたはず。矛盾があるなら具体的に示してほしかった。`,
-          `冤罪であれ正解であれ、残された人たちの判断に委ねるしかありません。`,
-          `私を処刑する根拠は十分でしたか？…冷静に振り返ってください。`,
-          `感情ではなく、論理で判断してほしかった…それだけが心残りです。`,
-          `投票ラインを精査すれば真実が見えるはずです。どうかそれを忘れないで。`,
-          `この結果が村のためになることを祈っています…さようなら。`,
-          `残った情報をよく整理してください。答えはログの中にあるはずです。`
-        ],
-        cautious: [
-          `私は…本当に何も悪いことはしていません…信じてください…`,
-          `どうか落ち着いて考え直してほしかった…もう遅いけれど…`,
-          `こんな形で終わるなんて…みなさん、どうかお元気で…`,
-          `私の無実はいつか証明されるはずです…それだけを信じています。`,
-          `せめて残された人たちが正しい判断をしてくれることを願います…`,
-          `最後まで言いたかったことがあるのに…もう時間がないようです。`,
-          `怖い…でも、村のためならこの運命を受け入れます…`,
-          `私を信じてくれた人、ありがとう…どうか最後まで戦ってください。`
-        ],
-        intuitive: [
-          `ふふ…面白い展開になってきたじゃないか。さて、真実はどこにある？`,
-          `この処刑、吉と出るか凶と出るか…見届けられないのが残念だよ。`,
-          `まあいいさ。答え合わせは最後のお楽しみってね…`,
-          `俺が消えた後の盤面をよく見ておけよ？真相が見えてくるはずだ。`,
-          `意外な結末だったな…いや、これもまた一つの運命か。`,
-          `最後に一つだけ言っておく…見えているものが全てとは限らないぞ。`,
-          `処刑されるのは構わないが…本当にこれでよかったのかい？`,
-          `さて、この村の結末はどうなるかな…見届けたかったよ。`
-        ]
+        aggressive: {
+          ja: [
+            `ここで処刑？冗談じゃない…本物の魔物はまだこの中にいるぞ！`,
+            `俺を疑うのか？いいだろう…だが明日の朝、後悔するのはお前たちだ。`,
+            `こんな判断で村が守れると思っているのか？甘いな…`,
+            `勝手にしろ。だがこの村は確実に間違った方向へ進んでいる。`,
+            `笑えるな…最も疑うべき人間を見逃しておいて、俺を吊るのか。`,
+            `俺の言葉を信じなかったこと、必ず悔やむことになる。`,
+            `この処刑が正しかったかどうか…明日の朝にわかるだろうさ。`,
+            `好きにしろ。だが忠告しておく…真犯人はまだ笑っているぞ。`
+          ],
+          en: [
+            `Executed here? You must be joking... the real monster is still among you!`,
+            `You suspect me? Very well... but tomorrow morning, you will sorely regret this.`,
+            `You think this judgment will protect the village? How naive...`,
+            `Do as you please. But this village is hurtling straight toward doom.`,
+            `Hilarious... overlooking the most suspicious souls only to condemn me.`,
+            `Mark my words, you will rue not believing what I said.`,
+            `Whether this execution was right or wrong... tomorrow morning will reveal.`,
+            `Have it your way. But heed my warning: the true culprit is laughing right now.`
+          ],
+          fr: [
+            `M'exécuter ici ? Vous plaisantez... le véritable monstre est toujours parmi vous !`,
+            `Vous me soupçonnez ? Soit... mais demain matin, vous le regretterez amèrement.`,
+            `Vous croyez que ce jugement sauvera le village ? Quelle naïveté...`,
+            `Faites ce que vous voulez. Mais ce village court droit à sa perte.`,
+            `C'est risible... épargner les plus suspects pour finalement me condamner moi.`,
+            `Vous regretterez amèrement de ne pas m'avoir accordé votre confiance.`,
+            `Que cette décision soit juste ou non... demain matin vous le révélera.`,
+            `À votre guise. Mais retenez mon avertissement : le vrai coupable rit dans l'ombre.`
+          ],
+          zh: [
+            `在此处决我？别开玩笑了……真正的魔物还在你们之中！`,
+            `怀疑我？随你们便……但明早后悔的一定是你们！`,
+            `以为这种草率的决断能保护村庄？太天真了……`,
+            `悉听尊便。但这村落正无可挽回地步入毁灭。`,
+            `真可笑……放过了最该怀疑的人，却偏偏要把我送上处决台。`,
+            `不信我的话，你们迟早会悔恨万分。`,
+            `这场处决究竟是对是错……明天清晨自见分晓。`,
+            `随便你们。但我奉劝一句……真凶此刻正在暗处嗤笑！`
+          ],
+          ko: [
+            `여기서 날 처형한다고? 농담 마라…… 진짜 마물은 아직 네놈들 틈에 있다!`,
+            `날 의심하는 건가? 좋다…… 하지만 내일 아침 뼈저리게 후회할 거다.`,
+            `이런 판결로 마을을 지킬 수 있다고 생각하나? 무르군……`,
+            `마음대로 해라. 허나 이 마을은 확실히 파멸로 치닫고 있다.`,
+            `웃기는군…… 가장 수상한 자들을 놓아주고 날 매달다니.`,
+            `내 말을 믿지 않은 것을 반드시 후회하게 될 거다.`,
+            `이 처형이 옳았는지 틀렸는지는…… 내일 아침이면 알게 되겠지.`,
+            `뜻대로 해라. 하지만 경고하마…… 진범은 지금도 웃고 있다.`
+          ]
+        },
+        logical: {
+          ja: [
+            `この処刑は論理的に正しいのですか？ログを読み返してください…`,
+            `私の主張は一貫していたはず。矛盾があるなら具体的に示してほしかった。`,
+            `冤罪であれ正解であれ、残された人たちの判断に委ねるしかありません。`,
+            `私を処刑する根拠は十分でしたか？…冷静に振り返ってください。`,
+            `感情ではなく、論理で判断してほしかった…それだけが心残りです。`,
+            `投票ラインを精査すれば真実が見えるはずです。どうかそれを忘れないで。`,
+            `この結果が村のためになることを祈っています…さようなら。`,
+            `残った情報をよく整理してください。答えはログの中にあるはずです。`
+          ],
+          en: [
+            `Is this execution truly logical? Please re-read the debate records...`,
+            `My claims were consistent throughout. If there was a flaw, show it concretely.`,
+            `Whether this is a false charge or correct, I leave the future to those who remain.`,
+            `Was the basis for executing me truly sufficient? ...Reflect calmly upon it.`,
+            `I only wished you judged with logic, not emotion... that is my sole regret.`,
+            `Examining the voting trails will reveal the truth. Please do not forget that.`,
+            `I pray this outcome ultimately benefits our village... farewell.`,
+            `Sort through the remaining information carefully. The answer lies within the records.`
+          ],
+          fr: [
+            `Cette exécution est-elle réellement logique ? Relisez attentivement le registre...`,
+            `Mes propos ont toujours été constants. Si contradiction il y avait, montrez-la précisément.`,
+            `Erreur judiciaire ou coup au but, je m'en remets au discernement de ceux qui restent.`,
+            `Les preuves étaient-elles suffisantes pour me condamner ? Réfléchissez-y posément.`,
+            `J'aurais souhaité un jugement guidé par la logique et non l'émotion... c'est mon seul regret.`,
+            `Examinez scrupuleusement la ligne des votes, la vérité y est inscrite. Ne l'oubliez pas.`,
+            `J'espère sincèrement que ce sacrifice servira au village... adieu.`,
+            `Rassemblez méthodiquement les indices restants. La réponse se trouve dans le journal.`
+          ],
+          zh: [
+            `这场处决从逻辑上讲真的说得通吗？请再重温一遍记录吧……`,
+            `我的主张始终如一。若有矛盾之处，真希望你们能具体指出。`,
+            `无论是冤罪还是正解，接下来的一切只能交给幸存之人了。`,
+            `处决我的依据当真充分吗？……请冷静反思一番吧。`,
+            `我本希望你们以逻辑而非情绪作裁决……这便是我唯一的遗憾。`,
+            `仔细梳理投票动向便能得见真相，切记莫要遗忘。`,
+            `但愿此番结果能对村落有所裨益……永别了。`,
+            `请务必整理好留存的情报，答案就藏在对话记录之中。`
+          ],
+          ko: [
+            `이 처형이 과연 논리적으로 옳습니까? 부디 기록을 다시 읽어 보십시오……`,
+            `제 주장은 줄곧 일관되었습니다. 모순이 있다면 구체적으로 밝혀 주셨어야 합니다.`,
+            `누명이든 정답이든, 이제 남은 사람들의 판단에 맡길 수밖에 없군요.`,
+            `절 처형할 근거가 진정 충분했습니까?…… 냉정히 돌아보십시오.`,
+            `감정이 아닌 논리로 판결해 주시길 바랐습니다…… 그것만이 유일한 미련입니다.`,
+            `투표 흐름을 면밀히 분석하면 진실이 보일 것입니다. 부디 잊지 마십시오.`,
+            `이 결과가 마을을 위한 길이 되길 기도하겠습니다…… 안녕히.`,
+            `남은 정보를 잘 정리하십시오. 해답은 기록 속에 있을 터입니다.`
+          ]
+        },
+        cautious: {
+          ja: [
+            `私は…本当に何も悪いことはしていません…信じてください…`,
+            `どうか落ち着いて考え直してほしかった…もう遅いけれど…`,
+            `こんな形で終わるなんて…みなさん、どうかお元気で…`,
+            `私の無実はいつか証明されるはずです…それだけを信じています。`,
+            `せめて残された人たちが正しい判断をしてくれることを願います…`,
+            `最後まで言いたかったことがあるのに…もう時間がないようです。`,
+            `怖い…でも、村のためならこの運命を受け入れます…`,
+            `私を信じてくれた人、ありがとう…どうか最後まで戦ってください。`
+          ],
+          en: [
+            `I have... truly done nothing wicked... please believe me...`,
+            `I wished so dearly you would pause and reconsider... but it is too late now...`,
+            `To meet my end in such a way... everyone, please stay safe...`,
+            `My innocence will surely be proven in time... that is my only comfort.`,
+            `I only pray that those who remain will make the righteous choice...`,
+            `There was still something I yearned to say until the end... but time has run out.`,
+            `I am afraid... yet if it is for our village, I accept this cruel fate...`,
+            `To those who believed in me, thank you... please fight on until the very end.`
+          ],
+          fr: [
+            `Je n'ai... rien fait de mal, je vous en conjure, croyez-moi...`,
+            `J'aurais tant voulu que vous y réfléchissiez à deux fois... mais il est trop tard...`,
+            `Finir de cette manière... prenez tous bien soin de vous...`,
+            `Mon innocence sera prouvée un jour, j'en ai l'intime conviction...`,
+            `J'espère au moins que ceux qui survivent feront les bons choix...`,
+            `J'avais encore tant de choses à vous confier... mais le temps s'est écoulé.`,
+            `J'ai peur... mais si c'est pour sauver le village, j'accepte ce destin...`,
+            `À ceux qui m'ont fait confiance, merci du fond du cœur... battez-vous jusqu'au bout.`
+          ],
+          zh: [
+            `我……真的没做任何坏事……请相信我……`,
+            `真希望你们能冷静下来重新考虑……但如今已然太迟了……`,
+            `竟然以这种方式收场……大家，请务必多保重……`,
+            `我的清白总有一天会大白于天下……我唯有深信这一点。`,
+            `但愿留下来的人们能够做出正确的抉择……`,
+            `我原本还有话想对大家说……但看来已经没有时间了。`,
+            `我很害怕……但若是为了村庄，我甘愿接纳这份宿命……`,
+            `感谢曾经信任过我的人……请务必坚持奋战到最后一刻。`
+          ],
+          ko: [
+            `저는…… 정말 아무런 나쁜 짓도 하지 않았습니다…… 믿어 주십시오……`,
+            `부디 진정하고 다시 생각해 주시길 바랐는데…… 이젠 너무 늦었군요……`,
+            `이런 식으로 끝나다니…… 여러분, 부디 무탈하십시오……`,
+            `제 결백은 언젠가 증명될 것입니다…… 그것만을 믿겠습니다.`,
+            `적어도 남은 분들이 올바른 결정을 내려 주시기를 바랄 뿐입니다……`,
+            `마지막까지 전하고픈 말이 있었는데…… 이제 시간이 없는 모양이군요.`,
+            `두렵습니다…… 하지만 마을을 위한 길이라면 이 운명을 받아들이겠습니다……`,
+            `절 믿어 주신 분들, 진심으로 감사했습니다…… 부디 끝까지 싸워 주십시오.`
+          ]
+        },
+        intuitive: {
+          ja: [
+            `ふふ…面白い展開になってきたじゃないか。さて、真実はどこにある？`,
+            `この処刑、吉と出るか凶と出るか…見届けられないのが残念だよ。`,
+            `まあいいさ。答え合わせは最後のお楽しみってね…`,
+            `俺が消えた後の盤面をよく見ておけよ？真相が見えてくるはずだ。`,
+            `意外な結末だったな…いや、これもまた一つの運命か。`,
+            `最後に一つだけ言っておく…見えているものが全てとは限らないぞ。`,
+            `処刑されるのは構わないが…本当にこれでよかったのかい？`,
+            `さて、この村の結末はどうなるかな…見届けたかったよ。`
+          ],
+          en: [
+            `Heh... things have taken quite an intriguing turn. Now then, where lies the truth?`,
+            `Will this execution prove a blessing or a curse? Pity I won't be around to see.`,
+            `Well, no matter. The final revelation is the sweetest part anyway...`,
+            `Watch the board closely once I am gone. The truth shall reveal itself.`,
+            `An unexpected end indeed... or perhaps this too was written in the stars.`,
+            `I shall leave you with one final word: what you see is not always all there is.`,
+            `I care not about being executed... but are you truly certain of this?`,
+            `Now then, how shall our village's tale conclude? I truly wished to see it.`
+          ],
+          fr: [
+            `Héhé... voilà qui prend une tournure fascinante. Alors, où réside la vérité ?`,
+            `Cette exécution portera-t-elle ses fruits ou sera-t-elle néfaste ? Dommage que je ne sois plus là pour voir.`,
+            `Peu importe. Découvrir le fin mot de l'histoire n'en sera que plus savoureux...`,
+            `Observez bien la situation après mon départ. Le voile finira par se lever.`,
+            `Un dénouement inattendu... à moins que ce ne soit là mon destin.`,
+            `Un dernier mot avant de partir : les apparences sont souvent bien trompeuses.`,
+            `Être exécuté m'importe peu... mais êtes-vous véritablement sûrs de votre coup ?`,
+            `Eh bien, quelle sera l'issue pour ce village ? J'aurais bien aimé le découvrir.`
+          ],
+          zh: [
+            `呵呵……事情变得越来越有趣了呢。那么，真相究竟在何方？`,
+            `这场处决究竟是吉是凶……可惜我无法亲眼见证了。`,
+            `不过也无妨，真相揭晓的那一刻才是最精彩的保留节目……`,
+            `等我消失后，你们可要好好盯紧局面，真相自会浮出水面。`,
+            `还真是出人意料的结局……不过，这或许也是命中注定吧。`,
+            `最后留给你们一句话……亲眼所见之物，未必便是全貌。`,
+            `被处决我倒无所谓……但你们真的确信这样好吗？`,
+            `那么，这个村庄究竟会走向怎样的结局？真想亲眼看到最后啊。`
+          ],
+          ko: [
+            `후후…… 제법 흥미진진한 전개가 되었군. 자, 진실은 과연 어디에 있을까?`,
+            `이 처형이 길조가 될지 흉조가 될지…… 끝까지 지켜보지 못하는 게 아쉽구려.`,
+            `뭐, 상관없소. 정답 확인이야말로 마지막에 누리는 진짜 즐거움이니까……`,
+            `내가 사라진 뒤의 판세를 똑똑히 지켜보시오. 진상이 보이기 시작할 테니.`,
+            `의외의 결말이군…… 아니, 이것 또한 하나의 운명인가.`,
+            `마지막으로 한 마디만 남기지…… 눈에 보이는 것이 전부가 아닐 수도 있소.`,
+            `처형당하는 거야 상관없다만…… 정말로 이걸로 괜찮겠소?`,
+            `자, 이 마을의 끝은 어떻게 될까…… 끝까지 지켜보고 싶었건만.`
+          ]
+        }
       };
-      const pool = lastWordsPool[personality] || lastWordsPool.cautious;
+      const personaPools = lastWordsPool[personality] || lastWordsPool.cautious;
+      const pool = personaPools[lang] || personaPools.ja;
       let lastWords = pickRandom(pool);
 
-      addLogItem(`💬 ${targetDisplayName}の遺言`, '', `「${lastWords}」`, 'ai-discussion', char, false);
+      const testamentTitleMap = {
+        ja: `💬 ${targetDisplayName}の遺言`,
+        en: `💬 [${targetDisplayName}]'s Last Words`,
+        fr: `💬 Dernières volontés de ${targetDisplayName}`,
+        zh: `💬 ${targetDisplayName}的遗言`,
+        ko: `💬 ${targetDisplayName}의 유언`
+      };
+      const quoteOpen = (lang === 'fr' || lang === 'en') ? '« ' : '「';
+      const quoteClose = (lang === 'fr' || lang === 'en') ? ' »' : '」';
+      addLogItem(testamentTitleMap[lang] || testamentTitleMap.ja, '', `${quoteOpen}${lastWords}${quoteClose}`, 'ai-discussion', char, false);
 
       selectCharacter(null);
       renderStatus();
@@ -15774,7 +16591,14 @@ ${speakerName}としての審判会議発言:`;
 
       // 遺言読み上げ（読み上げ完了まで待機。スキップボタンで手動スキップ可能）
       try {
-        await playSpeechAsync(`${targetDisplayName}の遺言…… ${lastWords}`, getCharVoiceProfileKey(char));
+        const speechTestamentMap = {
+          ja: `${targetDisplayName}の遺言…… ${lastWords}`,
+          en: `Last words of ${targetDisplayName}... ${lastWords}`,
+          fr: `Dernières paroles de ${targetDisplayName}... ${lastWords}`,
+          zh: `${targetDisplayName}的遗言…… ${lastWords}`,
+          ko: `${targetDisplayName}의 유언…… ${lastWords}`
+        };
+        await playSpeechAsync(speechTestamentMap[lang] || speechTestamentMap.ja, getCharVoiceProfileKey(char));
       } catch(err) {
         console.log('Speech error in execution sequence:', err);
       }
@@ -15789,8 +16613,22 @@ ${speakerName}としての審判会議発言:`;
       }
 
       // 処刑を執り行ったコメント・ログを出力
-      const execText = `勇者の剣が振り下ろされ、${targetDisplayName} の処刑が執り行われた。`;
-      addLogItem(`⚖️ 処刑執行: ${targetDisplayName}`, '', execText, 'execution', null, false);
+      const execTextMap = {
+        ja: `勇者の剣が振り下ろされ、${targetDisplayName} の処刑が執り行われた。`,
+        en: `The Hero's blade struck downward, and ${targetDisplayName} was duly executed.`,
+        fr: `L'épée du Héros s'est abattue, et l'exécution de ${targetDisplayName} a été accomplie.`,
+        zh: `勇者之剑悍然斩落，对 ${targetDisplayName} 的处决宣告执行。`,
+        ko: `용사의 검이 내리쳐져, ${targetDisplayName}의 처형이 집행되었다.`
+      };
+      const execText = execTextMap[lang] || execTextMap.ja;
+      const execLogTitleMap = {
+        ja: `⚖️ 処刑執行: ${targetDisplayName}`,
+        en: `⚖️ Execution: ${targetDisplayName}`,
+        fr: `⚖️ Exécution accomplie : ${targetDisplayName}`,
+        zh: `⚖️ 处决执行: ${targetDisplayName}`,
+        ko: `⚖️ 처형 집행: ${targetDisplayName}`
+      };
+      addLogItem(execLogTitleMap[lang] || execLogTitleMap.ja, '', execText, 'execution', null, false);
       try {
         await playSpeechAsync(execText);
       } catch(err) {
@@ -15809,8 +16647,16 @@ ${speakerName}としての審判会議発言:`;
           if (gameState.roles[revengeChar] === 'wolf') {
             gameState.wolvesExecuted++;
           }
-          const revengeLog = `🐾 【猫又の道連れ】処刑された猫又の怨念により、${revengeName} が巻き添えとなって死亡しました！`;
-          addLogItem('ナレーション', '', revengeLog, 'execution', null, false);
+          const revengeLogMap = {
+            ja: `🐾 【猫又の道連れ】処刑された猫又の怨念により、${revengeName} が巻き添えとなって死亡しました！`,
+            en: `🐾 [Nekomata's Curse] Fueled by the executed Nekomata's grudge, ${revengeName} was dragged into death as well!`,
+            fr: `🐾 [Malédiction du Nekomata] Emporté par la rancœur du Nekomata exécuté, ${revengeName} a péri à ses côtés !`,
+            zh: `🐾 【猫又之同归于尽】因被处决猫又的怨念作祟，${revengeName} 亦遭卷入身亡！`,
+            ko: `🐾 【고양이 요괴의 원혼】처형된 고양이 요괴의 원념에 휩쓸려, ${revengeName} 님이 함께 목숨을 잃었습니다!`
+          };
+          const revengeLog = revengeLogMap[lang] || revengeLogMap.ja;
+          const narrationTitle = (I18N_TRANSLATIONS[lang] && I18N_TRANSLATIONS[lang].narration_speaker) || (lang === 'fr' ? 'Narration' : 'ナレーション');
+          addLogItem(narrationTitle, '', revengeLog, 'execution', null, false);
         }
       }
 
@@ -15901,6 +16747,90 @@ ${speakerName}としての審判会議発言:`;
     }
     window.skipExecutionVideo = skipExecutionVideo;
 
+    // 🎬 ストーリーカットシーン動画再生管理関数
+    let storyVideoResolve = null;
+
+    function playStoryVideoAsync(videoSrc) {
+      return new Promise((resolve) => {
+        const overlay = document.getElementById('story-video-overlay');
+        const video = document.getElementById('story-video-player');
+
+        if (!overlay || !video) {
+          resolve();
+          return;
+        }
+
+        storyVideoResolve = resolve;
+
+        // 動的にソースを設定
+        video.src = videoSrc;
+        video.currentTime = 0;
+        overlay.classList.add('active');
+
+        const onEnd = () => {
+          cleanup();
+          if (storyVideoResolve) {
+            const res = storyVideoResolve;
+            storyVideoResolve = null;
+            res();
+          }
+        };
+
+        const onError = () => {
+          cleanup();
+          if (storyVideoResolve) {
+            const res = storyVideoResolve;
+            storyVideoResolve = null;
+            res();
+          }
+        };
+
+        const cleanup = () => {
+          video.removeEventListener('ended', onEnd);
+          video.removeEventListener('error', onError);
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+          overlay.classList.remove('active');
+        };
+
+        video.addEventListener('ended', onEnd, { once: true });
+        video.addEventListener('error', onError, { once: true });
+
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.log('Story video autoplay blocked or error:', err);
+            cleanup();
+            if (storyVideoResolve) {
+              const res = storyVideoResolve;
+              storyVideoResolve = null;
+              res();
+            }
+          });
+        }
+      });
+    }
+
+    function skipStoryVideo() {
+      const overlay = document.getElementById('story-video-overlay');
+      const video = document.getElementById('story-video-player');
+      if (video) {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+      }
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+      if (storyVideoResolve) {
+        const res = storyVideoResolve;
+        storyVideoResolve = null;
+        res();
+      }
+    }
+    window.skipStoryVideo = skipStoryVideo;
+
     // Skip Execution Handler
     async function skipExecution() {
       if (gameState.executedToday || gameState.gameOver) return;
@@ -15986,8 +16916,26 @@ ${speakerName}としての審判会議発言:`;
       const descEl = document.getElementById('seamless-desc');
       const wolfEyes = document.getElementById('wolf-eyes');
 
-      if (titleEl) titleEl.textContent = '🌕 夜の暗躍 🌕';
-      if (descEl) descEl.innerHTML = '― 夜が訪れました ―<br>街に静けさが戻り、魔物たちが闇の中で密かに動き出します…';
+      const lang = typeof currentAppLanguage !== 'undefined' ? currentAppLanguage : 'ja';
+      const t = (typeof I18N_TRANSLATIONS !== 'undefined' && I18N_TRANSLATIONS[lang]) ? I18N_TRANSLATIONS[lang] : (I18N_TRANSLATIONS ? I18N_TRANSLATIONS['ja'] : {});
+
+      const nightTitleMap = {
+        ja: '🌕 夜の暗躍 🌕',
+        en: '🌕 Night\'s Secret Moves 🌕',
+        fr: '🌕 Agissements Nocturnes 🌕',
+        zh: '🌕 暗夜潜行 🌕',
+        ko: '🌕 밤의 암약 🌕'
+      };
+      const nightDescMap = {
+        ja: '― 夜が訪れました ―<br>街に静けさが戻り、魔物たちが闇の中で密かに動き出します…',
+        en: '― Night has fallen ―<br>Silence returns to the town as monsters quietly move in the darkness...',
+        fr: '― La nuit est tombée ―<br>Le calme revient sur la ville tandis que les monstres s\'agitent secrètement dans l\'obscurité…',
+        zh: '― 黑夜降临 ―<br>小镇重归寂静，魔物们在暗影中悄然行动……',
+        ko: '― 밤이 찾아왔습니다 ―<br>마을에 정적이 감돌고, 마물들이 어둠 속에서 은밀히 움직이기 시작합니다…'
+      };
+
+      if (titleEl) titleEl.textContent = nightTitleMap[lang] || nightTitleMap['ja'];
+      if (descEl) descEl.innerHTML = nightDescMap[lang] || nightDescMap['ja'];
       if (wolfEyes) wolfEyes.classList.add('visible');
       if (overlay) {
         overlay.classList.add('active');
@@ -15997,9 +16945,17 @@ ${speakerName}としての審判会議発言:`;
 
       try {
         // Step 1: Night Log & Speech
-        const nightLogText = '街に静けさが戻り、夜が訪れました。魔物たちが闇の中で密かに動き出します……';
+        const nightLogMap = {
+          ja: '街に静けさが戻り、夜が訪れました。魔物たちが闇の中で密かに動き出します……',
+          en: 'Silence returns to the town as night falls. Monsters quietly move in the shadows...',
+          fr: 'Le calme revient sur la ville alors que la nuit tombe. Les monstres s\'agitent secrètement dans l\'obscurité……',
+          zh: '小镇重归寂静，黑夜降临。魔物们在暗影中悄然行动……',
+          ko: '마을에 정적이 감돌고, 밤이 찾아왔습니다. 마물들이 어둠 속에서 은밀히 움직이기 시작합니다……'
+        };
+        const nightLogText = nightLogMap[lang] || nightLogMap['ja'];
         const nightSpeakMsg = `${getDaySpeechText(gameState.day)}、 ${nightLogText}`;
-        addLogItem('ナレーション', '', nightLogText, 'narration', null, false);
+        const narrationTitle = t.narration_speaker || 'ナレーション';
+        addLogItem(narrationTitle, '', nightLogText, 'narration', null, false);
 
         // ★ ナレーション読み上げ完了を待機（スキップボタンで手動スキップ可能）
         try {
@@ -16165,8 +17121,22 @@ ${speakerName}としての審判会議発言:`;
         gameState.day++;
 
         // Step 2: 暗転（フェードアウト） ➔ 裏でUI準備 ➔ 【フェードイン開始 ＆ ナレーション再生開始】
-        const line1 = `夜が明け、${gameState.day}日目の朝が来ます。`;
-        const line2 = '朝の光が村を包み込みます。';
+        const dawnLine1Map = {
+          ja: `夜が明け、${gameState.day}日目の朝が来ます。`,
+          en: `Dawn breaks, and the morning of Day ${gameState.day} arrives.`,
+          fr: `L'aube se lève et le matin du Jour ${gameState.day} arrive.`,
+          zh: `天亮了，迎来了第${gameState.day}天的早晨。`,
+          ko: `날이 밝아 ${gameState.day}일째 아침이 밝아옵니다.`
+        };
+        const dawnLine2Map = {
+          ja: '朝の光が村を包み込みます。',
+          en: 'Morning light envelops the village.',
+          fr: 'La lumière du matin enveloppe le village.',
+          zh: '晨光笼罩了整个村庄。',
+          ko: '아침 햇살이 마을을 감쌉니다.'
+        };
+        const line1 = dawnLine1Map[lang] || dawnLine1Map['ja'];
+        const line2 = dawnLine2Map[lang] || dawnLine2Map['ja'];
         const dawnDisplay = `${line1}\n${line2}`;
         const dawnLog = `${line1} ${line2}`;
         const dawnSpeechMsg = `${getDaySpeechText(gameState.day)}…… ${dawnLog}`;
@@ -16178,10 +17148,17 @@ ${speakerName}としての審判会議発言:`;
         }
 
         // 暗転中で見えない間に朝の訪れ画面のテキスト等を準備
+        const dawnTitleMap = {
+          ja: '☀️ 朝の訪れ ☀️',
+          en: '☀️ Arrival of Morning ☀️',
+          fr: '☀️ L\'Arrivée du Matin ☀️',
+          zh: '☀️ 晨曦来临 ☀️',
+          ko: '☀️ 아침의 방문 ☀️'
+        };
         if (wolfEyes) wolfEyes.classList.remove('visible');
-        if (titleEl) titleEl.textContent = '☀️ 朝の訪れ ☀️';
+        if (titleEl) titleEl.textContent = dawnTitleMap[lang] || dawnTitleMap['ja'];
         if (descEl) descEl.textContent = dawnDisplay;
-        addLogItem('ナレーション', '', dawnLog, 'narration', null, false);
+        addLogItem(narrationTitle, '', dawnLog, 'narration', null, false);
 
         // 短時間ウェイトで描画安定
         await new Promise(r => setTimeout(r, 100));
@@ -16593,25 +17570,25 @@ ${speakerName}としての審判会議発言:`;
       if (result === true) {
         winningFaction = 'villager';
         playBgm('syouri');
-        title.textContent = t.resultVictory || '🎉 審判成功！ - Victory -';
+        title.textContent = t.result_win_title || t.resultVictory || '🎉 審判成功！ - Victory -';
         title.className = 'modal-title win';
         titleSpeechText = lang === 'en' ? 'Victory! All monsters banished!' : (lang === 'fr' ? 'Victoire ! Tous les monstres ont été bannis !' : (lang === 'zh' ? '审判成功！魔物全灭！' : (lang === 'ko' ? '심판 성공! 마물 전멸!' : '審判成功！魔物全滅！')));
 
         if (gameState.gameCategory === 'daily') {
           recordDailyChallengeResult();
-          message += lang === 'en' ? ' (📅 Daily Challenge Cleared!)' : (lang === 'fr' ? ' (📅 Défi quotidien accompli !)' : (lang === 'zh' ? ' (📅 每日挑战达成！)' : (lang === 'ko' ? ' (📅 일일 챌린지 클리어!)' : ' (📅 デイリーお題クリア！)')));
+          message += t.result_daily_cleared || (lang === 'en' ? ' (📅 Daily Challenge Cleared!)' : (lang === 'fr' ? ' (📅 Défi quotidien accompli !)' : (lang === 'zh' ? ' (📅 每日挑战达成！)' : (lang === 'ko' ? ' (📅 일일 챌린지 클리어!)' : ' (📅 デイリーお題クリア！)'))));
         }
       } else if (result === 'fox_win') {
         winningFaction = 'fox';
         playBgm('haiboku');
-        title.textContent = t.resultFoxWin || '🦊 妖狐単独勝利！ - Fox Win -';
+        title.textContent = t.result_fox_title || t.resultFoxWin || '🦊 妖狐単独勝利！ - Fox Win -';
         title.className = 'modal-title win';
         title.style.color = 'var(--fox-color)';
         titleSpeechText = lang === 'en' ? 'Fox Victory!' : (lang === 'fr' ? 'Victoire du Renard !' : (lang === 'zh' ? '妖狐单独胜利！' : (lang === 'ko' ? '요호 단독 승리!' : '妖狐単独勝利！')));
       } else {
         winningFaction = 'wolf';
         playBgm('haiboku');
-        title.textContent = t.resultDefeat || '💀 村の滅亡… - Game Over -';
+        title.textContent = t.result_lose_title || t.resultDefeat || '💀 村の滅亡… - Game Over -';
         title.className = 'modal-title lose';
         titleSpeechText = lang === 'en' ? 'Defeat! Game Over!' : (lang === 'fr' ? 'Défaite ! Fin de partie !' : (lang === 'zh' ? '村庄沦陷！游戏结束！' : (lang === 'ko' ? '마을의 멸망! 게임 오버!' : '村の滅亡！ゲームオーバー！')));
       }
@@ -16638,24 +17615,34 @@ ${speakerName}としての審判会議発言:`;
         };
         const rankColor = rankColors[gameResult.rank] || '#95A5A6';
         const winLossLabel = gameResult.isVillageWon 
-          ? (lang === 'en' ? '🎉 Victory' : (lang === 'fr' ? '🎉 Victoire' : (lang === 'zh' ? '🎉 胜利' : (lang === 'ko' ? '🎉 승리' : '🎉 勝利'))))
+          ? (t.result_win_label || (lang === 'en' ? '🎉 Victory' : (lang === 'fr' ? '🎉 Victoire' : (lang === 'zh' ? '🎉 胜利' : (lang === 'ko' ? '🎉 승리' : '🎉 勝利')))))
           : (gameResult.isFoxWin 
-              ? (lang === 'en' ? '🦊 Fox Win' : (lang === 'fr' ? '🦊 Victoire Renard' : (lang === 'zh' ? '🦊 妖狐胜利' : (lang === 'ko' ? '🦊 요호 승리' : '🦊 妖狐勝利'))))
-              : (lang === 'en' ? '💀 Defeat' : (lang === 'fr' ? '💀 Défaite' : (lang === 'zh' ? '💀 败北' : (lang === 'ko' ? '💀 패배' : '💀 敗北')))));
+              ? (t.result_fox_label || (lang === 'en' ? '🦊 Fox Win' : (lang === 'fr' ? '🦊 Victoire Renard' : (lang === 'zh' ? '🦊 妖狐胜利' : (lang === 'ko' ? '🦊 요호 승리' : '🦊 妖狐勝利')))))
+              : (t.result_lose_label || (lang === 'en' ? '💀 Defeat' : (lang === 'fr' ? '💀 Défaite' : (lang === 'zh' ? '💀 败北' : (lang === 'ko' ? '💀 패배' : '💀 敗北'))))));
         const winLossClass = gameResult.isVillageWon ? 'win' : 'lose';
 
-        const iqLabel = t.resultEstimatedIQ || '推定IQ';
+        // 称号の多言語表示対応
+        const rankTitleMap = {
+          'S': { ja: '神域の探偵', en: 'Divine Detective', fr: 'Détective Divin', zh: '神域之侦探', ko: '신의 영역 탐정' },
+          'A': { ja: '名探偵', en: 'Master Detective', fr: 'Maître Détective', zh: '名侦探', ko: '명탐정' },
+          'B': { ja: '優秀な捜査官', en: 'Elite Investigator', fr: 'Enquêteur d\'élite', zh: '优秀搜查官', ko: '우수한 수사관' },
+          'C': { ja: '一般村人', en: 'Ordinary Villager', fr: 'Simple Villageois', zh: '普通村民', ko: '일반 마을사람' },
+          'D': { ja: '迷走者', en: 'Lost Wanderer', fr: 'Voyageur Égaré', zh: '迷途者', ko: '방황자' }
+        };
+        const localizedTitle = (rankTitleMap[gameResult.rank] && rankTitleMap[gameResult.rank][lang]) || gameResult.title;
+
+        const iqLabel = t.result_estimated_iq || t.resultEstimatedIQ || '推定IQ';
         const pointLabel = lang === 'en' ? 'Points' : (lang === 'fr' ? 'Points' : (lang === 'zh' ? '点数' : (lang === 'ko' ? '포인트' : 'ポイント')));
-        const earlyBonusLabel = (t.resultEarlyBonus || '🕐 早期クリアボーナス（{day}日目）').replace('{day}', gameResult.details.day);
-        const survivorBonusLabel = (t.resultSurvivorBonus || '👥 村人生存ボーナス（{count}人）').replace('{count}', gameResult.details.aliveVillagers);
-        const noMissBonusLabel = t.resultNoMissBonus || '✨ ノーミス処刑ボーナス';
-        const mislynchPenaltyLabel = (t.resultMislynchPenalty || '⚠️ 誤処刑ペナルティ（{count}回）').replace('{count}', gameResult.details.mislynchCount);
-        const totalScoreLabel = t.resultTotalScore || '📊 合計スコア';
+        const earlyBonusLabel = (t.result_bonus_day || t.resultEarlyBonus || '🕐 早期クリアボーナス（{day}日目）').replace('{day}', gameResult.details.day);
+        const survivorBonusLabel = (t.result_bonus_survivor || t.resultSurvivorBonus || '👥 村人生存ボーナス（{count}人）').replace('{count}', gameResult.details.aliveVillagers);
+        const noMissBonusLabel = t.result_bonus_nomiss || t.resultNoMissBonus || '✨ ノーミス処刑ボーナス';
+        const mislynchPenaltyLabel = (t.result_penalty_mislynch || t.resultMislynchPenalty || '⚠️ 誤処刑ペナルティ（{count}回）').replace('{count}', gameResult.details.mislynchCount);
+        const totalScoreLabel = t.result_total_score || t.resultTotalScore || '📊 合計スコア';
 
         resultCard.innerHTML = `
           <div class="result-rank-box">
             <div class="rank-letter" style="color: ${rankColor}; text-shadow: 0 0 30px ${rankColor}80;">${gameResult.rank}</div>
-            <div style="font-size: 1.1rem; color: ${rankColor}; font-weight: bold; margin-top: 0.3rem;">${gameResult.title}</div>
+            <div style="font-size: 1.1rem; color: ${rankColor}; font-weight: bold; margin-top: 0.3rem;">${localizedTitle}</div>
           </div>
           <div class="result-iq-badge">
             <span style="font-size: 0.85rem; color: #aaa;">${iqLabel}</span>
@@ -16692,15 +17679,46 @@ ${speakerName}としての審判会議発言:`;
         `;
       }
 
-      body.textContent = message;
+      // メッセージの言語自動変換（日本語デフォルト文がそのまま渡された場合の翻訳）
+      let displayMessage = message;
+      if (typeof message === 'string' && message.startsWith('見事すべての擬態モンスター')) {
+        const winMsgMap = {
+          ja: '見事すべての擬態モンスター（魔物）を退治した！村に平和が戻った。（勇者の勝利）',
+          en: 'All disguised monsters have been vanquished! Peace has returned to the village. (Hero\'s Victory)',
+          fr: 'Tous les monstres déguisés ont été vaincus ! La paix est revenue dans le village. (Victoire du Héros)',
+          zh: '成功消灭了所有拟态魔物！村庄重归和平。（勇者的胜利）',
+          ko: '모든 의태 몬스터(마물)를 훌륭히 퇴치했습니다! 마을에 평화가 찾아왔습니다. (용사의 승리)'
+        };
+        displayMessage = winMsgMap[lang] || message;
+      } else if (typeof message === 'string' && message.includes('無実の村人を誤って浄化')) {
+        const mislynchEndMap = {
+          ja: '無実の村人を誤って浄化しすぎてしまいました…（誤追放限界到達）',
+          en: 'Too many innocent villagers were wrongfully banished... (Mistake limit reached)',
+          fr: 'Trop d\'innocents villageois ont été bannis par erreur... (Limite d\'erreurs atteinte)',
+          zh: '错误处决了过多无辜村民……（达到误判上限）',
+          ko: '결백한 마을사람을 너무 많이 잘못 정화해 버렸습니다… (오추방 한계 도달)'
+        };
+        displayMessage = mislynchEndMap[lang] || message;
+      } else if (typeof message === 'string' && message.includes('魔物の数が村人の数と同等')) {
+        const wolfWinMsgMap = {
+          ja: '魔物の数が村人の数と同等になった……村は魔物に喰らい尽くされた。（敗北）',
+          en: 'The number of monsters has equaled the villagers... The village was devoured. (Defeat)',
+          fr: 'Le nombre de monstres a égalé celui des villageois... Le village a été dévoré. (Défaite)',
+          zh: '魔物数量已与村民相等……村庄被魔物吞噬殆尽。（败北）',
+          ko: '마물의 수가 마을사람 수와 같아졌습니다…… 마을은 마물에게 삼켜졌습니다. (패배)'
+        };
+        displayMessage = wolfWinMsgMap[lang] || message;
+      }
 
-      const rolesHeading = t.resultAllRoles || '【全員の実際の役職と最終状態】';
+      body.textContent = displayMessage;
+
+      const rolesHeading = t.result_reveal_title || t.resultAllRoles || '【全員の実際の役職と最終状態】';
       let revealHTML = `<strong style="font-size: 1.15rem;">${rolesHeading}</strong><div class="reveal-items-grid">`;
       gameState.charList.forEach(char => {
         const role = gameState.roles[char];
         const tag = getRoleLabelName(role);
 
-        let st = t.alive || '生存';
+        let st = t.status_alive || t.alive || (lang === 'fr' ? 'Vivant' : (lang === 'en' ? 'Alive' : '生存'));
         if (gameState.status[char] === 'attacked') st = lang === 'en' ? 'Attacked' : (lang === 'fr' ? 'Attaqué' : (lang === 'zh' ? '遇袭' : (lang === 'ko' ? '습격사' : '襲撃死')));
         if (gameState.status[char] === 'cursed') st = lang === 'en' ? 'Cursed' : (lang === 'fr' ? 'Maudit' : (lang === 'zh' ? '咒杀' : (lang === 'ko' ? '저주사' : '呪殺死')));
         if (gameState.status[char] === 'executed') st = lang === 'en' ? 'Executed' : (lang === 'fr' ? 'Exécuté' : (lang === 'zh' ? '已处决' : (lang === 'ko' ? '처형됨' : '処刑済')));
@@ -16709,48 +17727,59 @@ ${speakerName}としての審判会議発言:`;
         revealHTML += `<div>${charName}: ${tag}（${st}）</div>`;
       });
       revealHTML += '</div>';
+
+      const rankTitleMap = {
+        'S': { ja: '神域の探偵', en: 'Divine Detective', fr: 'Détective Divin', zh: '神域之侦探', ko: '신의 영역 탐정' },
+        'A': { ja: '名探偵', en: 'Master Detective', fr: 'Maître Détective', zh: '名侦探', ko: '명탐정' },
+        'B': { ja: '優秀な捜査官', en: 'Elite Investigator', fr: 'Enquêteur d\'élite', zh: '优秀搜查官', ko: '우수한 수사관' },
+        'C': { ja: '一般村人', en: 'Ordinary Villager', fr: 'Simple Villageois', zh: '普通村民', ko: '일반 마을사람' },
+        'D': { ja: '迷走者', en: 'Lost Wanderer', fr: 'Voyageur Égaré', zh: '迷途者', ko: '방황자' }
+      };
+      const localizedTitleForSpeech = (rankTitleMap[gameResult.rank] && rankTitleMap[gameResult.rank][lang]) || gameResult.title;
+
       const scoreSpeech = lang === 'en' 
-        ? `Your rank is ${gameResult.rank}, ${gameResult.title}. Estimated IQ ${gameResult.estimatedIQ}, Total Score ${gameResult.score} points.`
+        ? `Your rank is ${gameResult.rank}, ${localizedTitleForSpeech}. Estimated IQ ${gameResult.estimatedIQ}, Total Score ${gameResult.score} points.`
         : (lang === 'fr'
-            ? `Votre rang est ${gameResult.rank}, ${gameResult.title}. QI estimé ${gameResult.estimatedIQ}, score total ${gameResult.score} points.`
+            ? `Votre rang est ${gameResult.rank}, ${localizedTitleForSpeech}. QI estimé ${gameResult.estimatedIQ}, score total ${gameResult.score} points.`
             : (lang === 'zh' 
-                ? `你的评级是 ${gameResult.rank}，${gameResult.title}。预估IQ ${gameResult.estimatedIQ}，总分 ${gameResult.score} 点。`
+                ? `你的评级是 ${gameResult.rank}，${localizedTitleForSpeech}。预估IQ ${gameResult.estimatedIQ}，总分 ${gameResult.score} 点。`
                 : (lang === 'ko'
-                    ? `당신의 랭크는 ${gameResult.rank}, ${gameResult.title}. 추정 IQ ${gameResult.estimatedIQ}, 총점 ${gameResult.score}점입니다.`
-                    : `あなたのランクは${gameResult.rank}、${gameResult.title}。推定IQ ${gameResult.estimatedIQ}、合計スコア ${gameResult.score}ポイントです。`)));
-      const speechModalText = `${titleSpeechText}…… ${message}…… ${scoreSpeech}`;
+                    ? `당신의 랭크는 ${gameResult.rank}, ${localizedTitleForSpeech}. 추정 IQ ${gameResult.estimatedIQ}, 총점 ${gameResult.score}점입니다.`
+                    : `あなたのランクは${gameResult.rank}、${localizedTitleForSpeech}。推定IQ ${gameResult.estimatedIQ}、合計スコア ${gameResult.score}ポイントです。`)));
+      const speechModalText = `${titleSpeechText}…… ${displayMessage}…… ${scoreSpeech}`;
 
       reveal.innerHTML = revealHTML;
 
       // ■ リザルトアクションボタンの動的更新（ストーリーモード勝利時は「次へ」ボタンを優先表示）
       const actionBtnsContainer = document.querySelector('.result-action-buttons');
       if (actionBtnsContainer) {
-        const nextChBtnText = (t.resultNextChapter || '⚔️ 次の章へ進む（第{chapter}章）');
-        const returnTitleText = t.resultReturnTitle || '🏠 タイトルへ';
-        const playAgainText = t.resultPlayAgain || '🔄 もう一度プレイ';
-        const grandEndingText = lang === 'en' 
-          ? '次へ進む（エンディングへ） ▶ / Next (To Ending) ▶' 
+        const nextChBtnText = (t.result_btn_next_chapter || t.resultNextChapter || '⚔️ 次の章へ進む（第{ch}章）');
+        const returnTitleText = t.result_btn_to_title || t.resultReturnTitle || '🏠 タイトルへ';
+        const playAgainText = t.result_btn_replay || t.resultPlayAgain || '🔄 もう一度プレイ';
+        const grandEndingText = t.result_btn_grand_ending || (lang === 'en' 
+          ? 'Next (To Ending) ▶' 
           : (lang === 'fr' 
               ? 'Suivant (Vers la fin) ▶' 
               : (lang === 'zh' 
                   ? '下一步（前往结局） ▶' 
                   : (lang === 'ko' 
                       ? '다음으로 (엔딩으로) ▶' 
-                      : '次へ進む（エンディングへ） ▶')));
+                      : '次へ進む（エンディングへ） ▶'))));
 
         if (currentPlayMode === 'story' && result === true) {
           const nextChapter = currentStoryChapter + 1;
           if (nextChapter <= 5) {
+            const formattedNextBtn = nextChBtnText.replace('{ch}', nextChapter).replace('{chapter}', nextChapter);
             actionBtnsContainer.innerHTML = `
               <button class="btn-result-action btn-result-restart" style="background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);" onclick="proceedNextStoryChapter()">
-                ${nextChBtnText.replace('{chapter}', nextChapter)}
+                ${formattedNextBtn}
               </button>
               <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">${returnTitleText}</button>
             `;
           } else {
             // 第5章勝利 ＝ 「次へ進む（エンディングへ）」ボタン
             actionBtnsContainer.innerHTML = `
-              <button class="btn-result-action btn-result-restart" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="showGrandEndingModal()">
+              <button class="btn-result-action btn-result-restart" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="triggerGrandEndingTest(100)">
                 ${grandEndingText}
               </button>
               <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">${returnTitleText}</button>
@@ -16794,6 +17823,12 @@ ${speakerName}としての審判会議発言:`;
           madman: '💗 마교도', baker: '🍞 제빵사', freemason: '🤝 공유자', fox: '🦊 요호',
           nekomata: '🐱 네코마타', cat: '🐱 네코마타', villager: '🔵 마을사람', citizen: '🔵 마을사람',
           hunter: '🏹 사냥꾼', bodyguard: '🛡️ 경호원', cakeShop: '🍰 케이크점', fanatic: '🖤 광신자', immoral: '🦊 배덕자'
+        },
+        fr: {
+          wolf: '🔴 Monstre Déguisé', seer: '🔮 Voyant', medium: '👻 Médium', knight: '🛡️ Chevalier',
+          madman: '💗 Fanatique', baker: '🍞 Boulanger', freemason: '🤝 Frère juré', fox: '🦊 Renard Mystique',
+          nekomata: '🐱 Nekomata', cat: '🐱 Nekomata', villager: '🔵 Villageois', citizen: '🔵 Villageois',
+          hunter: '🏹 Chasseur', bodyguard: '🛡️ Garde du corps', cakeShop: '🍰 Pâtissier', fanatic: '🖤 Fanatique', immoral: '🦊 Immoral'
         }
       };
       const curMap = roleMaps[lang] || roleMaps.ja;
@@ -16821,6 +17856,7 @@ ${speakerName}としての審判会議発言:`;
     // =====================================================
 
     let debugAIMode = 'auto'; // 'auto' | 'local' | 'api'
+    let debugStoryClearMode = false; // ストーリー各ステージにクリアボタンを設置するデバッグフラグ
     let keyBuffer = "";
 
     // グローバルキーボード入力リスナー（「testmode」検知）
@@ -16888,10 +17924,13 @@ ${speakerName}としての審判会議発言:`;
             </div>
           </div>
 
-          <!-- ② 章（ストーリー）ロック解除 -->
-          <div style="margin-bottom:1rem;">
+          <!-- ② 章（ストーリー）ロック解除 ＆ クリアボタン設置 -->
+          <div style="margin-bottom:1rem; display:flex; flex-direction:column; gap:0.6rem;">
             <button onclick="unlockAllChapters()" style="width:100%; padding:0.75rem; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border:1px solid #60a5fa; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.92rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 3px 10px rgba(37,99,235,0.4); transition:all 0.2s ease;">
               🔓 全章ロック解除（第1章〜第5章開放）
+            </button>
+            <button id="debug-story-clear-toggle-btn" onclick="toggleDebugStoryClearMode()" style="width:100%; padding:0.75rem; background:linear-gradient(135deg, #059669, #047857); color:#fff; border:1px solid #34d399; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.92rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 3px 10px rgba(5,150,105,0.4); transition:all 0.2s ease;">
+              ⚡ 各ステージ即時クリアボタン: <span id="debug-story-clear-status">OFF</span>
             </button>
           </div>
 
@@ -16901,8 +17940,8 @@ ${speakerName}としての審判会議発言:`;
               🏆 エンディング直接テスト再生:
             </div>
             <div style="display:flex; flex-direction:column; gap:0.5rem;">
-              <button onclick="triggerGrandEndingTest(100)" style="width:100%; padding:0.6rem 0.8rem; background:linear-gradient(135deg, #10b981, #047857); color:#fff; border:1px solid #34d399; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.85rem; text-align:left; box-shadow:0 2px 6px rgba(16,185,129,0.3);">
-                ✨ ①【真・救世主】 (信頼度 90%以上)
+              <button onclick="triggerGrandEndingTest(100)" style="width:100%; padding:0.75rem 0.9rem; background:linear-gradient(135deg, #10b981, #047857); color:#fff; border:2px solid #34d399; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.95rem; text-align:left; box-shadow:0 3px 8px rgba(16,185,129,0.4);">
+                ✨ 👑 【真・救世主】全7画面テスト (信頼度 100%)
               </button>
               <button onclick="triggerGrandEndingTest(65)" style="width:100%; padding:0.6rem 0.8rem; background:linear-gradient(135deg, #f59e0b, #b45309); color:#fff; border:1px solid #fbbf24; border-radius:6px; cursor:pointer; font-weight:bold; font-size:0.85rem; text-align:left; box-shadow:0 2px 6px rgba(245,158,11,0.3);">
                 🏆 ②【救済と傷痕】 (信頼度 40%〜89%)
@@ -16951,15 +17990,82 @@ ${speakerName}としての審判会議発言:`;
         };
         status.textContent = `現在のAI状態: ${modeLabels[debugAIMode] || debugAIMode}`;
       }
+      const clearBtn = document.getElementById('debug-story-clear-toggle-btn');
+      const clearStatus = document.getElementById('debug-story-clear-status');
+      if (clearStatus) {
+        clearStatus.textContent = debugStoryClearMode ? 'ON (有効)' : 'OFF';
+        clearStatus.style.color = debugStoryClearMode ? '#34d399' : '#fff';
+      }
+      if (clearBtn) {
+        clearBtn.style.background = debugStoryClearMode
+          ? 'linear-gradient(135deg, #10b981, #059669)'
+          : 'linear-gradient(135deg, #374151, #1f2937)';
+      }
+    }
+
+    // ストーリー各ステージ即時クリアボタンのON/OFF切り替え
+    function toggleDebugStoryClearMode() {
+      debugStoryClearMode = !debugStoryClearMode;
+      updateDebugMenuUIState();
+      if (typeof renderStoryChapterModalContent === 'function') {
+        renderStoryChapterModalContent();
+      }
+      showNotification(`⚡ 各ステージ即時クリアボタンを【${debugStoryClearMode ? 'ON（有効）' : 'OFF'}】にしました`);
+    }
+
+    // 指定章のストーリー即時勝利クリア実行
+    function debugInstantClearChapter(chId) {
+      currentStoryChapter = chId;
+      currentPlayMode = 'story';
+
+      // 該当章の村規模・魔物数・設定を適用
+      const ch = (typeof STORY_CHAPTERS !== 'undefined' && STORY_CHAPTERS[chId]) || { size: 6, roles: { wolf: 1 } };
+      const size = ch.size || 6;
+      const targetWolves = (ch.roles && ch.roles.wolf) || 1;
+
+      // gameStateの最低限必要なフィールドを設定して勝利画面と整合性を合わせる
+      if (typeof gameState !== 'undefined') {
+        gameState.villageSize = size;
+        gameState.day = 1;
+        gameState.wolvesExecuted = targetWolves;
+        gameState.targetWolvesCount = targetWolves;
+        gameState.initialMistakesLeft = 2;
+        gameState.mistakesLeft = 2;
+        gameState.charList = Array.from({ length: size }, (_, i) => `char_${i + 1}`);
+        gameState.roles = {};
+        gameState.status = {};
+        gameState.charList.forEach((c, idx) => {
+          gameState.roles[c] = idx < targetWolves ? 'wolf' : 'citizen';
+          gameState.status[c] = idx < targetWolves ? 'executed' : 'alive';
+        });
+      }
+
+      // 開いているモーダル（章選択やオープニングストーリー）を閉じる
+      closeModal('story-chapter-modal');
+      closeModal('opening-story-modal');
+      if (typeof stopStoryBgm === 'function') {
+        stopStoryBgm();
+      }
+
+      // 画面をゲーム画面に切り替え（リザルトモーダルの背景用）
+      const titleScreen = document.getElementById('title-screen');
+      const gameScreen = document.getElementById('game-screen');
+      if (titleScreen) titleScreen.classList.add('hidden');
+      if (gameScreen) gameScreen.classList.remove('hidden');
+
+      // endGame(true) を呼び出して正式な勝利判定・スコア計算・章保存・ボタン遷移を起動
+      endGame(true, `【デバッグ】第${chId}章を即時クリアしました！勝利画面およびその後の動作（次の章への遷移 / エンディング遷移）を確認してください。`);
     }
 
     // 全章ロック解除処理
     function unlockAllChapters() {
       // 全冒険の書スロット＆現在アクティブスロットのデータを全開状態にする
       const slots = ['slot_1', 'slot_2', 'slot_3'];
+      const _ulLang = currentAppLanguage || 'ja';
+      const _ulDefaultHero = _ulLang === 'en' ? 'Hero' : (_ulLang === 'fr' ? 'Héros' : (_ulLang === 'zh' ? '勇者' : (_ulLang === 'ko' ? '용사' : '勇者')));
       slots.forEach(slot => {
         let saveData = loadGameData(slot) || {
-          heroName: "勇者",
+          heroName: _ulDefaultHero,
           currentChapter: 1,
           heroIQ: 100,
           totalScore: 0,
@@ -16987,8 +18093,14 @@ ${speakerName}としての審判会議発言:`;
 
     // グランドエンディングテスト再生（指定信頼度または現在の信頼度）
     function triggerGrandEndingTest(targetTrust) {
-      toggleDebugMenu(); // デバッグメニューを閉じる
-      showGrandEndingModal(null, null, null, targetTrust);
+      const debugModal = document.getElementById("debug-modal");
+      if (debugModal) {
+        debugModal.style.display = "none";
+      }
+      setTimeout(() => {
+        const trustVal = (typeof targetTrust === 'number') ? targetTrust : 100;
+        showGrandEndingModal(null, null, null, trustVal);
+      }, 50);
     }
 
     // =====================================================
@@ -17047,8 +18159,452 @@ ${speakerName}としての審判会議発言:`;
       currentEndingRank = null;
     }
 
+    // グランドエンディング 全画面タイプライター演出管理
+    let grandEndingTypewriterTimer = null;
+    let grandEndingNextHandler = null;
+
+    function stopGrandEndingTypewriter() {
+      if (grandEndingTypewriterTimer) {
+        clearTimeout(grandEndingTypewriterTimer);
+        grandEndingTypewriterTimer = null;
+      }
+      grandEndingNextHandler = null;
+      const fsEl = document.getElementById('true-ending-fullscreen');
+      if (fsEl) {
+        fsEl.classList.add('hidden');
+        fsEl.style.display = 'none';
+        fsEl.onclick = null;
+      }
+      const advanceBtn = document.getElementById('true-ending-advance-btn');
+      if (advanceBtn) {
+        advanceBtn.onclick = null;
+      }
+    }
+
+    // =====================================================
+    // 🎬 真エンディング幕間動画再生システム
+    // =====================================================
+    let _endingVideoSkipResolve = null;
+
+    /**
+     * 真エンディング幕間動画を再生する（Promise）
+     * @param {string[]} srcs 動画ソース候補（先頭から順に試す）
+     * @param {object}  [opts]
+     * @param {number}  [opts.fadeOut=0] フェードアウト時間(ms)。0なら即非表示
+     * @returns {Promise<void>}
+     */
+    function playEndingVideoAsync(srcs, opts) {
+      const fadeOutMs = (opts && opts.fadeOut) ? opts.fadeOut : 0;
+      return new Promise((resolve) => {
+        const overlay = document.getElementById('ending-video-overlay');
+        const video   = document.getElementById('ending-video-player');
+        if (!overlay || !video || !srcs || srcs.length === 0) {
+          resolve();
+          return;
+        }
+
+        // BGMはムービー中も流し続ける（停止しない）
+
+        // 終了 / スキップ 共通後処理
+        const finish = () => {
+          _endingVideoSkipResolve = null;
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+          if (fadeOutMs > 0) {
+            overlay.style.transition = `opacity ${fadeOutMs / 1000}s ease`;
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+              overlay.style.display = 'none';
+              overlay.style.opacity = '1';
+              overlay.style.transition = '';
+              resolve();
+            }, fadeOutMs);
+          } else {
+            overlay.style.display = 'none';
+            resolve();
+          }
+        };
+
+        _endingVideoSkipResolve = finish;
+
+        // ソースを順に試す
+        let srcIndex = 0;
+        const tryNext = () => {
+          if (srcIndex >= srcs.length) {
+            // 全ソース失敗 → スキップ扱い
+            finish();
+            return;
+          }
+          const src = srcs[srcIndex++];
+          video.src = src;
+          video.currentTime = 0;
+          video.onended  = finish;
+          video.onerror  = () => {
+            // このソースが再生できなければ次のソースを試す
+            tryNext();
+          };
+          overlay.style.opacity = '1';
+          overlay.style.display = 'flex';
+          const playPromise = video.play();
+          if (playPromise && typeof playPromise.then === 'function') {
+            playPromise.catch(() => { tryNext(); });
+          }
+        };
+        tryNext();
+      });
+    }
+
+    /** 幕間動画を即スキップ */
+    function skipEndingVideo() {
+      if (typeof _endingVideoSkipResolve === 'function') {
+        _endingVideoSkipResolve();
+      }
+    }
+
+    // =====================================================
+    // 🎞️ エンドロールシステム
+    // =====================================================
+    let _endrollSkipResolve = null;
+
+    /** エンドロールのHTMLコンテンツを生成（仮テキスト） */
+    function buildEndrollHTML() {
+      return `
+<div class="endroll-title">―― Staff Roll ――</div>
+
+<div class="endroll-section">ゲームデザイン・シナリオ</div>
+<div class="endroll-name">勇者の村 制作委員会</div>
+
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">キャラクターデザイン</div>
+<div class="endroll-name">村の絵師たち</div>
+
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">プログラム</div>
+<div class="endroll-name">コードの魔術師</div>
+
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">音楽・効果音</div>
+<div class="endroll-name">BGMの精霊</div>
+
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">背景・グラフィック</div>
+<div class="endroll-name">レムの国の画工たち</div>
+
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">ナレーション</div>
+<div class="endroll-name">語り部の老賢者</div>
+
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">スペシャルサンクス</div>
+<div class="endroll-name">テストプレイに協力してくださった皆さま</div>
+<div class="endroll-name">村人役を担ってくれたＡＩたちへ</div>
+
+<div class="endroll-spacer"></div>
+<div class="endroll-spacer"></div>
+
+<div class="endroll-section">使用ライブラリ・素材</div>
+<div class="endroll-name">（各権利者様に感謝申し上げます）</div>
+
+<div class="endroll-spacer"></div>
+<div class="endroll-spacer"></div>
+
+<div class="endroll-fin">Fin.</div>
+
+<div class="endroll-thanks">
+ご プ レ イ あ り が と う ご ざ い ま し た
+
+―― 『ぼっち人狼 〜審判の勇者〜』 ――
+</div>
+`;
+    }
+
+    /**
+     * エンドロールを表示して完了/スキップ後に onDone を呼ぶ
+     * @param {Function} onDone
+     */
+    /**
+     * @param {Function} onDone
+     * @param {boolean} [alreadyVisible=false] - trueならoverlay表示・コンテンツ初期化をスキップ
+     */
+    function showEndroll(onDone, alreadyVisible) {
+      const overlay  = document.getElementById('endroll-overlay');
+      const content  = document.getElementById('endroll-content');
+      if (!overlay || !content) { if (onDone) onDone(); return; }
+
+      if (!alreadyVisible) {
+        // 通常呼び出し: 7ページ目テキスト非表示 & コンテンツ初期化 & overlay即時表示
+        const fsElInner = document.getElementById('true-ending-fullscreen');
+        if (fsElInner) fsElInner.style.display = 'none';
+
+        content.style.animation = 'none';
+        content.style.top = '100vh';
+        void content.offsetHeight;
+        content.innerHTML = buildEndrollHTML();
+
+        overlay.style.transition = '';
+        overlay.style.opacity = '1';
+        overlay.style.display = 'block';
+      }
+
+      // 終了処理
+      const finish = () => {
+        _endrollSkipResolve = null;
+        content.style.animation = 'none';
+        overlay.style.transition = 'opacity 1.2s ease';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          overlay.style.opacity = '1';
+          overlay.style.transition = '';
+          if (onDone) onDone();
+        }, 1200);
+      };
+      _endrollSkipResolve = finish;
+      content.addEventListener('animationend', finish, { once: true });
+
+      // スクロールアニメーション開始
+      // コンテンツ高さを計測し「最後の文字が完全に上へ消えるまで」の正確なゴール位置を動的生成
+      requestAnimationFrame(() => {
+        content.style.top = '100vh'; // 計測用に一時固定
+        void content.offsetHeight;
+
+        const contentH  = content.scrollHeight;          // コンテンツ実際の高さ(px)
+        const goalTop   = -(contentH + 80);              // 最後の文字が完全に画面外へ出る位置
+
+        // 移動距離 = 100vh + contentH(px)。速度を ~65px/s で固定して自動算出
+        const travelPx  = window.innerHeight + contentH;
+        const duration  = Math.round(travelPx / 65);     // 秒
+
+        // 動的キーフレームを <style> タグで注入（既存があれば上書き）
+        let dynStyle = document.getElementById('endroll-keyframe-dyn');
+        if (!dynStyle) {
+          dynStyle = document.createElement('style');
+          dynStyle.id = 'endroll-keyframe-dyn';
+          document.head.appendChild(dynStyle);
+        }
+        dynStyle.textContent =
+          `@keyframes endroll-scroll { from { top: 100vh; } to { top: ${goalTop}px; } }`;
+
+        content.style.top = '';
+        content.style.animation = `endroll-scroll ${duration}s linear both`;
+      });
+    }
+
+    /** エンドロールをスキップ */
+    function skipEndroll() {
+      if (typeof _endrollSkipResolve === 'function') {
+        _endrollSkipResolve();
+      }
+    }
+
+    /**
+     * 真エンディング（全7画面 全画面文字だけタイプライター演出）
+     */
+    function playTrueEndingFullscreenSequence(paragraphs, onComplete) {
+      stopGrandEndingTypewriter();
+      const fsEl = document.getElementById('true-ending-fullscreen');
+      const textEl = document.getElementById('true-ending-fullscreen-text');
+      // stepEl / hintEl / advanceBtn は非表示なので参照のみ保持
+      const advanceBtn = document.getElementById('true-ending-advance-btn');
+
+      if (!fsEl || !textEl || !paragraphs || paragraphs.length === 0) {
+        if (typeof onComplete === 'function') onComplete();
+        return;
+      }
+
+      // スプラッシュ画面や他のモーダルをすべて確実に閉じる・非表示にする
+      const splash = document.getElementById('splash-screen');
+      if (splash) splash.style.display = 'none';
+      closeModal('grand-ending-modal');
+      closeModal('result-modal');
+      closeModal('debug-modal');
+      closeModal('settings-modal');
+      closeModal('how-to-play-modal');
+      closeModal('modal-overlay');
+
+      fsEl.classList.remove('hidden');
+      fsEl.style.setProperty('display', 'flex', 'important');
+      fsEl.style.setProperty('z-index', '9999999', 'important');
+
+      let pIndex = 0;
+      let charIndex = 0;
+      let isTyping = false;
+      let currentFullText = "";
+      let canClick = false; // 起動時および画面切り替え時の連打・バブリング防止フラグ
+      let autoAdvanceTimer = null; // 10秒自動進行タイマー
+
+      // 演出開始直後はボタン押下のバブリングを無視するため350ms受付を遅延
+      setTimeout(() => {
+        canClick = true;
+      }, 350);
+
+      /** 10秒自動進行タイマーをリセット・再設定 */
+      const resetAutoAdvance = () => {
+        if (autoAdvanceTimer) {
+          clearTimeout(autoAdvanceTimer);
+          autoAdvanceTimer = null;
+        }
+        autoAdvanceTimer = setTimeout(() => {
+          if (grandEndingNextHandler) grandEndingNextHandler();
+        }, 10000);
+      };
+
+      const startParagraph = (idx) => {
+        if (idx >= paragraphs.length) {
+          if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+          stopGrandEndingTypewriter();
+          if (typeof onComplete === 'function') onComplete();
+          return;
+        }
+
+        currentFullText = paragraphs[idx];
+        isTyping = true;
+        textEl.innerHTML = "";
+        textEl.style.textAlign = "center";
+
+        // 全文を事前レンダリングして行のセンタリング位置を完全に固定し、文字は左から右へ1文字ずつ出現
+        const chars = Array.from(currentFullText);
+        const fragment = document.createDocumentFragment();
+        const spanElements = [];
+
+        chars.forEach(ch => {
+          if (ch === '\n') {
+            fragment.appendChild(document.createElement('br'));
+          } else {
+            const span = document.createElement('span');
+            span.textContent = ch;
+            span.style.opacity = '0';
+            span.style.transition = 'opacity 0.08s ease';
+            fragment.appendChild(span);
+            spanElements.push(span);
+          }
+        });
+        textEl.appendChild(fragment);
+
+        charIndex = 0;
+
+        // 10秒タイマー開始（各ページ表示開始時にリセット）
+        resetAutoAdvance();
+
+        const typeNextChar = () => {
+          if (!isTyping) return;
+          if (charIndex < spanElements.length) {
+            spanElements[charIndex].style.opacity = '1';
+            charIndex++;
+            grandEndingTypewriterTimer = setTimeout(typeNextChar, 35);
+          } else {
+            isTyping = false;
+            grandEndingTypewriterTimer = null;
+          }
+        };
+        typeNextChar();
+      };
+
+      grandEndingNextHandler = () => {
+        if (!canClick) return; // クールダウン中は無視
+
+        if (isTyping) {
+          // タイピング中なら瞬時にその画面の全文字を可視化
+          isTyping = false;
+          if (grandEndingTypewriterTimer) {
+            clearTimeout(grandEndingTypewriterTimer);
+            grandEndingTypewriterTimer = null;
+          }
+          const allSpans = textEl.querySelectorAll('span');
+          allSpans.forEach(s => { s.style.opacity = '1'; });
+          // 全文表示直後も誤連打防止で少し待つ
+          canClick = false;
+          setTimeout(() => { canClick = true; }, 200);
+          // タイマーはそのまま継続（全文表示からも10秒後に自動進行）
+        } else {
+          // 表示完了していれば次の画面へ進める
+          // ページ終了時に幕間動画を挿入する（ページ0,1,3,5,6 の後）
+          const pageVideos = {
+            0: ['MOVE/ED!1NO1.mp4', 'MOVE/ED!1NO1.avi'],
+            1: ['MOVE/ED_NO2.mp4'],
+            3: ['MOVE/ED_NO3.mp4'],
+            5: ['MOVE/ED_NO6.mp4'],
+            6: ['MOVE/ED_NO7.mp4']
+          };
+
+          canClick = false;
+          if (autoAdvanceTimer) {
+            clearTimeout(autoAdvanceTimer);
+            autoAdvanceTimer = null;
+          }
+
+          const currentPage = pIndex;
+          const videoSrcs = pageVideos[currentPage];
+          if (videoSrcs) {
+            pIndex++;
+            if (currentPage === 6) {
+              // 7ページ目: テキストと背景を即非表示 → エンドロール黒幕を敷く → ED_NO7フェードアウト → スクロール開始
+
+              // ① テキスト画面を隠す（背景ごと消える）
+              fsEl.style.display = 'none';
+
+              // ② エンドロール黒幕を動画の下に即時表示（z-index 10000005 < 動画 10000010）
+              const endrollOl = document.getElementById('endroll-overlay');
+              const endrollCt = document.getElementById('endroll-content');
+              if (endrollOl && endrollCt) {
+                endrollCt.innerHTML = buildEndrollHTML();
+                endrollCt.style.animation = 'none';
+                endrollCt.style.top = '100vh';
+                void endrollCt.offsetHeight;
+                endrollOl.style.transition = '';
+                endrollOl.style.opacity = '1';
+                endrollOl.style.display = 'block';
+              }
+
+              // ③ ED_NO7をフェードアウト再生（フェード中は黒幕がOP背景を隠す）
+              playEndingVideoAsync(videoSrcs, { fadeOut: 1800 }).then(() => {
+                // ④ 動画が消えたら既に表示済みのoverlay上でスクロール開始
+                return new Promise(resolve => showEndroll(resolve, true));
+              }).then(() => {
+                startParagraph(pIndex); // pIndex=7 → onComplete
+                setTimeout(() => { canClick = true; }, 250);
+              });
+            } else {
+              // 通常の幕間動画 → 次ページへ
+              playEndingVideoAsync(videoSrcs).then(() => {
+                startParagraph(pIndex);
+                setTimeout(() => { canClick = true; }, 250);
+              });
+            }
+          } else {
+            // 動画なし：そのまま次ページへ
+            pIndex++;
+            startParagraph(pIndex);
+            setTimeout(() => { canClick = true; }, 250);
+          }
+        }
+      };
+
+      const handleUserTap = (e) => {
+        if (e) {
+          e.stopPropagation();
+        }
+        if (grandEndingNextHandler) grandEndingNextHandler();
+      };
+
+      fsEl.onclick = handleUserTap;
+      if (advanceBtn) {
+        advanceBtn.onclick = handleUserTap;
+      }
+
+      startParagraph(0);
+    }
+
     // グランドエンディング表示モーダル関数（信頼度マルチエンディング対応）
     function showGrandEndingModal(finalIQ, totalScore, rankTitle, overrideTrust) {
+      stopGrandEndingTypewriter();
       const trust = (typeof overrideTrust === 'number') 
         ? overrideTrust 
         : (typeof gameState.playerTrust === 'number' ? gameState.playerTrust : 100);
@@ -17062,7 +18618,16 @@ ${speakerName}としての審判会議発言:`;
         ja: {
           s: {
             title: "【絶望を越えて ―― 聖なる救世主】",
-            content: `20人の疑心が渦巻く「絶望の村」に、静寂が訪れる。\n\n妖狐の幻影を打ち破り、4体の魔物を全て審判の剣で討ち果たした瞬間、村を覆っていた不吉な暗雲がゆっくりと裂けていった。\n誤審の影は一切ない。勇者の神眼は最後まで曇ることなく、無辜の民を一人も傷つけずに悪魔だけを断罪しきったのだ。\n\n差し込む一筋の朝光が、生き残った村人たちと勇者を温かく包み込む。人々は涙を流しながら膝を折り、絶対の審判者に心からの感謝と賛美の祈りを捧げた。\n\n「讃えよ、真の救世主を。その剣は偽りを完全に断ち、レムの王国に永遠の光をもたらした」\n\n王国の歴史の最上段に、神話のごとき新たな伝説が今、刻まれたのである――。\n\n―― 『ぼっち人狼 〜審判の勇者〜』 真・完結 ――`
+            paragraphs: [
+              "20人の疑心が渦巻く「絶望の村」に、静寂が訪れる。\n\n妖狐の幻影を打ち破り、\n4体の魔物を全て審判の剣で討ち果たした瞬間、\n村を覆っていた不吉な暗雲がゆっくりと裂けていった。",
+              "誤審の影は一切ない。\n\n勇者の神眼は最後まで曇ることなく、\n無辜の民を一人も傷つけずに\n悪魔だけを断罪しきったのだ。",
+              "差し込む一筋の朝光が、\n生き残った村人たちと勇者を温かく包み込む。",
+              "人々は涙を流しながら膝を折り、\n絶対の審判者に心からの感謝と\n賛美の祈りを捧げた。",
+              "「讃えよ、真の救世主を。\n　その剣は偽りを完全に断ち、\n　レムの王国に永遠の光をもたらした」",
+              "王国の歴史の最上段に、\n神話のごとき新たな伝説が今、\n刻まれたのである――。",
+              "―― 『ぼっち人狼 〜審判の勇者〜』 ――\n\n【絶望を越えて ―― 聖なる救世主】\n\n真・完結"
+            ],
+            content: `20人の疑心が渦巻く「絶望の村」に、静寂が訪れる。\n\n妖狐の幻影を打ち破り、\n4体の魔物を全て審判の剣で討ち果たした瞬間、\n村を覆っていた不吉な暗雲がゆっくりと裂けていった。\n\n誤審の影は一切ない。\n勇者の神眼は最後まで曇ることなく、\n無辜の民を一人も傷つけずに悪魔だけを断罪しきったのだ。\n\n差し込む一筋の朝光が、\n生き残った村人たちと勇者を温かく包み込む。\n\n人々は涙を流しながら膝を折り、\n絶対の審判者に心からの感謝と賛美の祈りを捧げた。\n\n「讃えよ、真の救世主を。\n　その剣は偽りを完全に断ち、\n　レムの王国に永遠の光をもたらした」\n\n王国の歴史の最上段に、\n神話のごとき新たな伝説が今、刻まれたのである――。\n\n―― 『ぼっち人狼 〜審判の勇者〜』 【絶望を越えて ―― 聖なる救世主】真・完結 ――`
           },
           a: {
             title: "【嵐の過ぎ去った村で】",
@@ -17076,6 +18641,15 @@ ${speakerName}としての審判会議発言:`;
         en: {
           s: {
             title: "【Beyond Despair — The Holy Savior】",
+            paragraphs: [
+              "Silence settles over the \"Village of Despair,\" where suspicion once consumed twenty souls.\n\nThe illusory tricks of the Specter Fox were shattered, and all four monsters fell before the sword of judgment. In that moment, the ominous clouds cloaking the village tore open to reveal radiant light.",
+              "Not a single shadow of misjudgment remains. The Hero's divine sight never wavered, condemning the evil while keeping every innocent soul safe.",
+              "A gentle beam of morning sun bathes the surviving villagers and the Hero in warmth.",
+              "Weeping tears of profound relief, the people kneel and offer prayers of sincere gratitude and praise.",
+              "\"Praise be to the true Savior! His blade severed falsehood and brought eternal peace to the realm.\"",
+              "At the very peak of the kingdom's history, a legendary chronicle worthy of myth was carved into eternity.",
+              "— Solo Werewolf: The Judgment of the Hero\n【Beyond Despair — The Holy Savior】True Ending —"
+            ],
             content: `Silence settles over the "Village of Despair," where suspicion once consumed twenty souls.\n\nThe illusory tricks of the Specter Fox were shattered, and all four monsters fell before the sword of judgment. In that moment, the ominous clouds cloaking the village tore open to reveal radiant light.\nNot a single shadow of misjudgment remains. The Hero's divine sight never wavered, condemning the evil while keeping every innocent soul safe.\n\nA gentle beam of morning sun bathes the surviving villagers and the Hero in warmth. Weeping tears of profound relief, the people kneel and offer prayers of sincere gratitude and praise.\n\n"Praise be to the true Savior! His blade severed falsehood and brought eternal peace to the realm."\n\nAt the very peak of the kingdom's history, a legendary chronicle worthy of myth was carved into eternity.\n\n— Solo Werewolf: The Judgment of the Hero (True Ending) —`
           },
           a: {
@@ -17090,6 +18664,15 @@ ${speakerName}としての審判会議発言:`;
         zh: {
           s: {
             title: "【跨越绝望 ―― 神圣的救世主】",
+            paragraphs: [
+              "20人疑心弥漫的“绝望之村”，迎来了久违的静谧。\n\n破除妖狐的幻术，将4只魔物悉数以审判之剑斩灭的瞬间，笼罩村庄的不祥阴云缓缓散开。",
+              "没有任何误判的阴影。勇者的神眼至始至终澄澈明晰，未曾伤及无辜黎民分毫，彻底斩灭了所有恶魔。",
+              "穿透云层的晨曦，温暖地包裹着幸存的村民与勇者。",
+              "人们热泪盈眶地单膝跪地，向绝对的审判者献上发自内心的感激与崇高的赞美。",
+              "“赞美吧，真正的救世主。其神剑断绝了一切虚妄，为雷姆王国迎来了永恒的光明。”",
+              "在王国史册的最顶峰，一段神话般的全新传奇史诗于此刻永恒铭刻——。",
+              "―― 《独行人狼 ～审判之勇者～》\n【跨越绝望 ―― 神圣的救世主】真·完结 ――"
+            ],
             content: `20人疑心弥漫的“绝望之村”，迎来了久违的静谧。\n\n破除妖狐的幻术，将4只魔物悉数以审判之剑斩灭的瞬间，笼罩村庄的不祥阴云缓缓散开。\n没有任何误判的阴影。勇者的神眼至始至终澄澈明晰，未曾伤及无辜黎民分毫，彻底斩灭了所有恶魔。\n\n穿透云层的晨曦，温暖地包裹着幸存的村民与勇者。人们热泪盈眶地单膝跪地，向绝对的审判者献上发自内心的感激与崇高的赞美。\n\n“赞美吧，真正的救世主。其神剑断绝了一切虚妄，为雷姆王国迎来了永恒的光明。”\n\n在王国史册的最顶峰，一段神话般的全新传奇史诗于此刻永恒铭刻——。\n\n―― 《独行人狼 ～审判之勇者～》 真正完结 ――`
           },
           a: {
@@ -17104,6 +18687,15 @@ ${speakerName}としての審判会議発言:`;
         ko: {
           s: {
             title: "【절망을 넘어 ―― 성스러운 구세주】",
+            paragraphs: [
+              "20인의 의혹이 소용돌이치던 「절망의 마을」에 고요한 평화가 찾아온다.\n\n요호의 환영을 깨뜨리고, 4마리의 마물을 모두 심판의 검으로 처단한 순간 마을을 덮고 있던 불길한 먹구름이 서서히 걷혀 갔다.",
+              "오심의 그림자는 전혀 없다. 용사의 신안은 마지막까지 흐려짐 없이, 무고한 백성을 단 한 명도 다치게 하지 않고 악마만을 온전히 단죄한 것이다.",
+              "구름 사이로 비치는 아침 햇살이 살아남은 주민들과 용사를 따스하게 감싼다.",
+              "사람들은 눈물을 흘리며 무릎을 꿇고 절대적인 심판자에게 마음 깊은 감사와 찬미의 기도를 올렸다.",
+              "“찬양하라, 진정한 구세주를. 그 검은 거짓を 완전히 베어내고 렘 왕국에 영원한 빛을 가져왔도다.”",
+              "왕국 역사의 가장 높은 자리에 신화와 같은 새로운 전설이 지금 영원히 새겨진 것이다――.",
+              "―― 『나홀로 늑대인간 〜심판의 용사〜』\n【절망을 넘어 ―― 성스러운 구세주】진 완결 ――"
+            ],
             content: `20인의 의혹이 소용돌이치던 「절망의 마을」에 고요한 평화가 찾아온다.\n\n요호의 환영을 깨뜨리고, 4마리의 마물을 모두 심판의 검으로 처단한 순간 마을을 덮고 있던 불길한 먹구름이 서서히 걷혀 갔다.\n오심의 그림자는 전혀 없다. 용사의 신안은 마지막까지 흐려짐 없이, 무고한 백성을 단 한 명도 다치게 하지 않고 악마만을 온전히 단죄한 것이다.\n\n구름 사이로 비치는 아침 햇살이 살아남은 주민들과 용사를 따스하게 감싼다. 사람들은 눈물을 흘리며 무릎을 꿇고 절대적인 심판자에게 마음 깊은 감사와 찬미의 기도를 올렸다.\n\n“찬양하라, 진정한 구세주를. 그 검은 거짓을 완전히 베어내고 렘 왕국에 영원한 빛을 가져왔도다.”\n\n왕국 역사의 가장 높은 자리에 신화와 같은 새로운 전설이 지금 영원히 새겨진 것이다――.\n\n―― 『나홀로 늑대인간 〜심판의 용사〜』 진 완결 ――`
           },
           a: {
@@ -17142,7 +18734,7 @@ ${speakerName}としての審判会議発言:`;
       if (statsEl) {
         const saveData = loadGameData(activeSaveSlot) || {};
         const defaultHero = lang === 'en' ? 'Hero' : (lang === 'fr' ? 'Héros' : (lang === 'zh' ? '勇者' : (lang === 'ko' ? '용사' : '勇者')));
-        const heroName = saveData.heroName || defaultHero;
+        const heroName = (() => { const _jd = ['勇者','Hero','Héros','용사']; return (saveData.heroName && !_jd.includes(saveData.heroName)) ? saveData.heroName : defaultHero; })();
         const heroIQ = (typeof finalIQ === 'number') ? finalIQ : (saveData.heroIQ || 100);
         const scoreVal = (typeof totalScore === 'number') ? totalScore : (saveData.totalScore || 0);
         const rawRank = rankTitle || saveData.rankTitle || getRankTitle(heroIQ, scoreVal);
@@ -17181,12 +18773,26 @@ ${speakerName}としての審判会議発言:`;
           '📜 冒険の書に栄光を刻み、タイトルへ')));
       }
 
-      openModal('grand-ending-modal');
-      playEndingBgm(endingRankType);
+      // Sランク（真エンディング）の場合は、まず文字だけの全画面7画面演出を再生し、終了後に画像画面（リザルト画面）を表示
+      const sParagraphs = (endingRankType === "S" && langPack.s && langPack.s.paragraphs) ? langPack.s.paragraphs : null;
+      if (sParagraphs && sParagraphs.length > 0) {
+        // Sランク真エンディング：全画面で文字を読み終えた後に開く画像画面では、重複するテキスト枠を隠してリザルトを美しく表示
+        if (contentEl) contentEl.style.display = 'none';
+
+        playEndingBgm(endingRankType);
+        playTrueEndingFullscreenSequence(sParagraphs, () => {
+          openModal('grand-ending-modal');
+        });
+      } else {
+        if (contentEl) contentEl.style.display = 'block';
+        openModal('grand-ending-modal');
+        playEndingBgm(endingRankType);
+      }
     }
 
     // グランドエンディング画面からタイトルへ戻る処理
     function returnToTitleFromGrandEnding() {
+      stopGrandEndingTypewriter();
       stopEndingBgm();
       closeModal('grand-ending-modal');
       closeModal('modal-overlay');
@@ -17202,6 +18808,8 @@ ${speakerName}としての審判会議発言:`;
     window.toggleDebugMenu = toggleDebugMenu;
     window.setDebugAIMode = setDebugAIMode;
     window.unlockAllChapters = unlockAllChapters;
+    window.toggleDebugStoryClearMode = toggleDebugStoryClearMode;
+    window.debugInstantClearChapter = debugInstantClearChapter;
     window.triggerGrandEndingTest = triggerGrandEndingTest;
     window.showGrandEndingModal = showGrandEndingModal;
     window.triggerEndingByTrust = triggerEndingByTrust;
