@@ -11592,7 +11592,7 @@ ${speakerName}としての審判会議発言:`;
             // 2. 完全なグレー（未判定かつ役職COなし/村人CO）の候補を抽出
             const grayCandidates = candidates.filter(c => {
               const isWhiteOut = whiteTargets.includes(c) || gameState.coRoles[c] === 'freemason';
-              const hasCoRole = gameState.coRoles[c] && gameState.coRoles[c] !== 'villager';
+              const hasCoRole = gameState.coRoles[c] && gameState.coRoles[c] !== 'villager' && gameState.coRoles[c] !== 'grey';
               return !isWhiteOut && !hasCoRole;
             });
 
@@ -11603,7 +11603,7 @@ ${speakerName}としての審判会議発言:`;
               targetPool = nonWhiteCandidates.length > 0 ? nonWhiteCandidates : candidates;
             }
 
-            // 4. プール内から疑われ度（仮想投票の疑心度や妖狐呪殺狙い）を加味して最高スコアの対象を選択
+            // 4. プール内から疑われ度（仮想投票の疑心度や発言状況）を加味して対象を選択（※妖狐への透視加算は完全排除し公平な自然確率にする）
             let bestTarget = targetPool[0];
             let maxScore = -999;
             targetPool.forEach(c => {
@@ -11612,7 +11612,6 @@ ${speakerName}としての審判会議発言:`;
               if (gameState.virtualVotes && gameState.virtualVotes[c] && gameState.virtualVotes[c].suspicionScore) {
                 score += (gameState.virtualVotes[c].suspicionScore / 2);
               }
-              if (gameState.roles[c] === 'fox') score += 40; // 呪殺狙い
               if (score > maxScore) {
                 maxScore = score;
                 bestTarget = c;
@@ -11642,14 +11641,14 @@ ${speakerName}としての審判会議発言:`;
 
           } else if (realRole === 'madman') {
             // 偽賢者(魔教徒): グレー中心に占う（擬態モンスター誤黒出しを避けるため慎重）
-            const greys = candidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager');
+            const greys = candidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager' || gameState.coRoles[c] === 'grey');
             target = greys.length > 0 ? pickRandom(greys) : pickRandom(candidates);
             // 70%で白出し（狼囲いを狙う）、30%で村人黒打ち乱立
             result = Math.random() < 0.3 ? '人狼' : '人間';
           }
 
-          // 真賢者が妖狐を占った場合：即座に呪殺（即死）が発生
-          if (realRole === 'seer' && target && gameState.roles[target] === 'fox' && gameState.status[target] === 'alive') {
+          // 真賢者が妖狐を占った場合：2日目以降の夜のみ呪殺（即死）が発生（初日は初夜・無犠牲のため発生させない）
+          if (realRole === 'seer' && target && gameState.roles[target] === 'fox' && gameState.status[target] === 'alive' && gameState.day > 1) {
             gameState.status[target] = 'cursed';
             if (!gameState.curseHistory) gameState.curseHistory = [];
             gameState.curseHistory.push({ day: gameState.day, target });
@@ -16669,6 +16668,11 @@ ${speakerName}としての審判会議発言:`;
 
     function playExecutionVideoAsync() {
       return new Promise((resolve) => {
+        // ナレーション・遺言等の既存読み上げを完全停止
+        if (typeof cancelSpeech === 'function') {
+          cancelSpeech();
+        }
+
         const overlay = document.getElementById('execution-video-overlay');
         const video = document.getElementById('execution-video-player');
 
@@ -16680,7 +16684,10 @@ ${speakerName}としての審判会議発言:`;
         executionVideoResolve = resolve;
         overlay.classList.add('active');
 
-        video.currentTime = 0;
+        // BGMを一時停止または控えめに
+        if (typeof pauseAllBgm === 'function') {
+          try { pauseAllBgm(); } catch(e) {}
+        }
 
         const onEnd = () => {
           cleanup();
@@ -16691,7 +16698,8 @@ ${speakerName}としての審判会議発言:`;
           }
         };
 
-        const onError = () => {
+        const onError = (e) => {
+          console.warn('Execution video playback error or failed to load:', e);
           cleanup();
           if (executionVideoResolve) {
             const res = executionVideoResolve;
@@ -16705,10 +16713,20 @@ ${speakerName}としての審判会議発言:`;
           video.removeEventListener('error', onError);
           video.pause();
           overlay.classList.remove('active');
+          if (typeof resumeAllBgm === 'function') {
+            try { resumeAllBgm(); } catch(e) {}
+          }
         };
 
         video.addEventListener('ended', onEnd, { once: true });
         video.addEventListener('error', onError, { once: true });
+
+        // ソース設定・ロードを確実に行ってから再生
+        if (!video.src || video.src.indexOf('MOVE/syokei.mp4') === -1) {
+          video.src = 'MOVE/syokei.mp4';
+        }
+        video.currentTime = 0;
+        video.load();
 
         const playPromise = video.play();
         if (playPromise !== undefined) {
@@ -16734,6 +16752,9 @@ ${speakerName}としての審判会議発言:`;
       }
       if (overlay) {
         overlay.classList.remove('active');
+      }
+      if (typeof resumeAllBgm === 'function') {
+        try { resumeAllBgm(); } catch(e) {}
       }
       if (executionVideoResolve) {
         const res = executionVideoResolve;
@@ -17082,19 +17103,15 @@ ${speakerName}としての審判会議発言:`;
           }
         }
 
-        // 3. 真賢者 (呪殺チェック用夜処理)
+        // 3. 妖狐呪殺チェック（※直前の昼や夜で真賢者に占われていた場合、呪殺被害者に追加）
         const trueSeerChar = gameState.charList.find(c => gameState.roles[c] === 'seer' && gameState.status[c] === 'alive');
         if (trueSeerChar) {
-          // 真賢者の最新ターゲットを取得（performNightAbilitiesより先行判定または評価）
-          const aliveOthers = gameState.charList.filter(c => c !== trueSeerChar && gameState.status[c] === 'alive');
-          if (aliveOthers.length > 0) {
-            // グレーでかつ怪しい人物を優先占い
-            const seerTarget = aliveOthers.find(c => gameState.roles[c] === 'fox' && !gameState.coRoles[c]);
-            if (seerTarget && gameState.roles[seerTarget] === 'fox') {
-              gameState.status[seerTarget] = 'cursed';
-              if (!nightVictims.includes(seerTarget)) {
-                nightVictims.push(seerTarget);
-              }
+          const seerRep = gameState.dailySeerReports && gameState.dailySeerReports[trueSeerChar];
+          if (seerRep && seerRep.target && gameState.roles[seerRep.target] === 'fox') {
+            const seerTarget = seerRep.target;
+            gameState.status[seerTarget] = 'cursed';
+            if (!nightVictims.includes(seerTarget)) {
+              nightVictims.push(seerTarget);
             }
           }
         }
