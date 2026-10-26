@@ -8591,31 +8591,14 @@ ${speakerName}としての審判会議発言:`;
           splash.style.pointerEvents = 'none';
           splash.style.zIndex = '-1';
           playBgm('title');
-          // タイトル画面コンテナ（メインメニュー）を確実に表示
+          // タイトルメニューボックスは表示しない（冒険の書モーダルを直接開く）
           const titleBox = document.getElementById('title-box-container');
-          if (titleBox) {
-            titleBox.style.display = 'block';
-            titleBox.style.position = 'relative';
-            titleBox.style.zIndex = '100';
-          }
-          const mainBtns = document.querySelector('.title-main-menu-buttons');
-          if (mainBtns) {
-            mainBtns.style.display = 'flex';
-            mainBtns.style.position = 'relative';
-            mainBtns.style.zIndex = '101';
-          }
-          // title-screen 自体も確実に表示
+          if (titleBox) titleBox.style.display = 'none';
+          // title-screen を背景として表示
           const titleScreen = document.getElementById('title-screen');
-          if (titleScreen) {
-            titleScreen.classList.remove('hidden');
-            titleScreen.style.position = 'relative';
-            titleScreen.style.zIndex = '100';
-          }
-          try {
-            openSaveModal(); // TAP TO STARTタップ後、「冒険の書（セーブスロット）」を開く
-          } catch (err) {
-            console.error('openSaveModal error:', err);
-          }
+          if (titleScreen) titleScreen.classList.remove('hidden');
+          // 冒険の書（セーブスロット選択）モーダルを直接表示
+          openSaveModal();
         }, 500);
       }
     }
@@ -9122,11 +9105,9 @@ ${speakerName}としての審判会議発言:`;
       closeModal('mode-select-modal');
       closeModal('story-chapter-modal');
       closeModal('grand-ending-modal');
-      // タイトルボックス（メニュー）を表示
+      // タイトルメニューボックスは表示しない（スプラッシュに戻す）
       const titleBox = document.getElementById('title-box-container');
-      if (titleBox) titleBox.style.display = 'block';
-      const mainBtns = document.querySelector('.title-main-menu-buttons');
-      if (mainBtns) mainBtns.style.display = 'flex';
+      if (titleBox) titleBox.style.display = 'none';
       showTitleScreen();
     }
     window.returnToModeSelect = returnToModeSelect;
