@@ -4676,8 +4676,19 @@ ${speakerName}としての審判会議発言:`;
      * 既存セーブデータは日本語で保存されているため、表示時に変換する
      */
     function translateSavedPhase(rawText, lang) {
-      if (!rawText) return rawText;
+      if (rawText === undefined || rawText === null) return '';
+      rawText = String(rawText);
+      if (!rawText) return '';
       lang = lang || currentAppLanguage || 'ja';
+
+      // もし数字のみ（章番号など）が渡された場合
+      if (/^\d+$/.test(rawText)) {
+        if (lang === 'en') return `Chapter ${rawText}`;
+        if (lang === 'fr') return `Chapitre ${rawText}`;
+        if (lang === 'zh') return `第${rawText}章`;
+        if (lang === 'ko') return `제${rawText}장`;
+        return `第${rawText}章`;
+      }
 
       const PHASE_DEFS = [
         {
@@ -4733,7 +4744,9 @@ ${speakerName}としての審判会議発言:`;
      * セーブデータに保存されたストーリーサマリーを現在の言語に双方向翻訳
      */
     function translateSavedSummary(rawSummary, lang) {
-      if (!rawSummary) return rawSummary;
+      if (rawSummary === undefined || rawSummary === null) return '';
+      rawSummary = String(rawSummary);
+      if (!rawSummary) return '';
       lang = lang || currentAppLanguage || 'ja';
 
       // パターン1: 序章（Prologue）
@@ -5154,7 +5167,7 @@ ${speakerName}としての審判会議発言:`;
     function getAllSaveSlotsOverview() {
       const slots = [];
       const lang = currentAppLanguage || 'ja';
-      const t = I18N_TRANSLATIONS[lang] || I18N_TRANSLATIONS.ja;
+      const t = (typeof I18N_TRANSLATIONS !== 'undefined' && I18N_TRANSLATIONS[lang]) ? I18N_TRANSLATIONS[lang] : {};
 
       const getBookTitle = (i) => {
         if (lang === 'en') return `Adventure Log Vol.${i}`;
@@ -8610,9 +8623,29 @@ ${speakerName}としての審判会議発言:`;
               renderSaveModalContent();
             } catch (err) {
               console.error('renderSaveModalContent error:', err);
-              // フォールバック：最低限のメッセージを表示
-              const container = document.getElementById('save-slot-list-container');
-              if (container) container.innerHTML = '<p style="color:#fde68a;padding:1rem;">読み込み中...</p>';
+              // フォールバック：エラー時も白紙スロットで強制再描画
+              try {
+                const container = document.getElementById('save-slot-list-container');
+                if (container) {
+                  container.innerHTML = '';
+                  for (let i = 1; i <= 3; i++) {
+                    const card = document.createElement('div');
+                    card.className = 'save-slot-card';
+                    card.innerHTML = `
+                      <div class="save-slot-header">
+                        <div class="save-slot-title empty"><span class="book-vol-badge">第${i}巻</span> 『冒険の書 第${i}巻』 [白紙の冒険の書]</div>
+                      </div>
+                      <div class="save-slot-detail">まだ旅の記録は書き記されていません</div>
+                      <div class="save-slot-actions">
+                        <button class="btn-slot-action btn-slot-save" style="background:linear-gradient(135deg,#d97706,#b45309); border-color:#fbbf24;" onclick="openModeSelectModal(${i})">⚔️ 遠征を開始</button>
+                      </div>
+                    `;
+                    container.appendChild(card);
+                  }
+                }
+              } catch(e2) {
+                console.error('fallback render error:', e2);
+              }
             }
           } else {
             // save-slot-modalが見つからない場合はタイトルボックスを表示
