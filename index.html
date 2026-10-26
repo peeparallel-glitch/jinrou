@@ -161,6 +161,8 @@
       -webkit-overflow-scrolling: touch;
       box-sizing: border-box;
       transition: background-image 0.3s ease-in-out;
+      position: relative;
+      z-index: 1;
     }
 
     /* --- Splash Screen (Attract Screen) --- */
@@ -277,6 +279,8 @@
       border-radius: 16px;
       padding: 2rem 1.5rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      position: relative;
+      z-index: 10;
     }
 
     .title-box h1 {
@@ -3258,18 +3262,18 @@
       <h1 class="main-title">ぼっち人狼<br><span class="sub-title">〜審判の勇者〜</span></h1>
 
       <!-- Sub Header Buttons (遊び方・ランク・設定) -->
-      <div class="title-sub-buttons" style="margin-bottom: 0.8rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
-        <button class="btn-title-sub" onclick="openModal('how-to-play-modal')">📖 遊び方</button>
-        <button class="btn-title-sub" onclick="openRankModal()">🏆 勇者ランク</button>
-        <button class="btn-title-sub" onclick="openModal('settings-modal')">⚙ 設定</button>
+      <div class="title-sub-buttons" style="margin-bottom: 0.8rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; position: relative; z-index: 200;">
+        <button class="btn-title-sub" onclick="openModal('how-to-play-modal')" ontouchstart="openModal('how-to-play-modal')">📖 遊び方</button>
+        <button class="btn-title-sub" onclick="openRankModal()" ontouchstart="openRankModal()">🏆 勇者ランク</button>
+        <button class="btn-title-sub" onclick="openModal('settings-modal')" ontouchstart="openModal('settings-modal')">⚙ 設定</button>
       </div>
 
       <!-- Title Screen Main Action Buttons -->
-      <div class="title-main-menu-buttons" style="display: flex; gap: 0.8rem; margin: 1rem 0; width: 100%; max-width: 480px;">
-        <button class="btn-start-game" style="flex: 1; margin-top:0; font-size: 1.05rem;" onclick="onStartNewGameClick()">
+      <div class="title-main-menu-buttons" style="display: flex; gap: 0.8rem; margin: 1rem 0; width: 100%; max-width: 480px; position: relative; z-index: 200;">
+        <button class="btn-start-game" style="flex: 1; margin-top:0; font-size: 1.05rem; position: relative; z-index: 201; cursor: pointer;" onclick="onStartNewGameClick()" ontouchstart="onStartNewGameClick()">
           ⚔️ はじめから<br><span style="font-size:0.75rem; font-weight:normal; opacity:0.9;">(新たな旅立ち)</span>
         </button>
-        <button class="btn-start-game" style="flex: 1; margin-top:0; font-size: 1.05rem; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="openSaveModal()">
+        <button class="btn-start-game" style="flex: 1; margin-top:0; font-size: 1.05rem; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); position: relative; z-index: 201; cursor: pointer;" onclick="openSaveModal()" ontouchstart="openSaveModal()">
           📜 冒険の書を開く<br><span style="font-size:0.75rem; font-weight:normal; opacity:0.9;">(続きから)</span>
         </button>
       </div>
@@ -8582,13 +8586,31 @@ ${speakerName}としての審判会議発言:`;
       if (splash) {
         splash.classList.add('fade-out');
         setTimeout(() => {
+          // スプラッシュを完全に無効化
           splash.style.display = 'none';
+          splash.style.pointerEvents = 'none';
+          splash.style.zIndex = '-1';
           playBgm('title');
           // タイトル画面コンテナ（メインメニュー）を確実に表示
           const titleBox = document.getElementById('title-box-container');
-          if (titleBox) titleBox.style.display = 'block';
+          if (titleBox) {
+            titleBox.style.display = 'block';
+            titleBox.style.position = 'relative';
+            titleBox.style.zIndex = '100';
+          }
           const mainBtns = document.querySelector('.title-main-menu-buttons');
-          if (mainBtns) mainBtns.style.display = 'flex';
+          if (mainBtns) {
+            mainBtns.style.display = 'flex';
+            mainBtns.style.position = 'relative';
+            mainBtns.style.zIndex = '101';
+          }
+          // title-screen 自体も確実に表示
+          const titleScreen = document.getElementById('title-screen');
+          if (titleScreen) {
+            titleScreen.classList.remove('hidden');
+            titleScreen.style.position = 'relative';
+            titleScreen.style.zIndex = '100';
+          }
           try {
             openSaveModal(); // TAP TO STARTタップ後、「冒険の書（セーブスロット）」を開く
           } catch (err) {
