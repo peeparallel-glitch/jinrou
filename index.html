@@ -3999,11 +3999,11 @@
   </div>
 
   <!-- MODE SELECT MODAL -->
-  <div id="mode-select-modal" class="modal-overlay hidden" onclick="if(event.target===this) returnToTitleScreen()">
+  <div id="mode-select-modal" class="modal-overlay hidden" onclick="if(event.target===this) openSaveModal()">
     <div class="modal-content" style="max-width: 520px; text-align: center;">
       <div class="modal-header">
         <h2>⚔️ 遠征モードの選択</h2>
-        <button class="modal-close-btn" onclick="returnToTitleScreen()">✕</button>
+        <button class="modal-close-btn" onclick="openSaveModal()">✕</button>
       </div>
       <div class="modal-body" style="padding: 1.2rem 0.5rem;">
         <div style="font-size: 0.85rem; color: #fde68a; margin-bottom: 1.2rem;">
@@ -4037,17 +4037,17 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="returnToTitleScreen()">戻る</button>
+        <button class="btn btn-secondary" onclick="openSaveModal()">戻る</button>
       </div>
     </div>
   </div>
 
   <!-- STORY CHAPTER MODAL -->
-  <div id="story-chapter-modal" class="modal-overlay hidden" onclick="if(event.target===this) returnToTitleScreen()">
+  <div id="story-chapter-modal" class="modal-overlay hidden" onclick="if(event.target===this) returnToModeSelect()">
     <div class="modal-content" style="max-width: 600px;">
       <div class="modal-header">
         <h2>📜 勇者の遠征記 - 章選択</h2>
-        <button class="modal-close-btn" onclick="returnToTitleScreen()">✕</button>
+        <button class="modal-close-btn" onclick="returnToModeSelect()">✕</button>
       </div>
       <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
         <div id="story-book-status-header" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 1rem; font-size: 0.85rem; color: #fef08a; display: flex; justify-content: space-between; align-items: center;">
@@ -4060,7 +4060,7 @@
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
         <button class="btn" style="background: linear-gradient(135deg, #991b1b, #7f1d1d); color: #fca5a5; border: 1px solid #dc2626; font-size: 0.78rem; padding: 0.4rem 0.7rem;" onclick="confirmStoryReset()">🔄 全リセット</button>
-        <button class="btn btn-secondary" onclick="returnToTitleScreen()">戻る</button>
+        <button class="btn btn-secondary" onclick="returnToModeSelect()">戻る</button>
       </div>
     </div>
   </div>
@@ -7827,6 +7827,9 @@ ${speakerName}としての審判会議発言:`;
       if (modal) {
         modal.classList.add('hidden');
       }
+      if (modalId === 'modal-overlay') {
+        cancelSpeech();
+      }
     }
 
     // --- Village Win/Loss Game Stats Management ---
@@ -9157,9 +9160,6 @@ ${speakerName}としての審判会議発言:`;
       closeModal('mode-select-modal');
       closeModal('story-chapter-modal');
       closeModal('grand-ending-modal');
-      // タイトルメニューボックスは表示しない（スプラッシュに戻す）
-      const titleBox = document.getElementById('title-box-container');
-      if (titleBox) titleBox.style.display = 'none';
       showTitleScreen();
     }
     window.returnToModeSelect = returnToModeSelect;
@@ -9191,21 +9191,27 @@ ${speakerName}としての審判会議発言:`;
       document.getElementById('seamless-overlay').classList.remove('active');
       const freeSection = document.getElementById('free-mode-selection-section');
       if (freeSection) freeSection.style.display = 'none';
+
+      // タイトルメニューボックスは非表示（TAP TO STARTのタイトル画面に戻す）
       const titleBox = document.getElementById('title-box-container');
       if (titleBox) titleBox.style.display = 'none';
-      const mainBtns = document.querySelector('.title-main-menu-buttons');
-      if (mainBtns) mainBtns.style.display = 'flex';
 
-      // 最初のアトラクト・スタート待機画面 (#splash-screen) を復元表示
+      // 最初のスタート待機画面 (#splash-screen: TAP TO START) を確実に最前面に復元表示
       const splash = document.getElementById('splash-screen');
       if (splash) {
         splash.style.display = 'flex';
+        splash.style.pointerEvents = 'auto';
+        splash.style.zIndex = '10000';
+        splash.style.opacity = '1';
         splash.classList.remove('fade-out');
       }
       isSplashHandled = false;
 
-      // 村選択画面 (#title-screen) も背景に控えておく
-      document.getElementById('title-screen').classList.remove('hidden');
+      // 背景の村選択画面 (#title-screen) も控えておく
+      const titleScreen = document.getElementById('title-screen');
+      if (titleScreen) {
+        titleScreen.classList.remove('hidden');
+      }
 
       // ★ タイトル専用BGM (Cathedral BlackoutTITLE.mp3) を頭からループ再生
       playBgm('title');
@@ -10603,6 +10609,7 @@ ${speakerName}としての審判会議発言:`;
      * 2章〜5章の場合: 章の物語 ➔ 村の詳細情報（2ページ構成）
      */
     function startStoryChapter(chId) {
+      cancelSpeech();
       currentStoryChapter = chId;
       currentPlayMode = 'story';
       closeModal('story-chapter-modal');
@@ -10761,6 +10768,7 @@ ${speakerName}としての審判会議発言:`;
      * リザルト画面から直接次の章へ進む
      */
     function proceedNextStoryChapter() {
+      cancelSpeech();
       closeModal('modal-overlay');
       const nextCh = Math.min(5, currentStoryChapter + 1);
 
@@ -10808,6 +10816,7 @@ ${speakerName}としての審判会議発言:`;
 
     // Start Game
     function startGame() {
+      cancelSpeech();
       requestFullScreen(); // ゲーム開始時にフルスクリーン化を試行
       unlockAudioOnInteraction();
       initAudio();
@@ -18175,6 +18184,8 @@ ${speakerName}としての審判会議発言:`;
 
     // グランドエンディングテスト再生（指定信頼度または現在の信頼度）
     function triggerGrandEndingTest(targetTrust) {
+      cancelSpeech();
+      closeModal('modal-overlay');
       const debugModal = document.getElementById("debug-modal");
       if (debugModal) {
         debugModal.style.display = "none";
@@ -18686,6 +18697,7 @@ ${speakerName}としての審判会議発言:`;
 
     // グランドエンディング表示モーダル関数（信頼度マルチエンディング対応）
     function showGrandEndingModal(finalIQ, totalScore, rankTitle, overrideTrust) {
+      cancelSpeech();
       stopGrandEndingTypewriter();
       const trust = (typeof overrideTrust === 'number') 
         ? overrideTrust 
