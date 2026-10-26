@@ -3210,7 +3210,7 @@
   </div>
 
   <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
-  <div id="splash-screen" onclick="handleSplashTap(event)" ontouchstart="handleSplashTap(event)">
+  <div id="splash-screen" onclick="handleSplashTap(event)" ontouchstart="handleSplashTap(event)" onmousedown="handleSplashTap(event)">
     <div style="position: absolute; top: 1.2rem; right: 1.2rem; display: flex; gap: 0.6rem; z-index: 10001;">
       <button class="splash-settings-btn" id="splash-settings-btn" style="position: static;" onclick="event.stopPropagation(); openModal('settings-modal');" ontouchstart="event.stopPropagation(); openModal('settings-modal');" title="設定">
         ⚙ 設定
@@ -8591,14 +8591,33 @@ ${speakerName}としての審判会議発言:`;
           splash.style.pointerEvents = 'none';
           splash.style.zIndex = '-1';
           playBgm('title');
-          // タイトルメニューボックスは表示しない（冒険の書モーダルを直接開く）
-          const titleBox = document.getElementById('title-box-container');
-          if (titleBox) titleBox.style.display = 'none';
-          // title-screen を背景として表示
+
+          // title-screen を背景として表示（タイトルボックスは非表示のまま）
           const titleScreen = document.getElementById('title-screen');
           if (titleScreen) titleScreen.classList.remove('hidden');
-          // 冒険の書（セーブスロット選択）モーダルを直接表示
-          openSaveModal();
+          const titleBox = document.getElementById('title-box-container');
+          if (titleBox) titleBox.style.display = 'none';
+
+          // 冒険の書モーダルを直接DOM操作で強制表示
+          const saveModal = document.getElementById('save-slot-modal');
+          if (saveModal) {
+            // まずモーダルを強制表示
+            saveModal.classList.remove('hidden');
+            saveModal.style.display = 'flex';
+            saveModal.style.zIndex = '25000';
+            // セーブスロット一覧をレンダリング
+            try {
+              renderSaveModalContent();
+            } catch (err) {
+              console.error('renderSaveModalContent error:', err);
+              // フォールバック：最低限のメッセージを表示
+              const container = document.getElementById('save-slot-list-container');
+              if (container) container.innerHTML = '<p style="color:#fde68a;padding:1rem;">読み込み中...</p>';
+            }
+          } else {
+            // save-slot-modalが見つからない場合はタイトルボックスを表示
+            if (titleBox) titleBox.style.display = 'block';
+          }
         }, 500);
       }
     }
@@ -18866,6 +18885,19 @@ ${speakerName}としての審判会議発言:`;
         requestFullScreen();
         document.removeEventListener('click', initFullScreenClick);
       }, { once: true });
+
+      // スプラッシュスクリーンのクリックが正しく動作することを確認
+      // （PCブラウザ向けの追加対策）
+      const splashEl = document.getElementById('splash-screen');
+      if (splashEl) {
+        // すでにイベントが設定されているが、念のため直接イベントを追加
+        splashEl.addEventListener('click', function(e) {
+          handleSplashTap(e);
+        });
+        splashEl.addEventListener('touchstart', function(e) {
+          handleSplashTap(e);
+        });
+      }
     };
   </script>
 </body>
