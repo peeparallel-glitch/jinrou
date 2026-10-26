@@ -8584,7 +8584,16 @@ ${speakerName}としての審判会議発言:`;
         setTimeout(() => {
           splash.style.display = 'none';
           playBgm('title');
-          openSaveModal(); // TAP TO STARTタップ後、そのまま「冒険の書（セーブスロット）」を開く
+          // タイトル画面コンテナ（メインメニュー）を確実に表示
+          const titleBox = document.getElementById('title-box-container');
+          if (titleBox) titleBox.style.display = 'block';
+          const mainBtns = document.querySelector('.title-main-menu-buttons');
+          if (mainBtns) mainBtns.style.display = 'flex';
+          try {
+            openSaveModal(); // TAP TO STARTタップ後、「冒険の書（セーブスロット）」を開く
+          } catch (err) {
+            console.error('openSaveModal error:', err);
+          }
         }, 500);
       }
     }
@@ -9091,6 +9100,11 @@ ${speakerName}としての審判会議発言:`;
       closeModal('mode-select-modal');
       closeModal('story-chapter-modal');
       closeModal('grand-ending-modal');
+      // タイトルボックス（メニュー）を表示
+      const titleBox = document.getElementById('title-box-container');
+      if (titleBox) titleBox.style.display = 'block';
+      const mainBtns = document.querySelector('.title-main-menu-buttons');
+      if (mainBtns) mainBtns.style.display = 'flex';
       showTitleScreen();
     }
     window.returnToModeSelect = returnToModeSelect;
