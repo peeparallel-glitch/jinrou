@@ -3211,8 +3211,8 @@
 
   <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
   <div id="splash-screen" onclick="handleSplashTap(event)" ontouchstart="handleSplashTap(event)" onmousedown="handleSplashTap(event)">
-    <div style="position: absolute; top: 1.2rem; right: 1.2rem; display: flex; gap: 0.6rem; z-index: 10001;">
-      <button class="splash-settings-btn" id="splash-settings-btn" style="position: static;" onclick="event.stopPropagation(); openModal('settings-modal');" ontouchstart="event.stopPropagation(); openModal('settings-modal');" title="設定">
+    <div style="position: absolute; top: 1.2rem; right: 1.2rem; display: flex; gap: 0.6rem; z-index: 10001;" onclick="event.stopPropagation();" ontouchstart="event.stopPropagation();" onmousedown="event.stopPropagation();">
+      <button class="splash-settings-btn" id="splash-settings-btn" style="position: static;" onclick="openSettingsModal(event)" ontouchstart="openSettingsModal(event)" onmousedown="openSettingsModal(event)" title="設定">
         ⚙ 設定
       </button>
     </div>
@@ -3264,8 +3264,8 @@
       <!-- Sub Header Buttons (遊び方・ランク・設定) -->
       <div class="title-sub-buttons" style="margin-bottom: 0.8rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; position: relative; z-index: 200;">
         <button class="btn-title-sub" onclick="openModal('how-to-play-modal')" ontouchstart="openModal('how-to-play-modal')">📖 遊び方</button>
-        <button class="btn-title-sub" onclick="openRankModal()" ontouchstart="openRankModal()">🏆 勇者ランク</button>
-        <button class="btn-title-sub" onclick="openModal('settings-modal')" ontouchstart="openModal('settings-modal')">⚙ 設定</button>
+        <button class="btn-title-sub" onclick="openRankModal(event)" ontouchstart="openRankModal(event)">🏆 勇者ランク</button>
+        <button class="btn-title-sub" onclick="openSettingsModal(event)" ontouchstart="openSettingsModal(event)">⚙ 設定</button>
       </div>
 
       <!-- Title Screen Main Action Buttons -->
@@ -3408,8 +3408,8 @@
       <h1 class="game-header-title">ぼっち人狼 <span>〜審判の勇者〜</span></h1>
       <div class="header-buttons">
         <button class="btn-header-icon" onclick="openModal('how-to-play-modal')" title="遊び方">📖 遊び方</button>
-        <button class="btn-header-icon" onclick="openRankModal()" title="ランク">🏆 ランク</button>
-        <button class="btn-header-icon" onclick="openModal('settings-modal')" title="設定">⚙ 設定</button>
+        <button class="btn-header-icon" onclick="openRankModal(event)" title="ランク">🏆 ランク</button>
+        <button class="btn-header-icon" onclick="openSettingsModal(event)" title="設定">⚙ 設定</button>
         <button class="btn-title-mini" onclick="showTitleScreen()">タイトルへ</button>
       </div>
     </header>
@@ -3974,9 +3974,9 @@
       <div style="text-align: center; margin-bottom: 0.8rem; padding-bottom: 0.7rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <h1 class="main-title" style="margin: 0.2rem 0; font-size: 1.65rem; color: #f8fafc; letter-spacing: 2px;">ぼっち人狼<br><span class="sub-title" style="font-size: 1.05rem; font-weight: normal; color: var(--accent-red);">〜審判の勇者〜</span></h1>
         <div class="title-sub-buttons" style="margin-top: 0.7rem; display: flex; gap: 0.5rem; justify-content: center;">
-          <button class="btn-title-sub" onclick="openModal('how-to-play-modal')" style="flex: 1; padding: 0.55rem; font-size: 0.85rem;">📖 遊び方</button>
-          <button class="btn-title-sub" onclick="openRankModal()" style="flex: 1; padding: 0.55rem; font-size: 0.85rem;">🏆 勇者ランク</button>
-          <button class="btn-title-sub" onclick="openModal('settings-modal')" style="flex: 1; padding: 0.55rem; font-size: 0.85rem;">⚙ 設定</button>
+          <button class="btn-title-sub" onclick="openModal('how-to-play-modal')" ontouchstart="openModal('how-to-play-modal')" style="flex: 1; padding: 0.55rem; font-size: 0.85rem; cursor: pointer;">📖 遊び方</button>
+          <button class="btn-title-sub" onclick="openRankModal(event)" ontouchstart="openRankModal(event)" style="flex: 1; padding: 0.55rem; font-size: 0.85rem; cursor: pointer;">🏆 勇者ランク</button>
+          <button class="btn-title-sub" onclick="openSettingsModal(event)" ontouchstart="openSettingsModal(event)" style="flex: 1; padding: 0.55rem; font-size: 0.85rem; cursor: pointer;">⚙ 設定</button>
         </div>
       </div>
 
@@ -7808,13 +7808,22 @@ ${speakerName}としての審判会議発言:`;
       saveSettings();
     }
 
-    let topModalZIndex = 20000;
+    let topModalZIndex = 50000;
     function openModal(modalId) {
       const modal = document.getElementById(modalId);
       if (modal) {
-        topModalZIndex += 10;
+        // 現在開いている全モーダルの中で最大の z-index を動的に検出
+        let maxZ = topModalZIndex;
+        document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(el => {
+          const z = parseInt(window.getComputedStyle(el).zIndex, 10);
+          if (!isNaN(z) && z > maxZ) {
+            maxZ = z;
+          }
+        });
+        topModalZIndex = maxZ + 100;
         modal.style.zIndex = topModalZIndex;
         modal.classList.remove('hidden');
+        modal.style.display = 'flex';
         // 遊び方モーダルを開いた時に現在の言語でコンテンツを再描画
         if (modalId === 'how-to-play-modal' && typeof renderHowToPlayModalContent === 'function') {
           renderHowToPlayModalContent(currentAppLanguage || 'ja');
@@ -7822,10 +7831,24 @@ ${speakerName}としての審判会議発言:`;
       }
     }
 
+    /**
+     * 設定モーダルを即座に最前面で確実に開く
+     */
+    function openSettingsModal(e) {
+      if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      }
+      openModal('settings-modal');
+    }
+    window.openSettingsModal = openSettingsModal;
+
     function closeModal(modalId) {
       const modal = document.getElementById(modalId);
       if (modal) {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
       }
       if (modalId === 'modal-overlay') {
         cancelSpeech();
@@ -8578,6 +8601,12 @@ ${speakerName}としての審判会議発言:`;
     let isSplashHandled = false;
 
     function handleSplashTap(e) {
+      // 設定ボタンまたはその内部要素がタップされた場合はスプラッシュタップ処理を絶対に実行しない
+      if (e && e.target) {
+        if (e.target.id === 'splash-settings-btn' || (typeof e.target.closest === 'function' && e.target.closest('#splash-settings-btn, .splash-settings-btn'))) {
+          return;
+        }
+      }
       if (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -8614,45 +8643,35 @@ ${speakerName}としての審判会議発言:`;
           const titleBox = document.getElementById('title-box-container');
           if (titleBox) titleBox.style.display = 'none';
 
-          // 冒険の書モーダルを直接DOM操作で強制表示
-          const saveModal = document.getElementById('save-slot-modal');
-          if (saveModal) {
-            // まずモーダルを強制表示
-            saveModal.classList.remove('hidden');
-            saveModal.style.display = 'flex';
-            saveModal.style.zIndex = '25000';
-            // セーブスロット一覧をレンダリング
+          // 冒険の書モーダルを開く
+          openModal('save-slot-modal');
+          try {
+            renderSaveModalContent();
+          } catch (err) {
+            console.error('renderSaveModalContent error:', err);
+            // フォールバック：エラー時も白紙スロットで強制再描画
             try {
-              renderSaveModalContent();
-            } catch (err) {
-              console.error('renderSaveModalContent error:', err);
-              // フォールバック：エラー時も白紙スロットで強制再描画
-              try {
-                const container = document.getElementById('save-slot-list-container');
-                if (container) {
-                  container.innerHTML = '';
-                  for (let i = 1; i <= 3; i++) {
-                    const card = document.createElement('div');
-                    card.className = 'save-slot-card';
-                    card.innerHTML = `
-                      <div class="save-slot-header">
-                        <div class="save-slot-title empty"><span class="book-vol-badge">第${i}巻</span> 『冒険の書 第${i}巻』 [白紙の冒険の書]</div>
-                      </div>
-                      <div class="save-slot-detail">まだ旅の記録は書き記されていません</div>
-                      <div class="save-slot-actions">
-                        <button class="btn-slot-action btn-slot-save" style="background:linear-gradient(135deg,#d97706,#b45309); border-color:#fbbf24;" onclick="openModeSelectModal(${i})">⚔️ 遠征を開始</button>
-                      </div>
-                    `;
-                    container.appendChild(card);
-                  }
+              const container = document.getElementById('save-slot-list-container');
+              if (container) {
+                container.innerHTML = '';
+                for (let i = 1; i <= 3; i++) {
+                  const card = document.createElement('div');
+                  card.className = 'save-slot-card';
+                  card.innerHTML = `
+                    <div class="save-slot-header">
+                      <div class="save-slot-title empty"><span class="book-vol-badge">第${i}巻</span> 『冒険の書 第${i}巻』 [白紙の冒険の書]</div>
+                    </div>
+                    <div class="save-slot-detail">まだ旅の記録は書き記されていません</div>
+                    <div class="save-slot-actions">
+                      <button class="btn-slot-action btn-slot-save" style="background:linear-gradient(135deg,#d97706,#b45309); border-color:#fbbf24;" onclick="openModeSelectModal(${i})">⚔️ 遠征を開始</button>
+                    </div>
+                  `;
+                  container.appendChild(card);
                 }
-              } catch(e2) {
-                console.error('fallback render error:', e2);
               }
+            } catch(e2) {
+              console.error('fallback render error:', e2);
             }
-          } else {
-            // save-slot-modalが見つからない場合はタイトルボックスを表示
-            if (titleBox) titleBox.style.display = 'block';
           }
         }, 500);
       }
@@ -17480,7 +17499,11 @@ ${speakerName}としての審判会議発言:`;
     }
 
     // ■ ランクモーダルの表示と描画
-    function openRankModal() {
+    function openRankModal(e) {
+      if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      }
       renderRankModalContent();
       openModal('rank-info-modal');
     }
@@ -18937,9 +18960,11 @@ ${speakerName}としての審判会議発言:`;
       if (splashEl) {
         // すでにイベントが設定されているが、念のため直接イベントを追加
         splashEl.addEventListener('click', function(e) {
+          if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('#splash-settings-btn, .splash-settings-btn')) return;
           handleSplashTap(e);
         });
         splashEl.addEventListener('touchstart', function(e) {
+          if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('#splash-settings-btn, .splash-settings-btn')) return;
           handleSplashTap(e);
         });
       }
