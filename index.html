@@ -2526,6 +2526,8 @@
       /* ⑤ タイトル画面・村選択画面のスマホ用スクロール安全領域拡張 */
       #title-screen {
         padding-bottom: 90px !important;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url('./IMG/o-puningu2tate.jpg');
+        background-position: center top;
       }
       .title-box {
         margin-bottom: 60px !important;
@@ -6735,38 +6737,46 @@ ${speakerName}としての審判会議発言:`;
 
     /**
      * 選択言語に応じたタイトル画面背景画像の自動切り替え関数
+     * スマホ縦画面（orientation: portrait）時は言語に関係なく「o-puningu2tate.jpg」を適用
      * @param {string} lang - 'ja' | 'en' | 'zh' | 'ko'
      */
     function updateTitleBackground(lang) {
       const titleContainer = document.getElementById('title-screen');
       const splashContainer = document.getElementById('splash-screen');
+      const isPortrait = window.matchMedia("(orientation: portrait)").matches;
 
       const langCode = lang || currentAppLanguage || 'ja';
       let fileName = "";
       let splashFileName = "";
 
-      switch (langCode) {
-        case 'en':
-          fileName = "TITLE_US.jpg";
-          splashFileName = "TITLE_US.jpg";
-          break;
-        case 'fr':
-          fileName = "TITLE_franchi.jpg";
-          splashFileName = "TITLE_franchi.jpg";
-          break;
-        case 'zh':
-          fileName = "TITLE_cin.jpg";
-          splashFileName = "TITLE_cin.jpg";
-          break;
-        case 'ko':
-          fileName = "TITLE_kol.jpg";
-          splashFileName = "TITLE_kol.jpg";
-          break;
-        case 'ja':
-        default:
-          fileName = "jinnrouyoko.jpg"; // デフォルト日本語タイトル画像
-          splashFileName = "o-puningu1.jpg"; // 日本語アトラクトスプラッシュ
-          break;
+      if (isPortrait) {
+        // ★ スマホ縦画面は言語に関係なくo-puningu2tate.jpgを使用
+        fileName = "o-puningu2tate.jpg";
+        splashFileName = "o-puningu2tate.jpg";
+      } else {
+        switch (langCode) {
+          case 'en':
+            fileName = "TITLE_US.jpg";
+            splashFileName = "TITLE_US.jpg";
+            break;
+          case 'fr':
+            fileName = "TITLE_franchi.jpg";
+            splashFileName = "TITLE_franchi.jpg";
+            break;
+          case 'zh':
+            fileName = "TITLE_cin.jpg";
+            splashFileName = "TITLE_cin.jpg";
+            break;
+          case 'ko':
+            fileName = "TITLE_kol.jpg";
+            splashFileName = "TITLE_kol.jpg";
+            break;
+          case 'ja':
+          default:
+            fileName = "jinnrouyoko.jpg"; // デフォルト日本語タイトル画像
+            splashFileName = "o-puningu1.jpg"; // 日本語アトラクトスプラッシュ
+            break;
+        }
       }
 
       // 1. タイトル画面（#title-screen）の背景画像更新
@@ -6779,7 +6789,7 @@ ${speakerName}としての審判会議発言:`;
         }
       }
 
-      // 2. スタート待機画面（#splash-screen）の背景画像更新（タップ前もずっと言語背景を表示）
+      // 2. スタート待機画面（#splash-screen）の背景画像更新
       if (splashContainer) {
         const splashPath = `./IMG/${splashFileName}`;
         splashContainer.style.setProperty('background-image', `url('${splashPath}')`, 'important');
@@ -8743,9 +8753,17 @@ ${speakerName}としての審判会議発言:`;
     // 画面リサイズ・回転時のレスポンシブ背景動的追従
     window.addEventListener('resize', () => {
       updateBackgroundImage();
+      if (typeof updateTitleBackground === 'function') {
+        updateTitleBackground();
+      }
     });
     window.addEventListener('orientationchange', () => {
-      setTimeout(() => updateBackgroundImage(), 100);
+      setTimeout(() => {
+        updateBackgroundImage();
+        if (typeof updateTitleBackground === 'function') {
+          updateTitleBackground();
+        }
+      }, 100);
     });
 
     // Attract Splash Screen Tap Handler
