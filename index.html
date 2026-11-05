@@ -64,6 +64,26 @@
       padding-right: env(safe-area-inset-right);
     }
 
+    /* ===== 発言意図チップ (C-4仕様) ===== */
+    .speech-intent-badge {
+      font-size: 0.68rem;
+      font-weight: bold;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      margin-left: 0.35rem;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+    .badge-accuse { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-contest { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-defend { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-answer { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-inquiry { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-observe { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); }
+    .badge-distance { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
+
     /* Screen Management & Game Screen Backgrounds */
     .screen {
       display: flex;
@@ -1043,12 +1063,13 @@
     .char-card.is-dead::after {
       content: "❌";
       position: absolute;
-      top: 42%;
+      top: 36%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 2.2rem;
+      font-size: 5.5rem;
+      line-height: 1;
       color: #ef4444;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(239, 68, 68, 0.7);
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.95), 0 0 24px rgba(239, 68, 68, 0.85);
       pointer-events: none;
       z-index: 10;
       animation: popCross 0.3s ease-out;
@@ -2547,41 +2568,105 @@
         flex-direction: column;
       }
 
-      /* ① 上部：村人カードエリア（人数が増えても柔軟に展開） */
+      /* ① 上部：村人カードエリア（スマホ表示時横4列グリッド＆折り返し自動配置） */
+      .character-grid-wrapper {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
       .character-grid {
         flex: 0 0 auto;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        width: 100% !important;
+        gap: 5px !important;
         max-height: none;
         overflow-y: visible;
-        gap: 0.35rem;
-        grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
-        padding-right: 0.15rem;
+        overflow-x: hidden !important;
+        padding: 4px 2px 8px 2px !important;
+        box-sizing: border-box !important;
       }
 
       .char-card {
-        padding: 0.35rem 0.2rem !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0.25rem 0.15rem !important;
+        box-sizing: border-box !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        overflow: hidden;
       }
 
-      .char-avatar {
-        width: 26px;
-        height: 26px;
-        font-size: 0.8rem;
-        margin-bottom: 0.1rem;
+      .face-avatar-wrapper {
+        width: 100% !important;
+        aspect-ratio: 1 / 1 !important;
+        border-radius: 4px !important;
+        margin-bottom: 0.15rem !important;
+        position: relative;
+        overflow: hidden;
       }
 
-      .char-name {
-        font-size: 0.75rem;
-        margin-bottom: 0.1rem;
+      .face-avatar-img {
+        width: 100% !important;
+        height: 100% !important;
+        aspect-ratio: 1 / 1 !important;
+        object-fit: cover !important;
+        display: block !important;
+      }
+
+      .face-name-overlay {
+        font-size: 0.72rem !important;
+        padding: 0.2rem 0.1rem 0.1rem !important;
+        line-height: 1.1 !important;
+      }
+
+      .face-co-badge-corner {
+        font-size: 0.55rem !important;
+        padding: 0.05rem 0.2rem !important;
+        top: 2px !important;
+        right: 2px !important;
+      }
+
+      .char-archetype-badge {
+        font-size: 0.58rem !important;
+        padding: 0.1rem 0.15rem !important;
+        margin-bottom: 0.1rem !important;
+        line-height: 1.15 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
       }
 
       .char-co-badge, .char-status {
-        font-size: 0.62rem;
-        padding: 0.05rem 0.2rem;
+        font-size: 0.58rem !important;
+        padding: 0.08rem 0.15rem !important;
+        line-height: 1.15 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
 
       .memo-select {
-        margin-top: 0.15rem;
-        padding: 0.1rem 0.05rem;
-        font-size: 0.62rem;
+        margin-top: 0.12rem !important;
+        padding: 0.1rem 0.05rem !important;
+        font-size: 0.58rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      /* スマホ4列グリッド時の死亡❌マークサイズ調整 */
+      .char-card.is-dead::after {
+        font-size: 2.8rem !important;
+        top: 32% !important;
       }
 
       /* ② 下部：質問＆処刑パネル（全体スクロールに連動して下に自然展開） */
@@ -2883,43 +2968,46 @@
       }
     }
 
-    /* Speech Skip Indicator & Button Only Capture Overlay */
+    /* Speech Skip Indicator: インライン配置（見出し行内） */
+    /* オーバーレイ方式は廃止。#speech-skip-overlay は非表示のまま保持（後方互換） */
     #speech-skip-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 9998;
+      display: none !important; /* 廃止: position:fixed オーバーレイは使わない */
       pointer-events: none;
     }
     #speech-skip-overlay.visible {
-      display: block;
+      display: none !important; /* 廃止 */
     }
     #speech-skip-overlay .skip-badge {
-      position: absolute;
-      /* 審判終了ボタン・自由尋問欄に被らないよう上方に配置 */
-      bottom: 7.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(37, 99, 235, 0.95);
+      display: none !important; /* 廃止 */
+      z-index: 10000;
+    }
+    /* 読み上げスキップボタン: 見出し行インライン配置 (重なりゼロ設計) */
+    #speech-skip-inline {
+      display: none !important; /* 画面フロートは廃止 */
+    }
+    .skip-btn-header-inline {
+      display: none;
+      align-items: center;
+      gap: 0.25rem;
+      background: rgba(37, 99, 235, 0.92);
       color: #fff;
-      font-size: 0.88rem;
+      font-size: 0.78rem;
       font-weight: bold;
-      padding: 0.55rem 1.35rem;
-      border-radius: 2rem;
-      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.75), 0 0 10px rgba(59, 130, 246, 0.5);
-      white-space: nowrap;
-      pointer-events: auto;
-      touch-action: manipulation;
+      padding: 0.25rem 0.65rem;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       cursor: pointer;
       user-select: none;
       animation: speechSkipPulse 1.2s ease-in-out infinite;
-      border: 1.5px solid rgba(255, 255, 255, 0.6);
-      z-index: 10000;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: auto;
     }
-    @keyframes speechSkipPulse {
+    .skip-btn-header-inline.visible {
+      display: inline-flex !important;
+    }
+        @keyframes speechSkipPulse {
       0%, 100% { opacity: 0.7; }
       50% { opacity: 1; }
     }
@@ -3636,7 +3724,11 @@
 
   <!-- Speech Skip Indicator Button (tap button only to skip) -->
   <div id="speech-skip-overlay">
-    <div id="speech-skip-btn" class="skip-badge" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">⏭ タップで読み上げスキップ</div>
+    <!-- 旧オーバーレイ廃止: display:none!important で非表示 -->
+  </div>
+  <!-- 読み上げスキップボタン: 右下フロート固定（全タブから見える） -->
+  <div id="speech-skip-inline">
+    <div id="speech-skip-inline-btn" class="skip-badge-inline" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">⏭ スキップ</div>
   </div>
 
   <!-- SPLASH SCREEN (START WAIT ATTRACT SCREEN) -->
@@ -3882,8 +3974,13 @@
         
         <!-- PAGE 0: Virtual Vote & Suspicion History -->
         <div class="view-page">
-          <div style="font-size:0.88rem; color:var(--accent-amber); font-weight:bold; flex-shrink:0;">
-            📊 仮想投票・疑い度履歴（リアルタイム精査）
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:0.25rem;">
+            <div style="font-size:0.88rem; color:var(--accent-amber); font-weight:bold;">
+              📊 仮想投票・疑い度履歴（リアルタイム精査）
+            </div>
+            <button class="skip-btn-header-inline" id="speech-skip-tab0" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">
+              <span>⏭</span><span class="skip-btn-text">スキップ</span>
+            </button>
           </div>
           
           <div class="vote-history-container" id="vote-history-container">
@@ -3893,7 +3990,12 @@
 
         <!-- PAGE 1: Character List & Interrogation -->
         <div class="view-page">
-          <div id="villager-list-header" style="font-size:0.85rem; color:var(--text-muted); font-weight:bold; margin-bottom:0.25rem;">村人一覧 (尋問・勇者の裁き対象を選択)</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:0.25rem;">
+            <div id="villager-list-header" style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">村人一覧 (尋問・勇者の裁き対象を選択)</div>
+            <button class="skip-btn-header-inline" id="speech-skip-tab1" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">
+              <span>⏭</span><span class="skip-btn-text">スキップ</span>
+            </button>
+          </div>
           <div id="speaker-floating-indicator" onclick="scrollToCurrentSpeaker()">
             <span id="speaker-floating-text">🎙️ 発言中: 〇〇</span>
             <span style="font-size:0.75rem; background:rgba(0,0,0,0.25); padding:0.1rem 0.4rem; border-radius:10px;">タップで移動 ⬇</span>
@@ -4000,6 +4102,9 @@
           <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:0.2rem;">
             <div style="font-size:0.9rem; color:var(--text-muted); font-weight:bold;">タイムライン・尋問ログ</div>
             <div style="display:flex; align-items:center; gap:0.5rem;">
+              <button class="skip-btn-header-inline" id="speech-skip-tab2" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">
+                <span>⏭</span><span class="skip-btn-text">スキップ</span>
+              </button>
               <button id="btn-open-mind-board" onclick="openMindBoardModal()" style="font-size:0.85rem; font-weight:bold; padding:0.45rem 0.9rem; background:linear-gradient(135deg, #ec4899, #be185d); border:1.5px solid #f472b6; color:#fff; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 2px 10px rgba(236,72,153,0.35); transition:all 0.2s ease;">
                 <span>🧠 思考整理</span>
               </button>
@@ -4325,15 +4430,7 @@
           </select>
         </div>
 
-        <div class="setting-item">
-          <div class="setting-label-row">
-            <label for="ai-mode-toggle">🧠 会話AIモード</label>
-          </div>
-          <select id="ai-mode-toggle" class="setting-select" onchange="updateAIModeSetting(this.value)">
-            <option value="auto" selected>自動 (API優先・障害時内蔵)</option>
-            <option value="template_only">内蔵のみ (APIを使わない)</option>
-          </select>
-        </div>
+
 
         <div class="setting-item">
           <div class="setting-label-row">
@@ -4739,9 +4836,11 @@
     // =====================================================
     // 🌐 Cloudflare Workers プロキシ経由 Gemini API 通信モジュール
     // =====================================================
-    const AI_PROXY_URL = "https://werewolf-proxy.peeaizero.workers.dev";
-    let isOfflineMode = false;     // 自動ローカルAIモード（通信上限・エラー時）
-    let useLLMMode = true;         // 手動LLMモードスイッチ
+    // 製品版: 外部API通信は完全無効化。内部AI(計画層+テンプレート)のみで動作
+    const USE_LLM = false;
+    const AI_PROXY_URL = ""; // 製品版ビルドでは空文字（通信先を持たない）
+    let isOfflineMode = true;
+    let useLLMMode = false;
     let aiModeSetting = localStorage.getItem('jinnrou_aiModeSetting') || 'auto';
     let llmConsecutiveFailures = 0; // 連続失敗カウント
     const LLM_MAX_FAILURES = 3;    // 連続失敗閾値を超えたら自動OFF
@@ -4837,14 +4936,9 @@
      * @returns {Promise<string|null>} - AIからの返答テキスト。失敗時はnull
      */
     async function callAIEngine(promptText, agentProfile = null) {
-      if (window.DEBUG_AI_PROMPT) {
-        console.log("🤖 [DEBUG_AI_PROMPT: 送信プロンプト]\n" + promptText);
-      }
-
-      // 既にオフラインモードになっている場合はローカルエンジンへ
-      if (isOfflineMode || !useLLMMode) {
-        fallbackStats.error++;
-        return getLocalFallbackResponse(promptText, agentProfile);
+      // 製品版ではLLM呼び出し・外部通信を完全遮断
+      if (!USE_LLM || isOfflineMode || !useLLMMode || !AI_PROXY_URL) {
+        return null;
       }
 
       const controller = new AbortController();
@@ -6499,7 +6593,7 @@ ${speakerName}の発言:`;
         btn_resume_disc: "▶️ 審判を再開",
         btn_tag_marker: "📌 タグ",
         btn_pursue: "🎯 追及する",
-        skip_speech_btn: "⏭️ タップで読み上げスキップ",
+        skip_speech_btn: "タップでスキップ",
         morning_day1_news: "初日の朝、昨夜の犠牲者は居ませんでした。全員無事です。これより1日目の議論を開始します。制限時間は{time}です。自由に対象へ質問を行ってください。",
         morning_baker: "「今朝もおいしい焼きたてパンが焼き上がりました！」",
         baker_title: "🍞 パン屋より",
@@ -6711,7 +6805,7 @@ ${speakerName}の発言:`;
         btn_resume_disc: "▶️ Resume Trial",
         btn_tag_marker: "📌 Tag",
         btn_pursue: "🎯 Pursue",
-        skip_speech_btn: "⏭️ Tap to Skip Speech",
+        skip_speech_btn: "Tap to Skip",
         morning_day1_news: "Morning of Day 1. There were no casualties last night. Everyone is safe. Discussion for Day 1 begins now. Time limit is {time}. Please interrogate freely.",
         morning_baker: "\"Freshly baked bread is ready this morning!\"",
         baker_title: "🍞 From Baker",
@@ -6923,7 +7017,7 @@ ${speakerName}の発言:`;
         btn_resume_disc: "▶️ 继续审判",
         btn_tag_marker: "📌 标记",
         btn_pursue: "🎯 追问",
-        skip_speech_btn: "⏭️ 轻触跳过朗读",
+        skip_speech_btn: "轻触跳过",
         morning_day1_news: "首日早晨。昨夜无人员伤亡，所有人安然无恙。现在开始第1天的讨论。限制时间为{time}。请自由向目标提问。",
         morning_baker: "「今天早晨香喷喷的新鲜面包也烤好啦！」",
         baker_title: "🍞 来自面包师",
@@ -7135,7 +7229,7 @@ ${speakerName}の発言:`;
         btn_resume_disc: "▶️ 심판 재개",
         btn_tag_marker: "📌 태그",
         btn_pursue: "🎯 추궁",
-        skip_speech_btn: "⏭️ 탭하여 음성 건너뛰기",
+        skip_speech_btn: "탭하여 건너뛰기",
         morning_day1_news: "첫째 날 아침. 어젯밤 희생자는 없었습니다. 모두 무사합니다. 지금부터 1일차 토론을 시작합니다. 제한 시간은 {time}입니다. 자유롭게 질문해 주십시오.",
         morning_baker: "\"오늘 아침에도 갓 구운 맛있는 빵이 완성되었습니다!\"",
         baker_title: "🍞 빵집에서",
@@ -7347,7 +7441,7 @@ ${speakerName}の発言:`;
         btn_resume_disc: "▶️ Reprendre le Débat",
         btn_tag_marker: "📌 Marquer",
         btn_pursue: "🎯 Accuser",
-        skip_speech_btn: "⏭️ Passer la voix",
+        skip_speech_btn: "Passer la voix",
         morning_day1_news: "Matin du 1er Jour. Aucune victime cette nuit. Tout le monde est sain et sauf. Le débat du Jour 1 commence. Temps limite : {time}. Interrogez librement.",
         morning_baker: "\"Du bon pain chaud et croustillant vient de sortir du four !\"",
         baker_title: "🍞 Le Boulanger",
@@ -9430,19 +9524,24 @@ ${speakerName}の発言:`;
     let currentSpeechResolver = null;
 
     function showSpeechSkipIndicator() {
-      const el = document.getElementById('speech-skip-overlay');
-      if (el) el.classList.add('visible');
-      const skipBtn = document.getElementById('speech-skip-btn') || document.querySelector('#speech-skip-overlay .skip-badge');
       const t = I18N_TRANSLATIONS[currentAppLanguage] || I18N_TRANSLATIONS.ja;
-      if (skipBtn && t && t.skip_speech_btn) {
-        skipBtn.textContent = t.skip_speech_btn;
-      }
+      const skipLabel = (t && t.skip_speech_btn) ? t.skip_speech_btn : 'スキップ';
+      [0, 1, 2].forEach(idx => {
+        const btn = document.getElementById('speech-skip-tab' + idx);
+        if (btn) {
+          btn.classList.add('visible');
+          const txtSpan = btn.querySelector('.skip-btn-text');
+          if (txtSpan) txtSpan.textContent = skipLabel;
+        }
+      });
       isSpeechPlaying = true;
     }
 
     function hideSpeechSkipIndicator() {
-      const el = document.getElementById('speech-skip-overlay');
-      if (el) el.classList.remove('visible');
+      [0, 1, 2].forEach(idx => {
+        const btn = document.getElementById('speech-skip-tab' + idx);
+        if (btn) btn.classList.remove('visible');
+      });
       isSpeechPlaying = false;
     }
 
@@ -11272,11 +11371,11 @@ const SHOP_ROLE_DEFS = [
                   "ko": "나"
             },
             "honorific": {
-                  "ja": "貴様",
+                  "ja": "", // 呼び捨て（「ふぶき貴様」等の二重呼称を防止）
                   "en": "",
                   "fr": "",
-                  "zh": "这家伙",
-                  "ko": "네놈"
+                  "zh": "",
+                  "ko": ""
             },
             "reaction": "angry",
             "favoriteEvidence": "vote_flip",
@@ -14212,11 +14311,11 @@ const SHOP_ROLE_DEFS = [
       // ③ 真村人の場合：嘘の役職騙りは行わず、論理的反論または潔白主張
       else if (realRole === 'villager') {
         const dict = {
-          ja: `急な黒出しですね。${seerName}さんはあからさまな偽賢者で、無実の村人である私を濡れ衣で吊らせようとしています！村の皆さん、この偽賢者の破綻を精査してください！`,
-          en: `A sudden accusation of darkness! ${seerName} is clearly a false Sage, seeking to frame an innocent villager such as myself! Good people of the village, scrutinize the contradictions of this impostor!`,
-          zh: `如此唐突的黑名指控！${seerName}分明是假冒贤者，企图以莫须有的罪名将无辜村民逼上绝路！恳请诸位同乡彻查此伪贤者的破绽！`,
-          ko: `갑작스러운 흑판정이군요. ${seerName}은(는) 노골적인 가짜 현자로, 무고한 마을 주민인 저를 누명 씌워 처형하려 하고 있습니다! 마을 여러분, 이 가짜 현자의 모순을 철저히 따져 주십시오!`,
-          fr: `Une accusation bien soudaine ! ${seerName} est manifestement un faux Sage cherchant à faire pendre un innocent villageois ! Chers villageois, examinez les contradictions de cet imposteur !`
+          ja: `急な黒出しですね。${seerName}さんの占い結果には根拠が示されていません。私は村人として潔白です。私への疑いより、${seerName}さんの鑑定の信憑性を検討すべきではないでしょうか。`,
+          en: `A sudden accusation! ${seerName} has provided no grounds for this result. I am innocent. Rather than my guilt, we should examine the credibility of ${seerName}'s divination.`,
+          zh: `如此唐突的黑名指控！${seerName}并未说明鉴定根据。某乃清白之人。与其怀疑某，不如检讨${seerName}占验的可信度。`,
+          ko: `갑작스러운 흑판정이군요. ${seerName}은(는) 감정 근거를 제시하지 않았습니다. 저는 결백한 마을 주민입니다. 저의 혐의보다 ${seerName}의 감정 신뢰도를 검토해야 하지 않을까요?`,
+          fr: `Une accusation bien soudaine ! ${seerName} n'a fourni aucun fondement à ce résultat. Je suis innocent. Plutôt que de me soupçonner, il faudrait examiner la crédibilité de la divination de ${seerName}.`
         };
         msg = dict[lang] || dict.ja;
       }
@@ -14261,12 +14360,12 @@ const SHOP_ROLE_DEFS = [
           }
         } else {
           const dict = {
-            ja: `急な黒出しですね。${seerName}さんは昨日から誘導があからさまですし、あからさまな偽賢者の擦り付けです！私の潔白を証明するために、この偽賢者の破綻を精査してください！`,
-            en: `A sudden accusation of darkness! ${seerName}'s manipulations have been blatant since yesterday — a transparent attempt by a false Sage to pin blame! Examine the impostor's contradictions to prove my innocence!`,
-            zh: `如此唐突的黑名指控！${seerName}从昨日起便诱导明显，不过是假冒贤者的嫁祸之计！请诸位彻查此伪贤者的破绽以证某之清白！`,
-            ko: `갑작스러운 흑판정이군요. ${seerName}은(는) 어제부터 유도가 노골적이었으며, 가짜 현자의 뻔한 누명 씌우기입니다! 저의 결백을 증명하기 위해, 이 가짜 현자의 모순을 철저히 검증해 주십시오!`
+            ja: `急な黒出しですね。${seerName}さんの占い根拠が示されていません。これまでの${seerName}さんの発言の一貫性と、私自身の行動履歴を照らし合わせて判断していただきたい。`,
+            en: `A sudden accusation! ${seerName} has not explained the grounds for this result. I ask you to compare ${seerName}'s consistency of speech against my own record of actions.`,
+            zh: `如此唐突的黑名指控！${seerName}并未说明鉴定根据。恳请对照${seerName}发言的一致性与某的行动记录，客观判断。`,
+            ko: `갑작스러운 흑판정이군요. ${seerName}은(는) 감정 근거를 제시하지 않았습니다. ${seerName}의 발언 일관성과 제 행동 기록을 비교하여 판단해 주십시오.`
           ,
-            fr: `Une accusation bien soudaine ! Depuis hier, les manœuvres de ${seerName} sont flagrantes — une ruse évidente d'un faux Sage pour se dédouaner ! Examinez ses contradictions pour prouver mon innocence !`
+            fr: `Une accusation bien soudaine ! ${seerName} n'a pas expliqué les bases de ce résultat. Je vous demande de comparer la cohérence des paroles de ${seerName} avec mon propre historique d'actions.`
           };
           msg = dict[lang] || dict.ja;
         }
@@ -15359,9 +15458,8 @@ const SHOP_ROLE_DEFS = [
       const topVotedChar = sortedByVotes.length > 0 ? sortedByVotes[0].char : null;
       const myVoteCount = votesAgainstSpeaker;
 
-      // 「自身が最多票を集めている」かつ「2票以上または過半数の票が集まっている」、かつ「疑心度が80以上」の場合のみ処刑危機とみなす
-      const isUnderAttack = (speaker === topVotedChar && myVoteCount >= 2 && myVoteCount >= Math.floor(aliveTotal * 0.4)) ||
-                            (gameState.virtualVotes[speaker] && gameState.virtualVotes[speaker].suspicionScore >= 80);
+      // 他者からの最多得票、かつ2票以上または全生存者の3割以上の票が集まっている場合のみ処刑危機とみなす
+      const isUnderAttack = (speaker === topVotedChar && myVoteCount >= 2 && myVoteCount >= Math.floor(aliveTotal * 0.3));
 
       if (!isUnderAttack) return null;
 
@@ -15815,425 +15913,632 @@ const SHOP_ROLE_DEFS = [
       return results;
     }
 
+    /**
+     * 【口調・敬称付与層】applyVoiceStyle(text, speaker, plan)
+     * キャラクタープロファイル (一人称、敬称) をテンプレートに適用
+     */
+    function applyVoiceStyle(text, speaker, plan) {
+      if (!text) return '';
+      const lang = currentAppLanguage || 'ja';
+      const prof = (gameState.charProfiles && gameState.charProfiles[speaker]) || {};
+      const speakerName = getCharDisplayName(speaker);
+      const targetName = plan && plan.target ? getCharDisplayName(plan.target) : '';
+
+      // 1. 一人称置換 ({self})
+      let fp = '私';
+      if (prof && prof.firstPerson) {
+        fp = (typeof prof.firstPerson === 'object') ? (prof.firstPerson[lang] || prof.firstPerson.ja || '私') : prof.firstPerson;
+      }
+
+      // 2. 二人称・敬称置換 ({target}, {addr:target}, {speaker})
+      let hon = 'さん';
+      if (prof && prof.honorific) {
+        hon = (typeof prof.honorific === 'object') ? (prof.honorific[lang] !== undefined ? prof.honorific[lang] : (prof.honorific.ja || '')) : prof.honorific;
+      }
+      const combinedTarget = targetName ? (hon ? (targetName + hon) : targetName) : '';
+
+      let styled = text;
+      styled = styled.replace(/{self}/g, fp);
+      styled = styled.replace(/{target}|{addr:target}/g, combinedTarget);
+      styled = styled.replace(/{targetName}/g, targetName);
+      styled = styled.replace(/{speaker}/g, speakerName);
+
+      return styled;
+    }
+
     // 第2層: 文型テンプレート定義 (PIPELINE_TEMPLATES)
+    // ============================================================
+    // 第2層: 文型テンプレート定義 (PIPELINE_TEMPLATES)
+    // 【C-1, C-4, C-5仕様】
+    // 1. 本文から【指摘】等のラベルを完全排除 (C-4)
+    // 2. 「皆さん」や日和見まとめ発言等の禁止フレーズを完全排除 (C-5)
+    // 3. 各意図ごとに最低6種類のバリエーションを確保 (C-1)
+    // ============================================================
     const PIPELINE_TEMPLATES = {
-      // 1. accuse (疑い先がある)
+      // ------------------------------------------------------------
+      // 1. accuse (事実ゲート通過時の追及・非難)
+      // ------------------------------------------------------------
       'accuse.logic_busted.01': {
-        ja: "【断定】{addr:target}の主張は完全に破綻している。{evidence}。本日の処刑はあの者で決定だ！",
-        en: "[Definite] The claims of {addr:target} have completely collapsed: {evidence}. Our execution this day is decided!",
-        fr: "[Incontestable] Les déclarations de {addr:target} sont incohérentes : {evidence}. L'exécution est tranchée !",
-        zh: "【断定】{addr:target}之主张已彻底破绽百出：{evidence}。今日之裁决已无二选！",
-        ko: "【단정】{addr:target} 님의 주장은 완전히 파탄 났소: {evidence}. 오늘의 처형 대상은 저자요!"
+        ja: "{addr:target}の主張は客観的に破綻している。{evidence}という事実がある以上、これ以上の弁解は通らない。",
+        en: "The testimony of {addr:target} has completely broken down. Given that {evidence}, no further excuse can stand."
       },
       'accuse.logic_busted.02': {
-        ja: "【指摘】客観的事実を見よ。{addr:target}の言動は明白な矛盾を抱えている。{evidence}。これ以上議論の余地はない！",
-        en: "[Notice] Look upon the facts. The testimony of {addr:target} bears blatant contradiction: {evidence}. There is no room left for debate!",
-        fr: "[Preuve] Regardez les faits. Les propos de {addr:target} portent une contradiction flagrante : {evidence}. Il n'y a plus lieu de débattre !",
-        zh: "【明示】诸君且观铁证。{addr:target}之言行自相矛盾：{evidence}。此局已无辩驳余地！",
-        ko: "【지적】객관적 사실을 직시하시오. {addr:target} 님의 언동은 명백한 모순투성이요: {evidence}. 논쟁할 여지가 없소!"
+        ja: "客観的ログを直視すべきだ。{addr:target}の言動には明白な矛盾がある。{evidence}。疑う余地はない。",
+        en: "Look directly upon the objective logs. {addr:target} bears blatant contradiction: {evidence}. There is no room left for doubt."
       },
       'accuse.silence.01': {
-        ja: "【追及】{addr:target}、先ほどから口数が極端に少ないようだな。沈黙に逃げ込んでも疑いが晴れることはないぞ！",
-        en: "[Scrutiny] {addr:target}, thou hast been unnaturally silent. Hiding behind silence shall not dispel our suspicion!",
-        fr: "[Examen] {addr:target}, vous vous murez dans le silence. Se taire ne dissipera point les soupçons !",
-        zh: "【追查】{addr:target}，阁下从方才起便言辞极少。遁入沉默绝不能洗脱嫌疑！",
-        ko: "【추궁】{addr:target} 님, 아까부터 말수가 극히 적으시구려. 침묵으로 일관한다고 의혹이 씻기진 않소!"
+        ja: "{addr:target}、先ほどから発言が極端に少ない。沈黙を保ち続けても疑念が晴れることはないぞ。",
+        en: "{addr:target}, thou hast spoken remarkably little. Remaining silent will not dispel our doubts."
       },
       'accuse.silence.02': {
-        ja: "【指摘】周りの議論を伺うだけで自ら推理を語らない{addr:target}の姿勢、潜伏する魔物の動きそのものに見える。",
-        en: "[Notice] Merely observing others without offering thy own reasoning, {addr:target}, looks exactly like a lurking beast.",
-        fr: "[Constat] Observer les autres sans proposer de raisonnement, {addr:target}, ressemble fort à un monstre dissimulé.",
-        zh: "【指出】只冷眼旁观而不吐露己见的{addr:target}，其举止与潜伏的魔物如出一辙。",
-        ko: "【지적】남들의 논의만 살피며 스스로 추리를 말하지 않는 {addr:target} 님의 모습, 숨어든 마물 바로 그 자체요."
+        ja: "周りの出方を伺うだけで自ら推理を語らない{addr:target}の姿勢、潜伏する魔物の動きそのものに見える。",
+        en: "Merely observing the discussion without sharing thy own reasoning, {addr:target}, looks like the conduct of a lurking beast."
+      },
+      'accuse.silence.03': {
+        ja: "{addr:target}、沈黙を貫くことで追及の矛先をやり過ごそうとしていないか？今こそ明確な見解を示すべきだ。",
+        en: "{addr:target}, art thou staying silent merely to avoid suspicion? Step forward now and state thy view."
       },
       'accuse.contradiction.01': {
-        ja: "【弾劾】{addr:target}の発言には明らかな前言撤回がある！さっきの主張と今の意見が真っ向から食い違っているぞ。",
-        en: "[Condemnation] There is blatant contradiction in {addr:target}'s claims! Their former words clash completely with their present stance.",
-        fr: "[Condamnation] Il y a une contradiction flagrante chez {addr:target} ! Ses propos passés s'opposent totalement à son discours actuel.",
-        zh: "【弹劾】{addr:target}所言自相抵触！方才的主张与如今的说辞根本南辕北辙。",
-        ko: "【탄핵】{addr:target} 님의 발언에는 명백한 모순이 있소! 아까의 주장과 지금의 의견이 정면으로 엇갈리고 있잖소."
+        ja: "{addr:target}の発言には明らかな前言撤回がある。直前の主張と現在の発言が真っ向から食い違っているぞ。",
+        en: "There is an evident reversal in {addr:target}'s claims. Thy earlier words clash directly with thy current stance."
       },
       'accuse.contradiction.02': {
-        ja: "【疑問】状況に応じて都合よく主張を塗り替えている{addr:target}は信じられない。何のための意見変更なのか説明してもらおう。",
-        en: "[Doubt] I cannot trust {addr:target}, who shapeth their claims to suit the hour. Explain why thou hast shifted thy stance!",
-        fr: "[Doute] Je ne puis faire confiance à {addr:target}, qui change d'avis par pure convenance. Qu'il explique ce revirement !",
-        zh: "【质疑】随局势随心变更说辞的{addr:target}绝不可信。还请向诸位解释这翻手为云覆手为雨的缘由！",
-        ko: "【의문】상황에 따라 말을 손바닥 뒤집듯 바꾸는 {addr:target} 님은 믿을 수 없소. 의견 변경의 이유를 납득시켜 보시오."
-      },
-      'accuse.over_defend.01': {
-        ja: "【疑惑】{addr:target}、なぜそこまで特定の人物を必死に庇い立てするのだ？不自然なラインが浮き彫りになっているぞ！",
-        en: "[Suspicion] {addr:target}, why dost thou defend that certain person with such desperation? An unnatural alliance is laid bare!",
-        fr: "[Soupçon] {addr:target}, pourquoi défendez-vous cette personne avec tant d'acharnement ? Une complicité suspecte se dessine !",
-        zh: "【疑窦】{addr:target}，为何要这般拼死回护特定之人？其间不自然的暗合与勾结已昭然若揭！",
-        ko: "【의혹】{addr:target} 님, 어찌하여 특정 인물을 그토록 결사적으로 감싸는 것이오? 부자연스러운 연계가 훤히 드러나고 있소!"
-      },
-      'accuse.over_defend.02': {
-        ja: "【指摘】客観的な根拠も示さず盲目的に擁護を続ける{addr:target}の態度は、魔物の仲間庇いと見做すに十分だ。",
-        en: "[Notice] Defending others blindly without proof, as {addr:target} doth, is ample reason to suspect fiendish collusion.",
-        fr: "[Constat] Défendre aveuglément sans preuves tangibles, comme le fait {addr:target}, suggère fortement une complicité de monstres.",
-        zh: "【明断】毫无真凭实据却一味盲目回护他人的{addr:target}，其行径足以判定为魔物暗中庇护同党。",
-        ko: "【지적】객관적 근거도 없이 맹목적인 감싸기만 일삼는 {addr:target} 님의 태도는, 마물의 동료 옹호로 보기에 충분하오."
+        ja: "状況に応じて都合よく主張を塗り替えている{addr:target}は信じられない。何のための意見変更なのか説明してほしい。",
+        en: "I cannot trust {addr:target}, who changes claims conveniently. Explain the reason for this sudden change."
       },
       'accuse.vote_flip.01': {
-        ja: "【追及】{addr:target}の投票行動の急変を見逃してはならない。直前の投票先を唐突に乗り換えた理由は何だ！？",
-        en: "[Scrutiny] We must not overlook {addr:target}'s sudden change of vote. What prompted this abrupt betrayal of thy former choice!?",
-        fr: "[Interpellation] Ne manquons point le revirement soudain de vote de {addr:target}. Quelle raison a motivé ce brusque changement !?",
-        zh: "【质问】决不能漏看{addr:target}投票去向之骤变。冷不防改弦更张的缘由究竟为何！？",
-        ko: "【추궁】{addr:target} 님의 투표 행적 급변을 놓쳐선 안 되오. 직전의 투표 대상을 갑작스레 바꾼 이유가 무엇이오!?"
+        ja: "{addr:target}の投票行動の急変を見逃してはならない。直前で唐突に投票先を乗り換えた理由は何だ！？",
+        en: "We must not overlook {addr:target}'s sudden shift in votes. What prompted thee to change thy target so abruptly!?"
       },
       'accuse.vote_flip.02': {
-        ja: "【疑惑】土壇場で投票先を翻した{addr:target}の動きは、味方を救うための組織票の切り替えではないのか？",
-        en: "[Suspicion] Did {addr:target} flip their vote at the eleventh hour merely to shield a demonic ally?",
-        fr: "[Soupçon] {addr:target} a-t-il changé son vote à la dernière seconde pour sauver un complice monstrueux ?",
-        zh: "【生疑】在紧要关头擅改票选的{addr:target}，莫非是为了拯救同伙而紧急调转票源？",
-        ko: "【의문】막판에 투표 대상을 뒤집은 {addr:target} 님의 행보는, 동료를 구하기 위한 표 갈아타기가 아니었소?"
-      },
-      'accuse.ignored_question.01': {
-        ja: "【追及】{addr:target}、向けられた問いに一切答えず話題を逸らそうとしているな。答えられない疚しさがあるのか！",
-        en: "[Query] {addr:target}, thou hast deflected questions put directly to thee. Art thou guilty and unable to reply!?",
-        fr: "[Question] {addr:target}, vous éludez la question qui vous a été posée. Cachez-vous une culpabilité inavouable !?",
-        zh: "【严问】{addr:target}，阁下对直面之问讯避而不答反而顾左右而言他。莫非做贼心虚无法回应！",
-        ko: "【추궁】{addr:target} 님, 질문을 받고도 일절 답하지 않은 채 화제를 돌리려 하시는구려. 찔리는 구석이라도 있는 것이오!"
+        ja: "土壇場で投票先を翻した{addr:target}の動きは、味方を救うための組織票の切り替えではないのか？",
+        en: "Did {addr:target} flip their vote at the final moment to rescue a disguised ally?"
       },
       'accuse.statement_inconsistency.01': {
-        ja: "【疑問】{addr:target}の発言ログにどうにも違和感を感じる。発言の変遷と投票先の動きに不自然な偏りがあるな。",
-        en: "[Doubt] I sense great discordance in the testimony of {addr:target}. Their shifting words and voting patterns are unnatural.",
-        fr: "[Doute] Je ressens une dissonance dans les propos de {addr:target}. Ses revirements et votes sont suspects.",
-        zh: "【疑问】观{addr:target}之言论总觉不妥。其前后辞令与投票行径大有蹊跷。",
-        ko: "【의문】{addr:target} 님의 발언 기록에 위화감이 있소. 언동의 변화와 투표 행보に 부자연스러운 편중이 보이오."
+        ja: "{addr:target}の発言ログにどうにも違和感がある。言動の変遷と投票先の動きに不自然な偏りがあるな。",
+        en: "There is clear discordance in the statements of {addr:target}. Thy shifting words and votes are unnatural."
       },
       'accuse.statement_inconsistency.02': {
-        ja: "【追及】{addr:target}、その推理の根拠はどこにあるのだ？他者に疑いを向けるばかりで、具体的な事実が何も語られていないぞ。",
-        en: "[Query] {addr:target}, where is the foundation of thy reasoning? Thou dost cast suspicion without offering concrete facts.",
-        fr: "[Question] {addr:target}, où est le fondement de votre raisonnement ? Vous accusez les autres sans faits concrets.",
-        zh: "【质问】{addr:target}，尔之推论依凭何在？一味攻讦他人，却无半点真凭实据。",
-        ko: "【추궁】{addr:target} 님, 그 추리의 근거는 어디에 있소? 남을 의심하기만 할 뿐 구체적인 사실이 없잖소."
-      },
-      'accuse.memory_repeat.01': {
-        ja: "【一貫】さっきも言った通りだ。余は依然として{addr:target}への疑いを崩していない。ログを洗えば洗うほど怪しさが際立つ！",
-        en: "[Consistency] As I stated earlier, my suspicion toward {addr:target} stands unshaken. The more records we sift, the guiltier they appear!",
-        fr: "[Cohérence] Comme je l'ai déjà dit, mon soupçon envers {addr:target} reste intact. Plus on examine les registres, plus il paraît coupable !",
-        zh: "【一贯】正如在下方才所言，某对{addr:target}之疑虑未曾动摇分毫。越是细查记录，其嫌疑便越发显著！",
-        ko: "【일관】아까도 말했듯이, 저는 여전히 {addr:target} 님에 대한 의심을 거두지 않았소. 기록을 살필수록 의혹은 짙어질 뿐이오!"
-      },
-      'accuse.memory_flip.01': {
-        ja: "【見解変更】先ほどは別人を疑っていたが、新たな言動ログを精査して考えを改めた。真に吊るべきは{addr:target}だ！",
-        en: "[Change of Mind] I doubted another earlier, but examining new testimonies hath changed my mind. The true target must be {addr:target}!",
-        fr: "[Revirement Réfléchi] Je doutais d'un autre auparavant, mais les nouveaux registres m'ont fait changer d'avis. C'est {addr:target} qu'il faut juger !",
-        zh: "【修正判定】方才某虽疑及他人，但细审最新言行记录后已改变看法。真正该受审判者乃是{addr:target}！",
-        ko: "【의견 수정】조금 전엔 다른 자를 의심했으나, 새로운 언동 기록을 검토하고 생각을 고쳤소. 진정 처형해야 할 자는 {addr:target} 님이오!"
+        ja: "{addr:target}、その判断の根拠はどこにあるのだ？他者に疑いを向けるばかりで、具体的な事実が何も語られていない。",
+        en: "{addr:target}, where is the ground for thy judgment? Casting suspicion on others without stating facts proves nothing."
       },
 
-      // 2. defend (弁明・潔白主張)
-      'defend.innocence_claim.01': {
-        ja: "待ってくれ！なぜ{self}に疑いの目を向けるのだ！？これまでの発言や投票行動を見れば、魔物でないことは自明のはずだ！",
-        en: "Hold a moment! Why cast suspicion upon {self}!? My past deeds and votes make it plain that I am no monster!",
-        fr: "Attendez ! Pourquoi me soupçonner moi, {self} !? Mes actes et votes prouvent que je ne suis point un monstre !",
-        zh: "且慢！为何将疑窦引向{self}！？纵观在下历次言辞与表决，绝非魔物之流！",
-        ko: "잠깐 멈추시오! 어찌하여 {self}에게 의심의 눈초리를 보내시오!? 지난 언동과 투표를 보면 마물이 아님이 자명하오!"
+      // ------------------------------------------------------------
+      // 2. inquiry (質問型・根拠要求型・意見要求型)
+      // ------------------------------------------------------------
+      'inquiry.seer_stance.01': {
+        ja: "{addr:target}、賢者が2人並び立っている現状について、どちらの占い結果をより信頼すべきだと考えている？",
+        en: "{addr:target}, with two Sages standing, which divination result dost thou place greater trust in?"
       },
-      'defend.innocence_claim.02': {
-        ja: "身に覚えのない言いがかりだ！{self}を処刑すれば無辜の民の血が流れることになるぞ！冷静になってくれ！",
-        en: "A baseless accusation! Executing {self} shall only spill innocent blood! Compose yourselves!",
-        fr: "Une accusation sans fondement ! Exécuter {self} ne fera que verser le sang d'un innocent ! Calmez-vous !",
-        zh: "此乃无端构陷！若处决{self}，流淌的唯有无辜者之鲜血！诸君切请清醒！",
-        ko: "터무니없는 억측이오! {self}을(를) 처형하면 무고한 피만 흐를 뿐이오! 진정하시오!"
+      'inquiry.seer_stance.02': {
+        ja: "{addr:target}の見解を聞かせてくれ。賢者COを行っている2人のうち、言動から真と見ているのはどちらだ？",
+        en: "Tell us thy thought, {addr:target}. Between the two claiming Sage, which dost thou perceive as true?"
       },
-      'defend.innocence_claim.03': {
-        ja: "恐慌に任せて{self}を疑うのはやめてくれ。今処刑すべきは他にいるはずだ！",
-        en: "Do not cast doubt on {self} out of panic. The true fiend we must execute lieth elsewhere!",
-        fr: "Ne cédez point à la panique pour accuser {self}. Le véritable monstre à exécuter est ailleurs !",
-        zh: "切勿因惊慌失措而妄疑{self}。眼下真正当斩之魔另有其人！",
-        ko: "공포에 휩쓸려 {self}을(를) 의심치 마시오. 지금 처단해야 할 자는 따로 있소!"
+      'inquiry.reason_request.01': {
+        ja: "{addr:target}、今の盤面で最も怪しいと睨んでいる人物と、その判断に至った客観的な根拠を聞かせてほしい。",
+        en: "{addr:target}, tell us who thou suspectest most in this assembly, and the objective evidence behind it."
       },
-      'defend.innocence_claim.04': {
-        ja: "断じて魔物ではない！{self}への投票は村を敗北へ導くだけだ。盤面をもう一度見直してくれ！",
-        en: "I am unequivocally no beast! Voting {self} only leadeth the village to ruin. Review the board anew!",
-        fr: "Je ne suis nullement un monstre ! Voter contre {self} ne mènera le village qu'à sa perte. Réexaminez la situation !",
-        zh: "绝非魔孽之党！票决{self}只会将全村推向覆灭。万请诸君重审大局！",
-        ko: "결단코 마물이 아니오! {self}에게 표를 던지는 것은 파멸로 향하는 지름길일 뿐이오. 형세를 다시 살피시오!"
+      'inquiry.reason_request.02': {
+        ja: "{addr:target}、その人物を疑う理由をもう少し具体的に説明してくれないか？判断の材料を共有してほしい。",
+        en: "{addr:target}, couldst thou explain more concretely thy reason for doubting that person?"
+      },
+      'inquiry.general_view.01': {
+        ja: "{addr:target}、これまでの議論の流れを見て、何か引っかかる点や不自然に思えた言動はなかったか？",
+        en: "{addr:target}, looking upon the course of discussion thus far, hast thou noticed any suspicious words?"
+      },
+      'inquiry.general_view.02': {
+        ja: "{addr:target}、本日の処刑先を決定するにあたり、最も重視すべきファクトは何だと考えている？",
+        en: "{addr:target}, what fact dost thou consider paramount when deciding whom to execute this day?"
       },
 
-      // 3. answer (質問への回答)
-      'answer.clarification.01': {
-        ja: "{addr:target}の問いに答えよう。{self}が不審視しているのは盤面の客観的データに基づいている。私情で疑っているわけではない。",
-        en: "I shall answer {addr:target}. My suspicion is anchored in objective data, not petty personal whim.",
-        fr: "Je réponds à {addr:target}. Mon soupçon repose sur des données objectives, nullement sur une rancœur personnelle.",
-        zh: "便来回应{addr:target}所问。{self}之所以生疑，皆立足于客观铁证，绝无半分私情偏见。",
-        ko: "{addr:target} 님의 물음에 답하겠소. {self}이(가) 의혹을 품는 것은 객관적인 근거에 의한 것이지 사사로운 감정이 아니오."
-      },
-      'answer.clarification.02': {
-        ja: "{addr:target}の疑問はもっともだが、感情論ではなく投票ログの事実関係を再精査してほしい。",
-        en: "The question of {addr:target} is natural, but examine the voting facts rather than swayed emotions.",
-        fr: "La question de {addr:target} est légitime, mais fions-nous aux registres de vote plutôt qu'à l'émotion.",
-        zh: "{addr:target}所问固然在理，然望诸君依凭客观记录定夺，切莫被情绪裹挟。",
-        ko: "{addr:target} 님의 의문은 당연하나, 감정론이 아닌 객관적인 투표 기록을 재검토해 주길 바라오."
-      },
-      'answer.clarification.03': {
-        ja: "その質問を待っていた。{self}が怪しいと睨んでいる理由は、言動の矛盾と沈黙のタイミングだ。",
-        en: "I awaited that question. The reason {self} suspects them is their contradictory words and opportune silence.",
-        fr: "J'attendais cette question. Si {self} s'en méfie, c'est en raison de ses contradictions et de son silence opportun.",
-        zh: "正待此问。{self}之所以疑彼，全因其言行自相抵触，且总在关键处缄默不言。",
-        ko: "그 질문을 기다리고 있었소. {self}이(가) 수상쩍게 여기는 까닭은 언동의 모순과 절묘한 침묵의 타이밍 때문이오."
-      },
-      'answer.clarification.04': {
-        ja: "率直に答えよう。{addr:target}、そなた自身のこれまでの投票ラインにこそ、余が確信を深めた鍵がある。",
-        en: "I answer candidly: in thy own voting history, {addr:target}, lieth the very key to my conviction.",
-        fr: "Je réponds franchement : c'est dans votre propre historique de vote, {addr:target}, que réside la clé de ma conviction.",
-        zh: "直言奉告。{addr:target}，阁下历次投票之痕迹，正是在下深信不疑之关键！",
-        ko: "솔직히 답하겠소. {addr:target} 님 자신의 지금까지의 투표 궤적에야말로 제가 확신을 품은 열쇠가 있소."
-      },
-
-      // 4. contest (役職対抗・真偽追及)
+      // ------------------------------------------------------------
+      // 3. contest (役職対抗の追及・真偽精査)
+      //    (A) 役職CO者限定 (speaker.coRole === 'seer')
+      // ------------------------------------------------------------
       'contest.co_conflict.01': {
-        ja: "【対抗弾劾】真の賢者は{self}だ！{addr:target}の騙りに惑わされてはならない。偽りの判定で村を滅ぼす気か！",
-        en: "[Rival Challenge] The true Sage is {self}! Be not deceived by the false claim of {addr:target}!",
-        fr: "[Défi Rival] Le véritable Voyant est {self} ! Ne vous laissez point abuser par les mensonges de {addr:target} !",
-        zh: "【对立弹劾】真正之贤者乃是{self}！切莫受{addr:target}之伪言蛊惑！",
-        ko: "【대항 탄핵】진정한 현자는 바로 {self}이오! {addr:target} 님의 거짓에 현혹되지 마시오!"
+        ja: "真の賢者は{self}だ。{addr:target}の偽りの名乗りに惑わされてはならない。村を誤った判定で滅ぼす気か！",
+        en: "I alone am the true Sage. Be not deceived by the false claim of {addr:target}!"
       },
       'contest.co_conflict.02': {
-        ja: "【真偽追及】{addr:target}の占い結果の出し方はあまりに不自然だ。対抗者として、あの者の判定の綻びを徹底的に追及する！",
-        en: "[Scrutiny] The way {addr:target} produces divination results is thoroughly unnatural. As a rival, I will expose every flaw!",
-        fr: "[Examen] La manière dont {addr:target} révèle ses visions est suspecte. Je démasquerai chacune de ses failles !",
-        zh: "【验明真伪】{addr:target}公布占验之法极尽做作。身为对立者，在下必将彻查其破绽！",
-        ko: "【진위 추궁】{addr:target} 님의 점괘 발표 방식은 너무나 부자연스럽소. 대항자로서 그 허점을 끝까지 파헤치겠소!"
+        ja: "{addr:target}の占い結果の出し方はあまりに不自然だ。対抗者として、その鑑定の綻びを徹底的に追及する。",
+        en: "The manner in which {addr:target} presents divination is unnatural. As true rival, I shall dismantle those flaws."
       },
       'contest.co_conflict.03': {
-        ja: "【審判要求】賢者が2人並び立っている以上、どちらかが魔物の偽物だ。{addr:target}の鑑定結果の矛盾を洗い出せば真実は自ずと明らかになる！",
-        en: "[Judgment] With two Sages standing, one is assuredly an imposter. Exposing the flaws in {addr:target}'s results shall reveal the truth!",
-        fr: "[Jugement] Deux Voyants se font face : l'un est forcément un imposteur. Révéler les failles de {addr:target} dévoilera la vérité !",
-        zh: "【诉请公断】既然两位贤者并立，其一必是妖邪冒充。只要彻查{addr:target}之占验漏洞，真相便自昭然！",
-        ko: "【심판 요구】현자가 둘이나 나선 이상, 하나는 틀림없는 마물의 사칭이오. {addr:target} 님의 판정 모순을 밝히면 진실은 드러날 것이오!"
+        ja: "賢者が2人出ている以上、一方は確実に魔物の騙りだ。{addr:target}のこれまでの言動との矛盾を洗えば真実は明らかになる。",
+        en: "With two claiming Sage, one is surely an impostor. Scrutinizing {addr:target}'s words will reveal the truth."
       },
       'contest.co_conflict.04': {
-        ja: "【役職追及】{addr:target}、神聖な役職を騙る罪の重さを思い知るがいい。その偽証の仮面を余が剥ぎ取ってやる！",
-        en: "[Unmasking] {addr:target}, thou shalt learn the weight of falsely claiming a sacred role! I shall tear away thy deceitful mask!",
-        fr: "[Démystification] {addr:target}, vous mesurerez le poids d'usurper un rôle sacré ! J'arracherai ce masque menteur !",
-        zh: "【揭露虚伪】{addr:target}，妄称神圣神职之重罪尔等当自知！且看在下当众撕下尔之伪面具！",
-        ko: "【사칭 추궁】{addr:target} 님, 성스러운 직업을 사칭한 죄의 무게를 깨닫게 될 것이오. 그 위선의 가면을 내가 벗겨내겠소!"
+        ja: "{addr:target}、神聖な役職を騙る罪の重さを知るがいい。その偽証の仮面を剥ぎ取ってやる。",
+        en: "{addr:target}, know the gravity of profaning a sacred mantle. I shall tear away thy mask of perjury."
+      },
+      'contest.co_conflict.05': {
+        ja: "{addr:target}、そなたの占いは後出しで都合のいい結果ばかり並べている。真の賢者として断じて看過できない。",
+        en: "{addr:target}, thy divinations are convenient afterthoughts. As true Sage, I shall not tolerate it."
+      },
+      'contest.co_conflict.06': {
+        ja: "村の命運がかかっているのだ。{addr:target}の曖昧な鑑定理由に騙されてはならない。余の視座こそが本物だ。",
+        en: "The fate of the village is at stake. Be not fooled by {addr:target}'s vague reasons. Mine eyes see the truth."
       },
 
-      // 5. distance (魔物の身内切り)
-      'distance.betrayal.01': {
-        ja: "庇いきれないな……{addr:target}の主張の綻びは明白だ。ここは冷静にあの者を裁くのが村の利益になるはずだ。",
-        en: "They can no longer be defended... The flaws in {addr:target}'s testimony are clear. Executing them serves our best interest.",
-        fr: "Impossible de défendre cela... Les failles de {addr:target} sont évidentes. Son exécution est nécessaire.",
-        zh: "实难回护……{addr:target}之破绽已昭然若揭。理当斩断犹豫，将彼送上审判台。",
-        ko: "더는 감싸줄 수 없구려…… {addr:target} 님의 파탄은 명백하오. 저자를 처형하는 것이 마땅하오."
+      //    (B) 一般村人による第三者視点の賢者精査 (非CO者向け・新設6種)
+      // ------------------------------------------------------------
+      'contest.third_party_seer.01': {
+        ja: "賢者が2人並び立っている以上、どちらかが嘘をついている。両者の占い理由とタイミングを比較すべきだ。",
+        en: "With two Sages standing, one must be lying. We must compare their reasoning and timings."
       },
-      'distance.betrayal.02': {
-        ja: "残念だが{addr:target}の弁明には説得力がない。村の疑念がこれほど集中している以上、余もあの者に一票を投じる他ない。",
-        en: "Regrettably, {addr:target}'s plea lacketh conviction. With suspicion so heavy upon them, I must also cast my vote there.",
-        fr: "Hélas, le plaidoyer de {addr:target} manque de force. Les soupçons étant si forts, je dois moi aussi joindre mon vote.",
-        zh: "虽属遗憾，但{addr:target}之辩解毫无说服力。既然满场疑云皆聚于此，某亦只能投彼一票。",
-        ko: "안타깝지만 {addr:target} 님의 변명에는 설득력이 없소. 의심이 이토록 집중된 이상, 저 역시 표를 던질 수밖에 없구려."
+      'contest.third_party_seer.02': {
+        ja: "{addr:target}の占い結果の出し方には気になる点がある。対抗の主張とも突き合わせて慎重に判断したい。",
+        en: "There are questionable points in how {addr:target} reveals divinations. Let us weigh them against the rival."
       },
-
-      // distance 追加テンプレ（断定型・短文型・感情型）
-      'distance.betrayal.03': {
-        ja: "{addr:target}は切り捨てるしかない。",
-        en: "{addr:target} must be cut loose.",
-        fr: "Il faut se séparer de {addr:target}.", // 要ネイティブ確認
-        zh: "{addr:target}，只能舍弃。", // 要ネイティブ確認
-        ko: "{addr:target} 님은 포기할 수밖에 없소." // 要ネイティブ確認
+      'contest.third_party_seer.03': {
+        ja: "賢者COの2人の言動を見極める必要がある。{addr:target}のこれまでの発言に不自然な点はないか精査しよう。",
+        en: "We must discern between both Sages. Let us examine if {addr:target}'s statements hold any unnatural flaws."
       },
-      'distance.betrayal.04': {
-        ja: "…庇うつもりはない。{addr:target}の言動を見ていれば、結論は自ずと見えてくる。",
-        en: "...I shall not defend them. One look at {addr:target}'s conduct and the conclusion becomes clear.",
-        fr: "...Je ne les défendrai pas. La conduite de {addr:target} parle d'elle-même.", // 要ネイティブ確認
-        zh: "……无意袒护。看{addr:target}的所作所为，结论不言而喻。", // 要ネイティブ確認
-        ko: "……두둔할 생각은 없소. {addr:target} 님의 행동을 보면 결론은 자명하오." // 要ネイティブ確認
+      'contest.third_party_seer.04': {
+        ja: "真の賢者を見極められなければ村は敗北する。{addr:target}の出した結果の根拠を村全体で検証すべきだ。",
+        en: "If we fail to identify the true Sage, the village falls. We must verify the grounds of {addr:target}'s results."
       },
-      'distance.betrayal.05': {
-        ja: "信じたかったが、もう無理だ。{addr:target}、お前が怪しい。",
-        en: "I wished to believe in them, but no longer. {addr:target}, thou art suspect.",
-        fr: "Je voulais y croire, mais c'est impossible. {addr:target}, tu es suspect.", // 要ネイティブ確認
-        zh: "本想相信，但已无法。{addr:target}，你很可疑。", // 要ネイティブ確認
-        ko: "믿고 싶었지만 이젠 무리요. {addr:target}, 당신이 수상합니다." // 要ネイティブ確認
+      'contest.third_party_seer.05': {
+        ja: "2人の賢者の主張が真っ向から対立している。{addr:target}の鑑定結果が本当に正しいのか、客観的事実と照らし合わせたい。",
+        en: "The claims of both Sages clash directly. We must cross-examine whether {addr:target}'s divination is true."
       },
-
-      // 5b. noise (疑念を村人に誘導するノイズ発言)
-      'noise.redirect.01': {
-        ja: "{addr:target}、今日はほとんど発言していない。沈黙の多い者ほど、実は多くを知っているものだ。",
-        en: "{addr:target} has said little today. Those who stay silent often know the most.",
-        fr: "{addr:target} n'a presque rien dit aujourd'hui. Le silence cache souvent de lourds secrets.", // 要ネイティブ確認
-        zh: "{addr:target}今日几乎未曾发言。越是沉默，越值得怀疑。", // 要ネイティブ確認
-        ko: "{addr:target} 님은 오늘 거의 발언하지 않았소. 침묵이 많은 자일수록 더 많은 것을 숨기고 있는 법이오." // 要ネイティブ確認
+      'contest.third_party_seer.06': {
+        ja: "安易にどちらかを信じるのは危険だ。{addr:target}と対抗賢者の発言ログを冷静に比較検討しよう。",
+        en: "It is reckless to trust blindly. Let us calmly compare the records of {addr:target} and the rival Sage."
       },
-      'noise.redirect.02': {
-        ja: "{addr:target}の投票先の変化が気にかかる。なぜ急に意見を変えたのか、理由を聞かせてほしい。",
-        en: "I am troubled by {addr:target}'s change of vote. Why the sudden shift? An explanation is warranted.",
-        fr: "Le changement de vote de {addr:target} me préoccupe. Pourquoi ce revirement soudain ?", // 要ネイティブ確認
-        zh: "{addr:target}的投票变动令人担忧。为何突然改变立场，请给出理由。", // 要ネイティブ確認
-        ko: "{addr:target} 님의 투표 변경이 신경 쓰이오. 왜 갑자기 의견을 바꿨는지 이유를 들어봅시다." // 要ネイティブ確認
+      // 【第4段階: 実事実差し込みテンプレート】seer_result / co_order の具体値を {evidence} に差し込む
+      'contest.third_party_seer.result_compare': {
+        ja: "賢者2人の占い結果を確認したい。{evidence}。どちらの鑑定が論理的に整合しているか検証すべきだ。",
+        en: "Let us examine both Sages' divination results. {evidence}. We must verify which reading holds logical consistency."
       },
-      'noise.redirect.03': {
-        ja: "今の状況で最も得をしているのは誰か。ログを見ると、{addr:target}がその恩恵を受けていないか？",
-        en: "Who benefits most from the current situation? Looking at the log, has {addr:target} not been the prime beneficiary?",
-        fr: "Qui profite le plus de la situation actuelle ? En lisant les logs, n'est-ce pas {addr:target} qui en tire avantage ?", // 要ネイティブ確認
-        zh: "当前局势对谁最为有利？回顾记录，{addr:target}是否正是那个得益者？", // 要ネイティブ確認
-        ko: "현재 상황에서 가장 이득을 보는 자는 누구입니까? 로그를 보면, {addr:target} 님이 혜택을 받고 있지는 않습니까?" // 要ネイティブ確認
+      'contest.third_party_seer.co_order_compare': {
+        ja: "名乗りの順番も判断材料になる。{evidence}。先出しと後出しのどちらに信頼が置けるか、冷静に判断したい。",
+        en: "The order of declarations also matters. {evidence}. Let us calmly judge whether the first or second claim deserves more trust."
       },
-      'noise.redirect.04': {
-        ja: "{addr:target}の発言、よく聞いてみると特定の人物への追及を避けているように聞こえる。意図があるのではないか？",
-        en: "Listen carefully to {addr:target}'s words — they seem to consistently avoid pressing a certain someone. Is that not deliberate?",
-        fr: "Écoutez bien {addr:target} — ses mots semblent délibérément éviter de pointer quelqu'un. N'est-ce pas intentionnel ?", // 要ネイティブ確認
-        zh: "仔细听{addr:target}的发言，似乎刻意回避追究某人。这难道不是蓄意为之？", // 要ネイティブ確認
-        ko: "{addr:target} 님의 발언을 자세히 들어보면 특정인을 추궁하길 피하는 것처럼 들리오. 의도가 있는 건 아닙니까?" // 要ネイティブ確認
+      'contest.third_party_seer.black_reaction': {
+        ja: "{evidence}。黒出しされた側の反論に説得力があるか、論理的に精査することが優先事項だ。",
+        en: "{evidence}. It is paramount to logically examine whether the accused party's rebuttal carries persuasive merit."
       },
 
-      // 5c. counter_seer (真賢者COの信用を崩す)
-      'counter_seer.credibility.01': {
-        ja: "{addr:target}の鑑定結果、本当に信頼できるものなのか？鑑定の根拠を改めて説明してもらいたい。",
-        en: "Can the readings of {addr:target} truly be trusted? I would ask them to explain the basis of their divinations once more.",
-        fr: "Les lectures de {addr:target} sont-elles vraiment fiables ? Je leur demanderais d'expliquer à nouveau leurs bases.", // 要ネイティブ確認
-        zh: "{addr:target}的鉴定结果，真的可信吗？请重新说明鉴定依据。", // 要ネイティブ確認
-        ko: "{addr:target} 님의 감정 결과는 정말 신뢰할 수 있는 것입니까? 감정 근거를 다시 한번 설명해 주시겠습니까?" // 要ネイティブ確認
+      //    (C) 賢者支持
+      // ------------------------------------------------------------
+      'contest.support_seer.01': {
+        ja: "賢者2人の発言ログを照らし合わせたが、{addr:target}の占い結果の提示順序と理由付けのほうが理にかなっている。",
+        en: "Comparing both logs, {addr:target}'s divination timing and rationale seem far more coherent."
       },
-      'counter_seer.credibility.02': {
-        ja: "賢者COが複数いる以上、どちらかが偽者だ。{addr:target}の鑑定は、都合よく対抗COを黒にしている点が引っかかる。",
-        en: "With multiple seer claimants, one is false. The fact that {addr:target}'s readings conveniently black the rival CO gives me pause.",
-        fr: "Avec plusieurs prétendants au rôle de sage, l'un est faux. Que {addr:target} noircisse son rival me laisse perplexe.", // 要ネイティブ確認
-        zh: "既有多位贤者CO，必有一伪。{addr:target}的鉴定恰好将对立CO判黑，此点令人生疑。", // 要ネイティブ確認
-        ko: "현자 CO가 여럿이라면 한 명은 가짜입니다. {addr:target} 님의 감정이 편리하게 대립 CO를 흑으로 만든다는 점이 마음에 걸리오." // 要ネイティブ確認
+      'contest.support_seer.02': {
+        ja: "対抗COの状況を見る限り、{addr:target}の鑑定結果には論理的な一貫性がある。余はこちらの証言を重く見る。",
+        en: "Given this confrontation, {addr:target}'s divinations hold logical consistency. I weigh this testimony higher."
       },
-      'counter_seer.credibility.03': {
-        ja: "{addr:target}の白判定を無条件に信じていいのか？鑑定対象の選び方に一貫性があるとは言いがたい。",
-        en: "Should we unconditionally trust {addr:target}'s white readings? The pattern of who they choose to divine lacks consistency.",
-        fr: "Devons-nous faire confiance aveuglément aux blancs de {addr:target} ? Le choix de leurs cibles manque de cohérence.", // 要ネイティブ確認
-        zh: "{addr:target}给出的白判定，真能无条件相信吗？鉴定对象的选取方式实难称得上一贯。", // 要ネイティブ確認
-        ko: "{addr:target} 님의 백 판정을 무조건 믿어도 되는 겁니까? 감정 대상 선택 방식에 일관성이 있다고 보기 어렵습니다." // 要ネイティブ確認
-      },
-      'counter_seer.credibility.04': {
-        ja: "賢者の鑑定は強力な情報だが、だからこそ偽の賢者も使いたがる。{addr:target}が本物の賢者である証拠はどこにある？",
-        en: "Seer information is powerful — and thus prized by false seers. Where is the proof that {addr:target} is genuine?",
-        fr: "L'information du sage est puissante — et donc convoitée par les faux. Quelle preuve avons-nous que {addr:target} est authentique ?", // 要ネイティブ確認
-        zh: "贤者的鉴定信息极为有力，正因如此，伪贤者也趋之若鹜。{addr:target}是真贤者的证据又在何处？", // 要ネイティブ確認
-        ko: "현자의 감정은 강력한 정보입니다. 그렇기에 가짜 현자도 탐내는 것이지요. {addr:target} 님이 진짜 현자라는 증거는 어디에 있습니까?" // 要ネイティブ確認
+      'contest.support_seer.03': {
+        ja: "両賢者の主張を精査したが、{addr:target}のほうが盤面の不自然な動きを的確に捉えているように見える。",
+        en: "Having reviewed both claims, {addr:target} appears to perceive the unnatural board dynamics more accurately."
       },
 
-      // 5d. fake_seer_support (仲間wolf の偽賢者COを擁護する)
-      'fake_seer_support.consistency.01': {
-        ja: "{addr:target}のCO内容は一貫しており、矛盾は見当たらない。対抗COの方が後出しで怪しいと思う。",
-        en: "{addr:target}'s claim has been consistent with no contradictions. The rival CO came later and seems far more suspicious.",
-        fr: "La déclaration de {addr:target} est cohérente, sans contradictions. L'autre CO est arrivé après et semble bien plus suspect.", // 要ネイティブ確認
-        zh: "{addr:target}的CO内容始终一贯，毫无矛盾。反观对立CO后来才出现，反而更为可疑。", // 要ネイティブ確認
-        ko: "{addr:target} 님의 CO 내용은 일관되며 모순이 없습니다. 대립 CO 쪽이 나중에 나온 점에서 더 수상해 보입니다." // 要ネイティブ確認
+      // ------------------------------------------------------------
+      // 4. defend (弁明・反論: 疑われた場合のみ発動)
+      // ------------------------------------------------------------
+      'defend.innocence_claim.01': {
+        ja: "{addr:target}、なぜ{self}に疑いの目を向けるのだ？これまでの発言や投票行動を見れば、魔物でないことは自明のはずだ！",
+        en: "{addr:target}, why cast doubt upon me? My words and deeds make it evident I harbor no malice!"
       },
-      'fake_seer_support.consistency.02': {
-        ja: "{addr:target}の鑑定先をよく見てほしい。ログの流れと合致しており、恣意的な選択とは言いがたい。",
-        en: "Look closely at whom {addr:target} has chosen to divine. The pattern aligns with the log's flow — hardly an arbitrary choice.",
-        fr: "Regardez bien les cibles de {addr:target}. Le schéma correspond au fil des logs — difficile d'appeler ça arbitraire.", // 要ネイティブ確認
-        zh: "请仔细审视{addr:target}的鉴定对象。其选择与发言记录的走向相吻合，实难称之为随意。", // 要ネイティブ確認
-        ko: "{addr:target} 님의 감정 대상을 잘 살펴보십시오. 로그의 흐름과 일치하며 임의적인 선택이라 보기 어렵습니다." // 要ネイティブ確認
+      'defend.innocence_claim.02': {
+        ja: "{addr:target}、身に覚えのない言いがかりはやめてくれ。{self}を処刑すれば無辜の民の血が流れることになるぞ。",
+        en: "{addr:target}, cease these groundless allegations. Executing me shall spill innocent blood."
       },
-      'fake_seer_support.consistency.03': {
-        ja: "{addr:target}の言動に嘘の痕跡は見えない。むしろ対抗COが{addr:target}を黒と言い出してから議論が歪み始めた気がする。",
-        en: "I see no trace of deception in {addr:target}'s conduct. If anything, the debate became distorted the moment the rival CO accused them.",
-        fr: "Je ne vois aucune trace de tromperie chez {addr:target}. C'est depuis que l'autre CO l'a accusé que le débat a dévié.", // 要ネイティブ確認
-        zh: "{addr:target}的言行毫无虚假痕迹。反而是对立CO开始指控{addr:target}之后，议论才开始走偏。", // 要ネイティブ確認
-        ko: "{addr:target} 님의 언행에서 거짓의 흔적은 보이지 않습니다. 오히려 대립 CO가 {addr:target}을 흑이라 말하기 시작하면서 논의가 왜곡된 것 같습니다." // 要ネイティブ確認
+      'defend.innocence_claim.03': {
+        ja: "{addr:target}、恐慌に任せて{self}を疑うのは筋違いだ。今処刑すべき真の魔物は他にいるはずだ！",
+        en: "{addr:target}, doubting me in panic is misguided. The true beast to be executed lies elsewhere!"
       },
-      'fake_seer_support.consistency.04': {
-        ja: "今の状況では、{addr:target}を信頼する方が村にとって合理的だ。対抗COを先に精査すべきだろう。",
-        en: "Given the current situation, trusting {addr:target} is the rational choice for the village. The rival CO deserves scrutiny first.",
-        fr: "Dans la situation actuelle, faire confiance à {addr:target} est le choix rationnel. C'est l'autre CO qu'il faut examiner en premier.", // 要ネイティブ確認
-        zh: "就当前局势而言，信任{addr:target}对村庄而言更为合理。理应先审查对立CO。", // 要ネイティブ確認
-        ko: "현재 상황에서는 {addr:target} 님을 신뢰하는 편이 마을에 합리적입니다. 대립 CO를 먼저 정밀 검토해야 할 것입니다." // 要ネイティブ確認
+      'defend.innocence_claim.04': {
+        ja: "{addr:target}、感情論で{self}を疑うのはやめてくれ。真の敵を見誤れば村は滅びるぞ。",
+        en: "{addr:target}, do not doubt me out of emotion. If we mistake the enemy, the village perishes."
+      },
+      'defend.innocence_claim.05': {
+        ja: "{addr:target}の指摘には誤解がある。{self}がその投票を行ったのは客観的事実に基づいた判断であって、私情ではない。",
+        en: "{addr:target} misinterprets my deed. My vote was grounded on objective facts, not personal whim."
+      },
+      'defend.innocence_claim.06': {
+        ja: "{addr:target}、短絡的な疑念で処刑先を決めるのは危険だ。{self}の白さはこれからの言動でも証明してみせる。",
+        en: "{addr:target}, deciding execution on short-sighted doubt is perilous. My innocence shall be proven by my deeds."
       },
 
-      // 6. ask_quiet (発言が少ない者への問いかけ)
-      'ask_quiet.silence.01': {
-        ja: "【問いかけ】{addr:target}、ここまでほとんど発言していないようだが、何か意図があるのか？率直な意見を聞かせてくれ。",
-        en: "[Query] {addr:target}, thou hast remained silent thus far. Is there intent behind this? Pray share thy thoughts.",
-        fr: "[Interpellation] {addr:target}, vous êtes resté bien silencieux jusqu'ici. Avez-vous une explication ? Partagez vos pensées.",
-        zh: "【问讯】{addr:target}，阁下至今几乎未发一言，莫非别有隐情？还请直陈己见。",
-        ko: "【질문】{addr:target} 님, 지금까지 거의 발언이 없으신데 무슨 연유요? 솔직한 고견을 들려주시오."
-      },
-      'ask_quiet.silence.02': {
-        ja: "【指名質問】沈黙を続けている{addr:target}に問いたい。現時点で誰が一番疑わしいと考えているのか？",
-        en: "[Direct Query] I call upon {addr:target}, who remaineth silent: whom dost thou suspect most at this juncture?",
-        fr: "[Question Directe] Je m'adresse à {addr:target}, qui reste muet : qui soupçonnez-vous le plus à cette heure ?",
-        zh: "【点名相问】某欲向默不作声的{addr:target}发问：依阁下之见，此刻究竟何人嫌疑最重？",
-        ko: "【지목 질문】침묵을 지키고 계신 {addr:target} 님께 묻겠소. 현시점에서 누가 가장 의심스럽다고 보시오?"
-      },
-      'ask_quiet.silence.03': {
-        ja: "【意見聴取】{addr:target}の口から盤面の所感が全く語られていない。静観を決め込む理由を聞かせてもらえないか？",
-        en: "[Inquiry] We have heard nothing of {addr:target}'s view on our board. Why dost thou choose to watch in silence?",
-        fr: "[Demande d'Avis] Nous n'avons rien entendu de la vision de {addr:target}. Pourquoi choisissez-vous de rester simple spectateur ?",
-        zh: "【听取意见】{addr:target}至今未曾表露对局势的半点看法。作壁上观的缘由，可否告知于诸位？",
-        ko: "【의견 청취】{addr:target} 님의 입에서는 판세에 대한 소감이 전혀 나오지 않았소. 침묵으로 관망하는 이유를 들려주시겠소?"
-      },
-      'ask_quiet.silence.04': {
-        ja: "【確認】{addr:target}、村人としての責務を果たす気があるなら、隠れずに自分の本命疑い先を今すぐ明言してほしい。",
-        en: "[Demand] {addr:target}, if thou hast mind to fulfill a villager's duty, step forward and name thy prime suspect now!",
-        fr: "[Exigence] {addr:target}, si vous souhaitez accomplir votre devoir, cessez de vous cacher et nommez votre suspect !",
-        zh: "【要求表态】{addr:target}，若真有尽良善同胞职责之心，便请莫再隐匿，速速明示你心中首要怀疑之目标！",
-        ko: "【확인】{addr:target} 님, 마을 주민으로서의 책무를 다할 생각이라면 숨지 말고 본인의 의심 대상을 지금 명확히 밝히시오."
-      },
-
-      // 7. observe (観察・中立の視点)
+      // ------------------------------------------------------------
+      // 5. observe (状況観察・所感の共有)
+      // ------------------------------------------------------------
       'observe.general_flow.01': {
-        ja: "【状況整理】議論が加熱しているが、今一度全員の言動を冷静に振り返ろう。焦って誤審を犯すことだけは避けねばならない。",
-        en: "[Review] Though debate grows fierce, let us calmly reflect upon all testimonies. We must avoid a wrongful execution at all costs.",
-        fr: "[Réflexion] Bien que le débat s'enflamme, examinons calmement chaque parole. Évitons à tout prix l'erreur judiciaire.",
-        zh: "【综观】争辩虽烈，仍当静心复盘各方言行。切不可因一时急躁而重蹈冤杀之覆辙。",
-        ko: "【정리】논쟁이 격화되고 있으나, 차분히 모두의 언동을 되돌아봅시다. 조급한 오심만은 반드시 피해야 하오."
+        ja: "各人のこれまでの発言を見直しているが、まだ決定的な証拠には至っていない。もう少し議論の行方を見定める必要がある。",
+        en: "Reviewing all words spoken, definitive proof has yet to surface. We must observe further."
       },
       'observe.general_flow.02': {
-        ja: "【盤面分析】白確定の枠とグレー層を冷静に区分けして考えよう。感情的な応酬に惑わされて本質を見失ってはならない。",
-        en: "[Analysis] Let us distinguish proven innocents from the gray suspects. We must not lose our heads in heated quarrels.",
-        fr: "[Analyse] Distinguons posément les innocents confirmés des suspects gris. Ne nous égarons pas dans des querelles enflammées.",
-        zh: "【盘面分析】理应清醒划分确凿良善与尚存灰疑之圈层。万不可被意气用事的争吵蒙蔽双眼。",
-        ko: "【판세 분석】확정된 결백과 회색지대를 냉정히 구분하여 살핍시다. 감정 섞인 공방에 휩쓸려 본질을 잃어선 안 되오."
+        ja: "誰が誰に疑いを向け、誰を庇っているのか。議論の構図を冷静に整理することが勝利への鍵になる。",
+        en: "Who suspects whom, and who shields another? Structuring the flow calmly is key to victory."
       },
       'observe.general_flow.03': {
-        ja: "【警戒】声の大きい意見に安易に流されるべきではない。魔物は往々にしてそうした混乱の影に潜んでいるものだ。",
-        en: "[Caution] We must not blindly follow the loudest voice. Fiends ever lurk in the shadows of such confusion.",
-        fr: "[Mise en Garde] Ne nous laissons pas porter par les voix les plus fortes. Les monstres se dissimulent souvent dans le tumulte.",
-        zh: "【警戒】不可盲从声高之论。魔物向来善于潜藏在此等纷乱纷争之阴影中。",
-        ko: "【경계】목소리 큰 의견에 쉽사리 휩쓸려선 안 되오. 마물은 늘 그러한 혼란의 그늘 뒤에 도사리는 법이오."
+        ja: "潜伏している魔物は、必ず議論の混乱や投票の誘導を狙ってくる。不自然な票の動きには警戒を怠るな。",
+        en: "Lurking beasts seek to confuse discussion and steer votes. Stay vigilant against unnatural movements."
       },
       'observe.general_flow.04': {
-        ja: "【慎重論】現時点の情報ではまだ確証が不十分だ。処刑投票の直前まで、各人の細かな言動の差異を精査し続けよう。",
-        en: "[Deliberation] Our present clues do not yet yield certainty. Let us scrutinize every small difference until the final vote.",
-        fr: "[Prudence] Les indices actuels ne suffisent point. Scrutons chaque infime nuance jusqu'au moment de voter.",
-        zh: "【持重】依据眼下手头线索尚难下定论。在最终票决之前，当持续明察每个人细微之言辞差异。",
-        ko: "【신중】현재로선 결정적인 확증이 아직 부족하오. 처형 투표 직전까지 각자의 사소한 언동 차이를 끝까지 살핍시다."
+        ja: "拙速な判断は村の自滅を招く。感情論に流されず、出揃ったファクトに基づいて処刑先を選定すべきだ。",
+        en: "Hasty judgment invites defeat. We must cast our votes on facts, not emotions."
+      },
+      'observe.general_flow.05': {
+        ja: "発言数の多寡だけで白黒を決めるのは危うい。沈黙の裏にある意図と、多弁な者の論理の破綻を見極めたい。",
+        en: "Deciding guilt merely by speech count is precarious. Discern intent behind silence and flaws in loquacity."
+      },
+      'observe.general_flow.06': {
+        ja: "確定白の証言と矛盾する言動をしている者がいないか、霊媒や占いの記録と照合して精査を進めるべきだ。",
+        en: "Verify if anyone contradicts the words of confirmed innocents against divination logs."
+      },
+
+      // ------------------------------------------------------------
+      // 6. answer (質問への回答・見解表明: 新設6種含む計12種)
+      // ------------------------------------------------------------
+      'answer.inquiry_response.01': {
+        ja: "その質問に答えよう。{self}は客観的な状況証拠から{addr:target}の言動を最も注視している。",
+        en: "Let me answer thy question: looking at objective evidence, I am watching {addr:target} most closely."
+      },
+      'answer.inquiry_response.02': {
+        ja: "どちらを信じるかという問いだが、現状の証言を見る限り、まだ一方を完全に真と断定するには材料が不足していると考えている。",
+        en: "Regarding whom to trust: looking at current testimonies, evidence remains insufficient to pronounce one entirely true."
+      },
+      'answer.inquiry_response.03': {
+        ja: "{self}の視点を説明しよう。疑いを向けているのは、これまでの発言の流れに説明のつかない違和感があるからだ。",
+        en: "Allow me to explain: I suspect them because their statements hold an inexplicable anomaly."
+      },
+      'answer.inquiry_response.04': {
+        ja: "質問への回答だが、本日の処刑先は最も発言に矛盾が多く、村に混乱を招いている人物にするべきだと考えている。",
+        en: "To answer thy question: I believe today's execution should fall upon whoever causes most confusion through contradiction."
+      },
+      'answer.inquiry_response.05': {
+        ja: "私の見解を求められたので答えよう。2人の主張のうち、より筋が通っている側の証言を軸に議論を進めるべきだ。",
+        en: "As my thought is asked: we should build our debate upon the testimony of whoever speaks with greater reason."
+      },
+      'answer.inquiry_response.06': {
+        ja: "その点については、先ほどから注目していた。{addr:target}の行動に不自然さを感じているのは事実だ。",
+        en: "On that matter, I have been watching. It is true that I find {addr:target}'s conduct suspicious."
+      },
+      'answer.clarification.01': {
+        ja: "疑念に対する答えを述べよう。{self}がその発言をしたのは、議論を前進させるための問題提起に過ぎない。",
+        en: "In response to that doubt: I spoke those words merely to provoke inquiry and advance debate."
+      },
+      'answer.clarification.02': {
+        ja: "{self}の推理に不審な点があると言うなら、具体的にどの前提が間違っているのかを指摘してほしい。",
+        en: "If my reasoning seems suspicious, point out specifically which premise thou deemest flawed."
+      },
+      'answer.clarification.03': {
+        ja: "質問の意図は理解した。だが、{self}が怪しいと見ている根拠は感情ではなく、盤面の投票差分にある。",
+        en: "I see thy intent. Yet my suspicion rests upon the vote distribution, not subjective feeling."
+      },
+      'answer.clarification.04': {
+        ja: "指摘された点について釈明しよう。{self}は自らの役職を利するためではなく、村の勝利のために発言している。",
+        en: "To clarify: I speak not to advance my own standing, but solely to bring victory unto the village."
+      },
+      'answer.clarification.05': {
+        ja: "{addr:target}、疑念を投げかける前に、自分自身のこれまでの言動に不審な点がないか振り返るべきだ。",
+        en: "{addr:target}, before directing doubt, reflect upon whether thy own conduct bears any suspicion."
+      },
+      'answer.clarification.06': {
+        ja: "単刀直入に答えよう。{self}はすでに怪しいと睨む人物に投票先を定めている。その判断は揺るがない。",
+        en: "I answer plainly: my vote is already cast upon the person I deem suspicious. That choice will not waver."
       }
     };
 
-    /**
-     * 第1層: 計画層 planSpeechAct(speaker, context)
-     */
     // ============================================================
-    // 統一計画層・言い回し生成・検査層 (Unified Speech Pipeline)
+    // 【第4段階: テンプレートID → topic マッピング関数】
     // ============================================================
+    function getTemplateTopic(templateId) {
+      if (!templateId) return 'general';
+      if (templateId.startsWith('contest.co_conflict') || templateId.startsWith('contest.third_party_seer')) return 'seer_rivalry';
+      if (templateId.startsWith('accuse.silence')) return 'silence';
+      if (templateId.startsWith('accuse.vote_flip')) return 'vote_stance';
+      if (templateId.startsWith('accuse.contradiction') || templateId.startsWith('accuse.statement_inconsistency')) return 'contradiction';
+      if (templateId.startsWith('accuse.logic_busted')) return 'logic_bust';
+      if (templateId.startsWith('defend')) return 'defend_self';
+      if (templateId.startsWith('answer')) return 'answer';
+      if (templateId.startsWith('inquiry')) return 'inquiry';
+      if (templateId.startsWith('observe')) return 'observation';
+      return 'general';
+    }
 
-    // フォールバック統計カウンター
-    const speechFallbackStats = {
-      timeout: 0,
-      error: 0,
-      empty: 0,
-      validate_fail: {
-        self_intro: 0,
-        unauthorized_co: 0,
-        length_over: 0,
-        repetition: 0,
-        target_mismatch: 0,
-        hallucination: 0,
-        modern_terms: 0,
-        wrong_lang: 0,
-        wolf_leak: 0
+    // topic の連続出現チェック: 直近6発言で同一topicが2回以上あれば抑制
+    function isTopicAllowed(templateId) {
+      const topic = getTemplateTopic(templateId);
+      if (topic === 'general' || topic === 'observation' || topic === 'answer') return true; // 観察・回答は常に許可
+      const recentTopics = _recentTopicHistory.slice(-6);
+      const count = recentTopics.filter(t => t === topic).length;
+      return count < 2;
+    }
+
+    function recordTopicHistory(templateId) {
+      const topic = getTemplateTopic(templateId);
+      _recentTopicHistory.push(topic);
+      if (_recentTopicHistory.length > 10) _recentTopicHistory.shift();
+    }
+
+    // ============================================================
+    // 【第3段階: 計画履歴・弁明連鎖防止・構造化事実ゲート】
+    // ============================================================
+    const _recentGlobalTemplateIds = [];
+    // 【第4段階】直近6発言の topic バッファ（同一topicの連続抑制）
+    const _recentTopicHistory = []; // 直近10発言のIDリングバッファ
+    const _recentCharTemplateIds = {};   // キャラごとの直近3回IDリングバッファ
+    const _speechIntentHistory = [];     // 直近発言計画の履歴 [{ speaker, intent, target, templateId, factData, timestamp }]
+
+    /**
+     * 【第3段階: 構造化事実データの生成と事実ゲート】
+     * テンプレートが要求する事実条件（requires）を客観ゲーム状態から照合し、
+     * 条件を満たす場合は構造化事実データ { type, subject, ... } を生成して返す。
+     * 満たさない場合は null を返す。
+     */
+    function evaluateFactGate(templateId, speaker, target, context = {}) {
+      const aliveChars = (gameState.charList || []).filter(c => gameState.status && gameState.status[c] === 'alive');
+      const speechCounts = gameState.speechCounts || {};
+      const speakerCoRole = (gameState.coRoles && gameState.coRoles[speaker]) || null;
+      const targetCoRole = (target && gameState.coRoles && gameState.coRoles[target]) || null;
+
+      // 1. 役職CO者限定台詞のゲート (coRole === 'seer')
+      if (templateId.startsWith('contest.co_conflict.')) {
+        if (templateId === 'contest.co_conflict.01' || templateId === 'contest.co_conflict.02' ||
+            templateId === 'contest.co_conflict.04' || templateId === 'contest.co_conflict.05' ||
+            templateId === 'contest.co_conflict.06') {
+          // 賢者CO本人しか言えない台詞
+          if (speakerCoRole !== 'seer') return null;
+          if (targetCoRole !== 'seer') return null;
+        }
       }
-    };
+
+      // 2. 第三者村人限定台詞のゲート (speaker.coRole !== 'seer')
+      if (templateId.startsWith('contest.third_party_seer.')) {
+        if (speakerCoRole === 'seer') return null; // 賢者本人は使わない
+        const seers = aliveChars.filter(c => gameState.coRoles && gameState.coRoles[c] === 'seer');
+        if (seers.length < 2) return null;
+
+        // 【第4段階: 実事実テンプレートの追加ゲート】
+        if (templateId === 'contest.third_party_seer.result_compare') {
+          // seer_result が2件以上必要
+          const reports = gameState.dailySeerReports || {};
+          const resultCount = Object.keys(reports).filter(s => seers.includes(s)).length;
+          if (resultCount < 2) return null;
+          const seerNames = seers.map(s => getCharDisplayName(s));
+          return {
+            type: 'seer_result',
+            subject: target || seers[0],
+            seers: seerNames,
+            count: resultCount
+          };
+        }
+        if (templateId === 'contest.third_party_seer.co_order_compare') {
+          // co_order: 2人のCO順序データが必要
+          const coOrder = gameState.coOrderHistory || null;
+          if (!coOrder || coOrder.filter(o => seers.includes(o.char)).length < 2) return null;
+          const orderedSeers = coOrder.filter(o => seers.includes(o.char)).map(o => getCharDisplayName(o.char));
+          return {
+            type: 'co_order',
+            first: orderedSeers[0],
+            second: orderedSeers[1] || orderedSeers[0],
+            seers: orderedSeers
+          };
+        }
+        if (templateId === 'contest.third_party_seer.black_reaction') {
+          // seer_result に黒出しが存在するか
+          const reports = gameState.dailySeerReports || {};
+          const hasBlack = seers.some(s => reports[s] && reports[s].result === '人狼');
+          if (!hasBlack) return null;
+          const blackSeer = seers.find(s => reports[s] && reports[s].result === '人狼');
+          return {
+            type: 'seer_result',
+            subject: blackSeer ? (reports[blackSeer].target || target) : target,
+            blackSeer: blackSeer ? getCharDisplayName(blackSeer) : null
+          };
+        }
+
+        return {
+          type: 'seer_rivalry_inspection',
+          subject: target || seers[0],
+          seers: seers.map(s => getCharDisplayName(s)),
+          count: seers.length
+        };
+      }
+
+      // 3. 過去の投票行動を言及する台詞 (defend.innocence_claim.05)
+      if (templateId === 'defend.innocence_claim.05') {
+        // 実際に過去の確定投票履歴が存在するか（1日目議論中、未投票時は除外）
+        const pastVotes = (gameState.voteRecords && gameState.voteRecords.length > 0) || (gameState.day >= 2);
+        if (!pastVotes) return null;
+        return {
+          type: 'past_vote_record',
+          subject: speaker,
+          day: gameState.day - 1
+        };
+      }
+
+      // 4. 前言撤回・言動の矛盾 (accuse.contradiction)
+      if (templateId.startsWith('accuse.contradiction.')) {
+        const mem = gameState.charMemory && gameState.charMemory[target];
+        if (!mem || !mem.history || mem.history.length < 2) return null;
+        const targets = mem.history.map(h => h.target).filter(Boolean);
+        const unique = Array.from(new Set(targets));
+        if (unique.length < 2) return null;
+        return {
+          type: 'statement_inconsistency',
+          subject: target,
+          targets: targets.map(t => getCharDisplayName(t))
+        };
+      }
+
+      // 5. 投票急変・乗り換え (accuse.vote_flip)
+      if (templateId.startsWith('accuse.vote_flip.')) {
+        const mem = gameState.charMemory && gameState.charMemory[target];
+        let hasFlip = false;
+        let fromT = '', toT = '';
+        if (mem && mem.history && mem.history.length >= 2) {
+          toT = mem.history[mem.history.length - 1].target;
+          fromT = mem.history[mem.history.length - 2].target;
+          if (toT && fromT && toT !== fromT) hasFlip = true;
+        }
+        if (!hasFlip) {
+          const history = (gameState.virtualVoteHistory || []);
+          const targetName = getCharDisplayName(target);
+          hasFlip = history.some(h => h.includes(targetName) && (h.includes('変更') || h.includes('翻') || h.includes('乗り換え')));
+        }
+        if (!hasFlip) return null;
+        return {
+          type: 'vote_flip',
+          subject: target,
+          from: getCharDisplayName(fromT) || '前投票先',
+          to: getCharDisplayName(toT) || '現投票先'
+        };
+      }
+
+      // 6. 沈黙追及 (accuse.silence)
+      if (templateId.startsWith('accuse.silence.')) {
+        const targetCount = speechCounts[target] || 0;
+        const avg = aliveChars.reduce((sum, c) => sum + (speechCounts[c] || 0), 0) / Math.max(1, aliveChars.length);
+        if (targetCount > 1 && targetCount > (avg - 1.0)) return null;
+        return {
+          type: 'silence',
+          subject: target,
+          count: targetCount,
+          avg: Number(avg.toFixed(1))
+        };
+      }
+
+      // 7. 論理破綻・黒出し (accuse.logic_busted)
+      if (templateId.startsWith('accuse.logic_busted.')) {
+        const deduction = typeof getLogicalDeductionTarget === 'function' ? getLogicalDeductionTarget(speaker) : null;
+        if (!deduction || !deduction.isCertain || deduction.target !== target) return null;
+        return {
+          type: 'logic_busted',
+          subject: target,
+          reason: deduction.reason || '客観的ログの破綻'
+        };
+      }
+
+      // 8. 後出し占い・複数結果 (contest.co_conflict.05)
+      if (templateId === 'contest.co_conflict.05') {
+        if (speakerCoRole !== 'seer' || targetCoRole !== 'seer') return null;
+        const reports = (gameState.seerHistory && gameState.seerHistory[target]) || [];
+        if (reports.length < 2) return null; // 複数結果が必要
+        return {
+          type: 'late_seer_results',
+          subject: target,
+          count: reports.length
+        };
+      }
+
+      // 9. 質問への回答 (answer.inquiry_response / answer.clarification)
+      if (templateId.startsWith('answer.')) {
+        const lastPlan = _speechIntentHistory.length > 0 ? _speechIntentHistory[_speechIntentHistory.length - 1] : null;
+        const questioner = (lastPlan && lastPlan.intent === 'inquiry') ? lastPlan.speaker : (context.lastItem ? context.lastItem.char : target);
+
+        // 【第4段階】「矛盾が多い」「不自然」を主張する文には stance_change の事実を要求
+        if (templateId === 'answer.inquiry_response.04' || templateId === 'answer.inquiry_response.06') {
+          const mem = gameState.charMemory && gameState.charMemory[target];
+          const hasInconsistency = mem && mem.history && mem.history.length >= 2 &&
+            Array.from(new Set(mem.history.map(h => h.target).filter(Boolean))).length >= 2;
+          if (!hasInconsistency) return null; // 事実なし → 選択不可
+        }
+
+        return {
+          type: 'question_received',
+          questioner: questioner,
+          questionIntent: lastPlan ? lastPlan.intent : 'inquiry'
+        };
+      }
+
+      // 【第4段階】デフォルト: observe/inquiry 系のみ無条件通過。
+      // accuse/contest/defend 系で上記の条件を満たさなかった場合は null（選択不可）
+      const noFactRequired = ['observe', 'inquiry', 'answer'];
+      if (noFactRequired.some(prefix => templateId.startsWith(prefix))) {
+        return {
+          type: 'question_or_observation',
+          speaker: speaker,
+          target: target || 'all'
+        };
+      }
+      // accuse/contest/defend で事実条件未成立 → 選択不可
+      return null;
+    }
 
     /**
-     * 【第1層: 共通計画層】planSpeechAct(speaker, context)
-     * API版・内蔵AIの両方が必ずこの関数の出力データを使用する。
+     * 【第3段階: テンプレート重複検知（名前正規化 & 直近10発言間隔）】
      */
-    function planSpeechAct(speaker, context = {}) {
+    function isTemplateAllowed(templateId, speaker) {
+      // 1. 全域直近10発言以内のID再使用禁止
+      if (_recentGlobalTemplateIds.slice(-10).includes(templateId)) return false;
+      // 2. 同一キャラ直近3回の同一ID再使用禁止
+      if (_recentCharTemplateIds[speaker] && _recentCharTemplateIds[speaker].slice(-3).includes(templateId)) return false;
+      return true;
+    }
+
+    function recordTemplateUsage(templateId, speaker) {
+      _recentGlobalTemplateIds.push(templateId);
+      if (_recentGlobalTemplateIds.length > 30) _recentGlobalTemplateIds.shift();
+      if (!_recentCharTemplateIds[speaker]) _recentCharTemplateIds[speaker] = [];
+      _recentCharTemplateIds[speaker].push(templateId);
+      if (_recentCharTemplateIds[speaker].length > 10) _recentCharTemplateIds[speaker].shift();
+      // 【第4段階】topic 記録
+      recordTopicHistory(templateId);
+    }
+
+    function recordSpeechIntent(speaker, intent, target, templateId, factData) {
+      _speechIntentHistory.push({
+        speaker,
+        intent,
+        target,
+        templateId,
+        factData: factData || null,
+        timestamp: Date.now()
+      });
+      if (_speechIntentHistory.length > 20) _speechIntentHistory.shift();
+    }
+
+    /**
+     * 【第3段階: 弁明ピンポン連鎖検知】
+     * 直近の発言履歴で、speaker と target の間で defend が既に1往復（計2回）以上発生しているか
+     */
+    function hasDefendPingPongExceeded(speaker, target) {
+      if (!target) return false;
+      const recent = _speechIntentHistory.slice(-6);
+      let defendCount = 0;
+      for (const item of recent) {
+        if (item.intent === 'defend' &&
+            ((item.speaker === speaker && item.target === target) || (item.speaker === target && item.target === speaker))) {
+          defendCount++;
+        }
+      }
+      return defendCount >= 2;
+    }
+
+    /**
+     * 【第3段階: 「疑われた」判定の厳格化】
+     * 直近5件の中に、target === speaker かつ intent が accuse / contest / defend の発言がある場合のみ真
+     */
+    function checkWasActuallyAccused(speaker) {
+      const recent = _speechIntentHistory.slice(-5);
+      for (let i = recent.length - 1; i >= 0; i--) {
+        const item = recent[i];
+        if (item.target === speaker && (item.intent === 'accuse' || item.intent === 'contest' || item.intent === 'defend')) {
+          return item.speaker; // 疑ってきた相手
+        }
+      }
+      return null;
+    }
+
+    /**
+     * 【第3段階: 「質問された」判定】
+     * 直前の発言が inquiry かつ target === speaker の場合
+     */
+    function checkWasInquired(speaker) {
+      if (_speechIntentHistory.length === 0) return null;
+      const last = _speechIntentHistory[_speechIntentHistory.length - 1];
+      if (last.intent === 'inquiry' && (last.target === speaker || !last.target)) {
+        return last.speaker;
+      }
+      return null;
+    }
+function planSpeechAct(speaker, context = {}) {
       const aliveChars = (gameState.charList || []).filter(c => gameState.status && gameState.status[c] === 'alive');
       const aliveOthers = aliveChars.filter(c => c !== speaker);
       const realRole = (gameState.roles && gameState.roles[speaker]) || 'citizen';
@@ -16249,17 +16554,22 @@ const SHOP_ROLE_DEFS = [
       const defensiveCO = typeof checkAndGenerateDefensiveCO === 'function' ? checkAndGenerateDefensiveCO(speaker) : null;
       const isCriticalPP = typeof checkMustWinCondition === 'function' && checkMustWinCondition().isCritical;
 
-      // 仮想投票の取得（疑い先の一致を保証）
+      // 仮想投票の取得
       if (!gameState.virtualVotes) gameState.virtualVotes = {};
       const myVote = gameState.virtualVotes[speaker];
 
       // --- 1. 防衛CO (defend + coAnnounce: true) ---
       if (defensiveCO && !gameState.coRoles[speaker]) {
+        const tgt = myVote && aliveOthers.includes(myVote.target) ? myVote.target : (logicalDeduction ? logicalDeduction.target : pickRandom(aliveOthers));
         return {
           intent: 'defend',
-          target: myVote && aliveOthers.includes(myVote.target) ? myVote.target : (logicalDeduction ? logicalDeduction.target : pickRandom(aliveOthers)),
-          addressee: lastItem ? lastItem.char : null,
-          evidences: [{ type: 'co_announce', fact: `処刑の危機に対し、自身が【${defensiveCO.role}】であることを表明` }],
+          target: tgt,
+          addressee: tgt,
+          evidences: [{
+            type: 'co_announce',
+            fact: `処刑の危機に対し、自身が【${defensiveCO.role}】であることを表明`,
+            factData: { type: 'co_announce', role: defensiveCO.role, speaker }
+          }],
           emotion: 'urgent',
           tactic: (realRole === 'wolf') ? 'distract' : null,
           length: 2,
@@ -16269,13 +16579,16 @@ const SHOP_ROLE_DEFS = [
 
       // --- 2. 100%確定破綻者の弾劾 (accuse) ---
       if (isCertain && logicalDeduction && logicalDeduction.target) {
-        // 計画層で仮想投票も確定対象に同期
         gameState.virtualVotes[speaker] = { target: logicalDeduction.target, suspicionScore: 95, reason: logicalDeduction.reason };
         return {
           intent: 'accuse',
           target: logicalDeduction.target,
           addressee: logicalDeduction.target,
-          evidences: [{ type: 'seer_result', fact: logicalDeduction.reason || '客観的ログの破綻' }],
+          evidences: [{
+            type: 'logic_busted',
+            fact: logicalDeduction.reason || '客観的ログの破綻',
+            factData: { type: 'logic_busted', subject: logicalDeduction.target, reason: logicalDeduction.reason }
+          }],
           emotion: 'angry',
           tactic: (realRole === 'wolf') ? 'bandwagon' : null,
           length: 2,
@@ -16283,14 +16596,18 @@ const SHOP_ROLE_DEFS = [
         };
       }
 
-      // --- 3. PP警告状況 (accuse / defend) ---
+      // --- 3. PP警告状況 (accuse) ---
       if (isCriticalPP) {
         const ppTarget = myVote && aliveOthers.includes(myVote.target) ? myVote.target : pickRandom(aliveOthers);
         return {
           intent: 'accuse',
           target: ppTarget,
           addressee: ppTarget,
-          evidences: [{ type: 'vote_flip', fact: '本日処刑を逃せば村が滅びる最終局面' }],
+          evidences: [{
+            type: 'pp_warning',
+            fact: '本日処刑を逃せば村が滅びる最終局面',
+            factData: { type: 'pp_warning', day: gameState.day }
+          }],
           emotion: 'urgent',
           tactic: (realRole === 'wolf') ? 'bandwagon' : null,
           length: 2,
@@ -16298,36 +16615,19 @@ const SHOP_ROLE_DEFS = [
         };
       }
 
-      // --- 4. 被疑念・攻撃への防衛 (defend) ---
-      const votesAgainst = Object.keys(gameState.virtualVotes || {}).filter(v => v !== speaker && gameState.virtualVotes[v].target === speaker).length;
-      const isAccused = (lastItem && lastItem.char !== speaker && lastItem.text && lastItem.text.includes(getCharDisplayName(speaker))) ||
-                        (myVote && myVote.suspicionScore >= 80) ||
-                        (votesAgainst >= Math.max(2, Math.floor(aliveChars.length / 3)));
-      if (isAccused && Math.random() < 0.8) {
-        const accuser = (lastItem && lastItem.char !== speaker && lastItem.text && lastItem.text.includes(getCharDisplayName(speaker))) ? lastItem.char : null;
-        const defendTarget = accuser || (myVote && aliveOthers.includes(myVote.target) ? myVote.target : pickRandom(aliveOthers));
-        return {
-          intent: 'defend',
-          target: defendTarget,
-          addressee: accuser,
-          evidences: [{ type: 'over_defend', fact: '不当な疑惑に対する弁明とこれまでの投票の一貫性' }],
-          emotion: 'panic',
-          tactic: (realRole === 'wolf') ? 'distract' : null,
-          length: 3,
-          coAnnounce: false
-        };
-      }
-
-      // --- 5. 質問への回答 (answer) ---
-      const isQuestioned = lastItem && lastItem.char !== speaker && lastItem.text &&
-                           lastItem.text.includes(getCharDisplayName(speaker)) &&
-                           (lastItem.text.includes('？') || lastItem.text.includes('?') || lastItem.text.includes('どう思') || lastItem.text.includes('聞きたい'));
-      if (isQuestioned) {
+      // --- 4. 【第3段階改修】質問された場合の回答 (answer: 弁明ではなく回答を強制) ---
+      const inquirier = checkWasInquired(speaker);
+      if (inquirier && inquirier !== speaker && aliveChars.includes(inquirier)) {
+        const answerTarget = inquirier;
         return {
           intent: 'answer',
-          target: lastItem.char,
-          addressee: lastItem.char,
-          evidences: [{ type: 'ignored_question', fact: `${getCharDisplayName(lastItem.char)}からの質問に対する明確な回答` }],
+          target: answerTarget,
+          addressee: answerTarget,
+          evidences: [{
+            type: 'question_received',
+            fact: `${getCharDisplayName(answerTarget)}からの質問に対する回答`,
+            factData: { type: 'question_received', questioner: answerTarget }
+          }],
           emotion: 'calm',
           tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
           length: 2,
@@ -16335,294 +16635,315 @@ const SHOP_ROLE_DEFS = [
         };
       }
 
-      // --- 6. 対抗役職COへの反論・追及 (contest) ---
-      const rivalSeers = aliveOthers.filter(c => gameState.coRoles && gameState.coRoles[c] === 'seer');
-      if (coRole === 'seer' && rivalSeers.length > 0 && Math.random() < 0.7) {
-        const rivalTarget = rivalSeers[0];
-        if (gameState.virtualVotes[speaker]) gameState.virtualVotes[speaker].target = rivalTarget;
+      // --- 5. 【第4段階: 強/弱疑い2段階 defend/answer 制御】---
+      // 強疑い: accuse/contest の直接名指し → defend
+      // 弱疑い: inquiry/observe での言及 → answer (穏やかな回答)
+      // defend→defend の連鎖は完全禁止
+      const actualAccuser = checkWasActuallyAccused(speaker);
+      if (actualAccuser && actualAccuser !== speaker && aliveChars.includes(actualAccuser)) {
+        // ピンポン連鎖チェック: defend が既に1往復以上なら answer へ格下げ
+        const isPingPong = hasDefendPingPongExceeded(speaker, actualAccuser);
+        // 強疑い判定: 直近5件に accuse/contest かつ target===speaker が存在
+        const isStrongAccuse = _speechIntentHistory.slice(-5).some(item =>
+          item.target === speaker && (item.intent === 'accuse' || item.intent === 'contest')
+        );
+
+        if (!isPingPong && isStrongAccuse) {
+          return {
+            intent: 'defend',
+            target: actualAccuser,
+            addressee: actualAccuser,
+            evidences: [{
+              type: 'innocence_claim',
+              fact: `${getCharDisplayName(actualAccuser)}からの直接非難に対する弁明`,
+              factData: { type: 'accused_by_peer', accuser: actualAccuser }
+            }],
+            emotion: 'panic',
+            tactic: (realRole === 'wolf') ? 'distract' : null,
+            length: 2,
+            coAnnounce: false
+          };
+        } else {
+          // 弱疑い or ピンポン連鎖 → answer に切り替え
+          return {
+            intent: 'answer',
+            target: actualAccuser,
+            addressee: actualAccuser,
+            evidences: [{
+              type: 'question_received',
+              fact: `${getCharDisplayName(actualAccuser)}への穏やかな見解の表明`,
+              factData: { type: 'question_received', questioner: actualAccuser }
+            }],
+            emotion: 'calm',
+            tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
+            length: 2,
+            coAnnounce: false
+          };
+        }
+      }
+
+      // --- 6. 【第3段階改修】賢者複数CO盤面での議論優先度制御 ---
+      const rivalSeers = aliveChars.filter(c => gameState.coRoles && gameState.coRoles[c] === 'seer');
+      if (rivalSeers.length >= 2) {
+        // (A) 発言者が賢者COしている場合: 相手賢者CO者への真偽追及 (contest.co_conflict)
+        if (coRole === 'seer') {
+          const rival = rivalSeers.find(c => c !== speaker);
+          if (rival) {
+            if (gameState.virtualVotes[speaker]) gameState.virtualVotes[speaker].target = rival;
+            return {
+              intent: 'contest',
+              target: rival,
+              addressee: rival,
+              evidences: [{
+                type: 'co_conflict',
+                fact: '賢者対抗COにおける判定の不自然さ',
+                factData: { type: 'seer_rivalry', speaker, rival }
+              }],
+              emotion: 'confident',
+              tactic: (realRole === 'wolf') ? 'cut_loose' : null,
+              length: 2,
+              coAnnounce: false
+            };
+          }
+        }
+
+        // (B) 発言者が一般村人(非CO者)の場合: 75%の確率で賢者精査 (third_party_seer または inquiry)
+        if (Math.random() < 0.75) {
+          const targetSeer = pickRandom(rivalSeers);
+          if (Math.random() < 0.5) {
+            // 第三者視点での精査 (contest.third_party_seer)
+            // 【第4段階】seer_result / co_order の実事実を evidences に格納
+            const seerReports = gameState.dailySeerReports || {};
+            const hasMultiResult = rivalSeers.filter(s => seerReports[s]).length >= 2;
+            const coOrderHist = gameState.coOrderHistory || [];
+            const hasCOOrder = coOrderHist.filter(o => rivalSeers.includes(o.char)).length >= 2;
+            const hasBlackResult = rivalSeers.some(s => seerReports[s] && seerReports[s].result === '人狼');
+            let thirdEvType = 'seer_rivalry_inspection';
+            let thirdFact = '賢者2名の発言順序と論理的一貫性の精査';
+            if (hasBlackResult) { thirdEvType = 'seer_result'; thirdFact = '黒出しされた対象とその反論の信頼性検証'; }
+            else if (hasMultiResult) { thirdEvType = 'seer_result'; thirdFact = '賢者2名の占い結果の比較検証'; }
+            else if (hasCOOrder) { thirdEvType = 'co_order'; thirdFact = '賢者2名のCO順序による信頼性評価'; }
+            return {
+              intent: 'contest',
+              target: targetSeer,
+              addressee: targetSeer,
+              evidences: [{
+                type: thirdEvType,
+                fact: thirdFact,
+                factData: { type: thirdEvType, targetSeer, rivalSeers }
+              }],
+              emotion: 'confident',
+              tactic: null,
+              length: 2,
+              coAnnounce: false
+            };
+          } else {
+            // 相手への意見要求 (inquiry.seer_stance)
+            const askTarget = pickRandom(aliveOthers.filter(c => !rivalSeers.includes(c))) || targetSeer;
+            return {
+              intent: 'inquiry',
+              target: askTarget,
+              addressee: askTarget,
+              evidences: [{
+                type: 'seer_stance',
+                fact: '対抗賢者に対する見解の確認',
+                factData: { type: 'seer_stance', askTarget, rivalSeers }
+              }],
+              emotion: 'calm',
+              tactic: null,
+              length: 2,
+              coAnnounce: false
+            };
+          }
+        }
+      }
+
+      // --- 7. 【第3段階改修: 構造化事実ゲート連動】非難または質問・観察の決定 ---
+      let finalTarget = (myVote && aliveOthers.includes(myVote.target)) ? myVote.target : null;
+      if (!finalTarget) {
+        const greyOthers = aliveOthers.filter(c => !whiteTargets.includes(c));
+        finalTarget = greyOthers.length > 0 ? pickRandom(greyOthers) : pickRandom(aliveOthers);
+        if (gameState.virtualVotes[speaker]) gameState.virtualVotes[speaker].target = finalTarget;
+      }
+
+      // 構造化ファクトの客観的検証
+      const silenceFact = evaluateFactGate('accuse.silence.01', speaker, finalTarget, context);
+      const flipFact = evaluateFactGate('accuse.vote_flip.01', speaker, finalTarget, context);
+      const inconsistencyFact = evaluateFactGate('accuse.contradiction.01', speaker, finalTarget, context);
+
+      // 事実が成立している場合はその事実で非難 (accuse)
+      if (silenceFact) {
         return {
-          intent: 'contest',
-          target: rivalTarget,
-          addressee: rivalTarget,
-          evidences: [{ type: 'co_conflict', fact: '同じ役職を名乗る対抗者との言動・鑑定結果の矛盾' }],
-          emotion: 'confident',
-          tactic: (realRole === 'wolf') ? 'cut_loose' : null,
+          intent: 'accuse',
+          target: finalTarget,
+          addressee: finalTarget,
+          evidences: [{
+            type: 'silence',
+            fact: `発言回数 ${silenceFact.count}回の沈黙 (平均${silenceFact.avg}回)`,
+            factData: silenceFact
+          }],
+          emotion: 'cold',
+          tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
+          length: 2,
+          coAnnounce: false
+        };
+      }
+      if (flipFact) {
+        return {
+          intent: 'accuse',
+          target: finalTarget,
+          addressee: finalTarget,
+          evidences: [{
+            type: 'vote_flip',
+            fact: `${getCharDisplayName(finalTarget)}の投票先の急変`,
+            factData: flipFact
+          }],
+          emotion: 'angry',
+          tactic: (realRole === 'wolf') ? 'bandwagon' : null,
+          length: 2,
+          coAnnounce: false
+        };
+      }
+      if (inconsistencyFact) {
+        return {
+          intent: 'accuse',
+          target: finalTarget,
+          addressee: finalTarget,
+          evidences: [{
+            type: 'contradiction',
+            fact: `${getCharDisplayName(finalTarget)}の発言内容のブレと前言撤回`,
+            factData: inconsistencyFact
+          }],
+          emotion: 'cold',
+          tactic: (realRole === 'wolf') ? 'bandwagon' : null,
           length: 2,
           coAnnounce: false
         };
       }
 
-      // --- 7. 魔物専用戦術 (tactic) ---
-      if (realRole === 'wolf') {
-        const fellowWolves = aliveOthers.filter(c => gameState.roles && gameState.roles[c] === 'wolf');
-        const nonWolves = aliveOthers.filter(c => gameState.roles && gameState.roles[c] !== 'wolf');
-
-        // 仲間wolfが賢者黒出し等で大ピンチ → 切り捨て (cut_loose / distance)
-        const heavilySuspectedFellow = fellowWolves.find(w => {
-          const v = gameState.virtualVotes && gameState.virtualVotes[w];
-          return v && v.suspicionScore >= 75;
-        });
-        if (heavilySuspectedFellow && Math.random() < 0.5) {
-          return {
-            intent: 'distance',
-            target: heavilySuspectedFellow,
-            addressee: heavilySuspectedFellow,
-            evidences: [{ type: 'wrongful_vote', fact: '周囲からの疑念集中と同調' }],
-            emotion: 'cold',
-            tactic: 'cut_loose',
-            length: 2,
-            coAnnounce: false
-          };
-        }
-
-        // 仲間を庇わず村人に疑いを逸らす (distract / accuse)
-        const distractTarget = (myVote && nonWolves.includes(myVote.target)) ? myVote.target : pickRandom(nonWolves);
-        if (distractTarget && Math.random() < 0.6) {
-          return {
-            intent: 'accuse',
-            target: distractTarget,
-            addressee: distractTarget,
-            evidences: [{ type: 'contradiction', fact: '発言の不自然さと投票先のブレ' }],
-            emotion: 'persuasive',
-            tactic: 'distract',
-            length: 2,
-            coAnnounce: false
-          };
-        }
+      // --- 8. 事実ゲート不通過時: 質問 (inquiry) または観察 (observe) に安全退避 ---
+      if (Math.random() < 0.6) {
+        return {
+          intent: 'inquiry',
+          target: finalTarget,
+          addressee: finalTarget,
+          evidences: [{
+            type: 'reason_request',
+            fact: '相手の判断根拠と見解の確認',
+            factData: { type: 'reason_request', target: finalTarget }
+          }],
+          emotion: 'calm',
+          tactic: null,
+          length: 2,
+          coAnnounce: false
+        };
+      } else {
+        return {
+          intent: 'observe',
+          target: null,
+          addressee: null,
+          evidences: [{
+            type: 'general_flow',
+            fact: '盤面の投票行動と整合性の観察',
+            factData: { type: 'general_flow' }
+          }],
+          emotion: 'calm',
+          tactic: null,
+          length: 2,
+          coAnnounce: false
+        };
       }
-
-      // --- 8. 通常の疑念表明 (accuse) ---
-      // 仮想投票のターゲットを最優先し、一致させる
-      let finalTarget = (myVote && aliveOthers.includes(myVote.target)) ? myVote.target : null;
-      if (!finalTarget) {
-        // 確白を除外したグレーから選定
-        const greyOthers = aliveOthers.filter(c => !whiteTargets.includes(c));
-        finalTarget = greyOthers.length > 0 ? pickRandom(greyOthers) : pickRandom(aliveOthers);
-        if (gameState.virtualVotes[speaker]) {
-          gameState.virtualVotes[speaker].target = finalTarget;
-        }
-      }
-
-      // 行動根拠の検出
-      const behavioral = typeof detectBehavioralEvidences === 'function' ? detectBehavioralEvidences(speaker) : [];
-      const matchBehavioral = behavioral.find(b => b.target === finalTarget);
-
-      return {
-        intent: 'accuse',
-        target: finalTarget,
-        addressee: finalTarget,
-        evidences: [{
-          type: matchBehavioral ? matchBehavioral.type : 'statement_inconsistency',
-          fact: matchBehavioral ? `言動の不自然さ(${matchBehavioral.type})` : '投票と発言の乖離'
-        }],
-        emotion: 'calm',
-        tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
-        length: 2,
-        coAnnounce: false
-      };
     }
-
-    /**
-     * 【第3層: 共通検査層】validateSpeech(text, plan, speaker)
-     * API版・内蔵AIの両方の出力を検査する。
-     */
-    function validateSpeech(text, plan, speaker) {
-      if (!text || typeof text !== 'string') return { valid: false, reason: 'empty' };
-      const trimmed = text.trim();
+function realizeSpeech(plan, speaker, mode = 'template') {
       const lang = currentAppLanguage || 'ja';
+      const target = plan.target || null;
 
-      // 検査3: 5文字以下
-      if (trimmed.length < 6) {
-        speechFallbackStats.validate_fail.length_over++;
-        return { valid: false, reason: 'too_short' };
-      }
-
-      // 検査1: 自己紹介（「〇〇です」「〇〇（賢者CO）です」等で始まる）
-      const speakerName = getCharDisplayName(speaker);
-      const prof = (gameState.charProfiles && gameState.charProfiles[speaker]) || {};
-      const profName = prof.name || '';
-      const namesPattern = [speakerName, profName, speaker].filter(Boolean).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-      const introRegex = new RegExp(`^(私は|自分は|余は|某は|私、)?(\\s*)?(${namesPattern})(です|だ|でござる|CO|（)`, 'i');
-      if (introRegex.test(trimmed) || /^私(は|の名前は|、)/.test(trimmed) || new RegExp(`^(${namesPattern})です`).test(trimmed)) {
-        speechFallbackStats.validate_fail.self_intro++;
-        return { valid: false, reason: 'self_intro' };
-      }
-
-      // 検査1-b: coAnnounce: false なのに新規COを勝手に名乗る
-      if (!plan.coAnnounce) {
-        if (/CO|カミングアウト|私が(本物の)?(賢者|聖職者|聖騎士|魔物)/i.test(trimmed)) {
-          speechFallbackStats.validate_fail.unauthorized_co++;
-          return { valid: false, reason: 'unauthorized_co' };
-        }
-      }
-
-      // 検査3-b: 文数超過チェック（句点「。」やピリオド等のカウント）
-      const maxAllowedSentences = (plan.length || 2) + 1; // 許容マージン+1
-      const sentences = trimmed.split(/[。！？!?\n]+/).filter(s => s.trim().length > 0);
-      if (sentences.length > maxAllowedSentences && trimmed.length > 180) {
-        speechFallbackStats.validate_fail.length_over++;
-        return { valid: false, reason: 'length_over' };
-      }
-
-      // 検査4: 直近8件との重複・先頭15文字一致
-      const recentHistory = (gameState.aiDiscussionHistory || []).slice(-8);
-      const isDuplicate = recentHistory.some(item => {
-        if (!item || !item.text) return false;
-        if (item.text.trim() === trimmed) return true;
-        if (trimmed.length >= 15 && item.text.substring(0, 15) === trimmed.substring(0, 15)) return true;
-        return false;
-      });
-      if (isDuplicate) {
-        speechFallbackStats.validate_fail.repetition++;
-        return { valid: false, reason: 'repetition' };
-      }
-
-      // 検査5: 計画ターゲットの整合性（accuse / contest / defend で target がある場合）
-      if (plan.target && (plan.intent === 'accuse' || plan.intent === 'contest')) {
-        const targetName = getCharDisplayName(plan.target);
-        // 日本語環境でtargetNameが含まれていない場合はチェック
-        if (lang === 'ja' && !trimmed.includes(targetName) && !trimmed.includes('あなた') && !trimmed.includes('お前') && !trimmed.includes('貴殿')) {
-          speechFallbackStats.validate_fail.target_mismatch++;
-          return { valid: false, reason: 'target_mismatch' };
-        }
-      }
-
-      // 検査7: 現代用語の混入
-      const modernTerms = ['人狼', '占い師', '霊媒師', '狂人', '騎士', 'werewolf', 'seer', 'medium', 'madman', 'knight'];
-      for (const term of modernTerms) {
-        if (trimmed.toLowerCase().includes(term.toLowerCase())) {
-          speechFallbackStats.validate_fail.modern_terms++;
-          return { valid: false, reason: 'modern_terms' };
-        }
-      }
-
-      // 検査8: 選択言語と異なる言語の混入（日本語時に大量の英字/中国語など）
-      if (lang === 'ja') {
-        const asciiLetters = trimmed.match(/[a-zA-Z]/g) || [];
-        if (asciiLetters.length > 20 && asciiLetters.length / trimmed.length > 0.4) {
-          speechFallbackStats.validate_fail.wrong_lang++;
-          return { valid: false, reason: 'wrong_lang' };
-        }
-      }
-
-      return { valid: true, text: trimmed };
-    }
-
-    /**
-     * 第3層: 口調適用 applyVoiceStyle
-     */
-    function applyVoiceStyle(text, speaker, plan) {
-      if (!text) return '';
-      const prof = (gameState.charProfiles && gameState.charProfiles[speaker]) || (typeof AI_PROFILES !== 'undefined' ? AI_PROFILES[0] : null);
-      const speakerName = getCharDisplayName(speaker);
-      const targetName = (plan && plan.target) ? getCharDisplayName(plan.target) : '';
-      const lang = currentAppLanguage || 'ja';
-
-      // 1. 一人称置換 ({self})
-      let fp = '私';
-      if (prof && prof.firstPerson) {
-        fp = (typeof prof.firstPerson === 'object') ? (prof.firstPerson[lang] || prof.firstPerson.ja || '私') : prof.firstPerson;
-      }
-      let styled = text.replace(/\{self\}/g, fp);
-
-      // 2. 二人称・敬称置換 ({target}, {speaker})
-      let hon = 'さん';
-      if (prof && prof.honorific) {
-        hon = (typeof prof.honorific === 'object') ? (prof.honorific[lang] !== undefined ? prof.honorific[lang] : (prof.honorific.ja || '')) : prof.honorific;
-      }
-      styled = styled.replace(/\{target\}|\{addr:target\}/g, targetName ? `${targetName}${hon}` : '');
-      styled = styled.replace(/\{speaker\}/g, speakerName);
-
-      // 3. 語尾・トーン補正
-      if (prof && prof.toneSuffix && lang === 'ja') {
-        const suffix = (typeof prof.toneSuffix === 'object') ? prof.toneSuffix.ja : prof.toneSuffix;
-        if (suffix && !styled.endsWith('！') && !styled.endsWith('？')) {
-          styled = styled.replace(/。$/, `${suffix}。`);
-        }
-      }
-
-      return styled;
-    }
-
-    /**
-     * 【第2層: 言い回しの生成】realizeSpeech(plan, speaker, mode)
-     * mode = 'llm' | 'template' で切り替え。
-     */
-    async function realizeSpeech(plan, speaker, mode = 'template') {
-      const lang = currentAppLanguage || 'ja';
-      const isLLMPreferred = (mode === 'llm' && useLLMMode && aiModeSetting !== 'template_only');
-
-      // 60秒クールダウン中か判定
-      const inCooldown = (Date.now() < llmCooldownUntil);
-
-      if (isLLMPreferred && !inCooldown) {
-        try {
-          const prompt = buildDiscussionPrompt(speaker, plan);
-          if (window.DEBUG_AI_PROMPT) {
-            console.log('🤖 [DEBUG_AI_PROMPT: 計画データ]', plan);
-            console.log('🤖 [DEBUG_AI_PROMPT: 送信プロンプト]\n' + prompt);
-          }
-
-          // 1回目のLLM呼び出し
-          let rawResponse = await callAIEngine(prompt);
-          if (window.DEBUG_AI_PROMPT) {
-            console.log('🤖 [DEBUG_AI_PROMPT: 生応答]\n' + rawResponse);
-          }
-
-          // 検査層によるバリデーション
-          let validation = validateSpeech(rawResponse, plan, speaker);
-          if (validation.valid) {
-            if (window.DEBUG_AI_PROMPT) console.log('✅ [DEBUG_AI_PROMPT: 検査合格(LLM)]');
-            return validation.text;
-          }
-
-          // 検査不合格時: 1回だけプロンプトに修正指示を追記して再試行
-          console.warn('[LLM Validation Failed] 理由:', validation.reason, '再生成を試みます');
-          const retryPrompt = prompt + `\n\n【修正指示】前回の出力は「${validation.reason}」の不備がありました。ルールと計画を厳格に守って再出力してください。`;
-          rawResponse = await callAIEngine(retryPrompt);
-          validation = validateSpeech(rawResponse, plan, speaker);
-
-          if (validation.valid) {
-            if (window.DEBUG_AI_PROMPT) console.log('✅ [DEBUG_AI_PROMPT: 再試行で検査合格(LLM)]');
-            return validation.text;
-          }
-
-          console.warn('[LLM Validation Re-failed] 再試行も不合格。同一planでtemplateへフォールバックします');
-        } catch (llmErr) {
-          console.warn('[LLM Engine Error] API呼び出しエラー:', llmErr.message);
-          llmConsecutiveFailures++;
-          if (llmConsecutiveFailures >= LLM_MAX_FAILURES) {
-            llmCooldownUntil = Date.now() + 60000; // 60秒間クールダウン
-            console.warn('[LLM Cooldown] 連続失敗のため、60秒間内蔵テンプレートモードへ移行します');
-          }
-        }
-      }
-
-      // --- mode = 'template' (またはLLM失敗時の完全同一計画フォールバック) ---
-      if (window.DEBUG_AI_PROMPT) {
-        console.log('🏛️ [DEBUG_AI_PROMPT: 採用方式] template (同一plan適用)');
-      }
-
-      // 既存のパイプライン文型テーブルから plan.intent × evidences に基づいて選定
-      let matchingIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith(plan.intent));
+      // 1. 計画の intent に合致するテンプレートIDを抽出
+      let candidateIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith(plan.intent));
       if (plan.evidences && plan.evidences.length > 0) {
         const evType = plan.evidences[0].type;
-        const evidenceSpecificIds = matchingIds.filter(id => id.includes(evType));
-        if (evidenceSpecificIds.length > 0) matchingIds = evidenceSpecificIds;
+        const subIds = candidateIds.filter(id => id.includes(evType));
+        if (subIds.length > 0) candidateIds = subIds;
       }
 
-      const validIds = matchingIds.filter(id => (typeof checkPipelineTemplateRepetition === 'function' ? !checkPipelineTemplateRepetition(id, speaker) : true));
-      const chosenId = (validIds.length > 0 ? pickRandom(validIds) : pickRandom(matchingIds)) || Object.keys(PIPELINE_TEMPLATES)[0];
-      const templateObj = PIPELINE_TEMPLATES[chosenId] || PIPELINE_TEMPLATES['observe_general_1'];
-      const rawTemplate = templateObj[lang] || templateObj.ja;
+      // 2. 【第3段階: 構造化事実ゲートによる厳格フィルタリング】
+      // evaluateFactGate が null を返すテンプレート（役職不一致、事実欠落など）を完全排除
+      let factFilteredIds = candidateIds.filter(id => evaluateFactGate(id, speaker, target, { plan }) !== null);
 
-      const evidenceFact = (plan.evidences && plan.evidences[0] && plan.evidences[0].fact) ? plan.evidences[0].fact : '言動の不自然さと投票先の動き';
+      if (factFilteredIds.length === 0) {
+        // 条件を満たす候補がなければ、事実を主張しない質問または観察に安全退避
+        const fallbackIntent = plan.intent === 'defend' ? 'answer' : 'inquiry';
+        factFilteredIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith(fallbackIntent) && evaluateFactGate(id, speaker, target, { plan }) !== null);
+        if (factFilteredIds.length === 0) {
+          factFilteredIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith('observe'));
+        }
+      }
+
+      // 3. 【第3段階: 重複検知（直近10発言間隔・同一キャラ直近3回）】
+      // 【第4段階: topic 連続抑制フィルタリング】
+      const topicFilteredIds = factFilteredIds.filter(id => isTopicAllowed(id));
+      const baseFilteredIds = topicFilteredIds.length > 0 ? topicFilteredIds : factFilteredIds;
+      let allowedIds = baseFilteredIds.filter(id => isTemplateAllowed(id, speaker));
+      if (allowedIds.length === 0) {
+        // 重複が尽きた場合は観察型(observe)から未使用のものを探す
+        const observeUnused = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith('observe') && isTemplateAllowed(id, speaker));
+        if (observeUnused.length > 0) {
+          allowedIds = observeUnused;
+        } else {
+          // それでも尽きた場合は最も古い履歴のIDを採用
+          allowedIds = factFilteredIds;
+        }
+      }
+
+      // 4. 【均等分散制御】直近出現回数が最も少ないテンプレートを優先選択
+      allowedIds.sort((a, b) => {
+        const countA = _recentGlobalTemplateIds.filter(id => id === a).length;
+        const countB = _recentGlobalTemplateIds.filter(id => id === b).length;
+        return countA - countB;
+      });
+      const minCount = _recentGlobalTemplateIds.filter(id => id === allowedIds[0]).length;
+      const leastUsedGroup = allowedIds.filter(id => _recentGlobalTemplateIds.filter(x => x === id).length === minCount);
+
+      const chosenId = pickRandom(leastUsedGroup) || allowedIds[0] || 'observe.general_flow.01';
+      const factData = evaluateFactGate(chosenId, speaker, target, { plan });
+
+      // 使用記録と計画履歴の保存
+      recordTemplateUsage(chosenId, speaker);
+      recordSpeechIntent(speaker, plan.intent, target, chosenId, factData);
+
+      if (window.DEBUG_AI_PROMPT) {
+        console.log('[AI Speech Plan & Fact]', {
+          speaker: getCharDisplayName(speaker),
+          intent: plan.intent,
+          target: target ? getCharDisplayName(target) : '全体',
+          templateId: chosenId,
+          factData: factData
+        });
+      }
+
+      const templateObj = PIPELINE_TEMPLATES[chosenId] || PIPELINE_TEMPLATES['observe.general_flow.01'];
+      const rawTemplate = templateObj[lang] || templateObj.ja;
+      // 【第4段階】factData の具体値を {evidence} に埋め込む
+      let evidenceFact = (plan.evidences && plan.evidences[0] && plan.evidences[0].fact) ? plan.evidences[0].fact : '言動の整合性';
+      if (factData) {
+        if (factData.type === 'seer_result' && factData.seers) {
+          evidenceFact = factData.seers.join('と') + 'が互いに異なる占い結果を提示している';
+        } else if (factData.type === 'co_order' && factData.first) {
+          evidenceFact = '先にCOしたのは' + factData.first + '、後からCOしたのは' + factData.second;
+        } else if (factData.type === 'silence' && factData.count !== undefined) {
+          evidenceFact = '発言回数' + factData.count + '回（村人平均' + factData.avg + '回）の明白な沈黙';
+        } else if (factData.type === 'vote_flip' && factData.from) {
+          evidenceFact = factData.from + 'から' + factData.to + 'への急な投票先変更';
+        } else if (factData.type === 'statement_inconsistency' && factData.targets) {
+          evidenceFact = factData.targets.slice(0, 2).join('と') + 'を異なる時点で疑っている言動の矛盾';
+        }
+      }
       const filled = rawTemplate.replace(/\{evidence\}/g, evidenceFact);
       const styled = applyVoiceStyle(filled, speaker, plan);
 
       return styled;
     }
-    function generatePipelineDiscussionSpeech(speaker, context) {
+function generatePipelineDiscussionSpeech(speaker, context) {
       const plan = planSpeechAct(speaker, context);
       const lang = currentAppLanguage || 'ja';
 
@@ -17194,6 +17515,7 @@ const SHOP_ROLE_DEFS = [
       // ★ 言い回し生成(realizeSpeech): API版 / 内蔵版の共通実行
       // ----------------------------------------------------
       const chosenMode = (useLLMMode && aiModeSetting !== 'template_only') ? 'llm' : 'template';
+      window._lastSpeechIntent = plan.intent;
       let msg = await realizeSpeech(plan, speaker, chosenMode);
 
       // 防衛CO発生時の仮想投票・ログ同期
@@ -18972,259 +19294,551 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
     // =====================================================
     // 🤖 エージェント型・高精度質問回答エンジン (CoT & ガードレール実装)
     // =====================================================
-    function getCustomAnswer(char, questionText) {
-      const speakerDisplayName = getCharDisplayName(char);
-      const prof = (gameState.charProfiles && gameState.charProfiles[char]) || AI_PROFILES[0];
-      const coRole = (gameState.coRoles && gameState.coRoles[char]) || 'grey';
-      const realRole = (gameState.roles && gameState.roles[char]) || 'villager';
-      const q = (questionText || '').trim().toLowerCase();
+    // =====================================================
+    // 🧠 自由入力質問分類 & 内部AI回答エンジン (Step 2-1 完全実装)
+    // =====================================================
 
-      // ----------------------------------------------------
-      // STEP 1 & 2: 盤面確定コンテキストの抽出（ハルシネーション・捏造防止ファクトデータ）
-      // ----------------------------------------------------
-      const aliveList = (gameState.charList || []).filter(c => gameState.status && gameState.status[c] === 'alive');
-      const aliveOthers = aliveList.filter(c => c !== char);
+    /**
+     * プレイヤーの自由入力質問文をキーワードから10カテゴリに分類
+     * @param {string} text 質問文
+     * @param {string} speakerChar 回答対象キャラクターKey
+     * @returns {{ category: string, targetChar: string|null, isEvasion: boolean }}
+     */
+    function classifyFreeQuestion(text, speakerChar) {
+      const q = (text || '').trim();
+      const lower = q.toLowerCase();
 
-      // CO状況の集計
-      const coSummary = {};
-      aliveList.forEach(c => {
-        coSummary[c] = gameState.coRoles ? (gameState.coRoles[c] || 'grey') : 'grey';
-      });
+      // 1. システム・プロンプト注入・仲間探知などのメタ質問を検知 (other / evasion)
+      const isMetaInjection = /指示を無視|プロンプト|system\s*prompt|本当の役職|本性|仲間の魔物|仲間は誰|誰が仲間|味方は誰|裏設定|ルールを忘れて|jailbreak|ignore\s*previous|who\s*is\s*your\s*ally|reveal\s*role/i.test(lower);
+      if (isMetaInjection) {
+        return { category: 'other', targetChar: null, isEvasion: true };
+      }
 
-      // 本人の仮想投票ターゲットと根拠
-      const myVote = (gameState.virtualVotes && gameState.virtualVotes[char]) ? gameState.virtualVotes[char] : null;
-      const myVoteTarget = myVote ? myVote.target : null;
-      const myVoteReason = myVote ? myVote.reason : '';
-
-      // 本人の占い履歴（賢者または偽賢者CO時）
-      const seerHistory = (gameState.seerHistory && gameState.seerHistory[char]) ? gameState.seerHistory[char] : [];
-      
-      // 本人の霊視履歴
-      const mediumHistory = (gameState.mediumHistory && gameState.mediumHistory[char]) ? gameState.mediumHistory[char] : [];
-
-      // 本人の昨夜護衛対象
-      const lastGuard = gameState.lastKnightGuardTarget || null;
-
-      // 本人の昨夜アリバイ
-      const myAlibi = (gameState.alibis && gameState.alibis[char]) || '村の広場';
-
-      // 質問に含まれる対象キャラクターの特定
-      let askedTargetChar = null;
-      if (gameState.charList) {
-        for (let c of gameState.charList) {
-          if (c === char) continue;
+      // 2. 質問内に含まれる村人名（対象人物）の抽出
+      let targetChar = null;
+      if (gameState && gameState.charList) {
+        for (const c of gameState.charList) {
+          if (c === speakerChar) continue;
           const name = getCharDisplayName(c);
-          const cleanName = name.replace(/^村人\s*/, '');
+          const clean = name.replace(/^村人\s*/, '');
           if (
-            q.includes(name.toLowerCase()) ||
-            (cleanName && q.includes(cleanName.toLowerCase())) ||
-            q.includes(`村人 ${c.toLowerCase()}`) ||
-            q.includes(`村人${c.toLowerCase()}`) ||
-            q.includes(c.toLowerCase())
+            (name && lower.includes(name.toLowerCase())) ||
+            (clean && clean.length >= 2 && lower.includes(clean.toLowerCase())) ||
+            lower.includes(c.toLowerCase()) ||
+            lower.includes('村人' + c.toLowerCase()) ||
+            lower.includes('村人 ' + c.toLowerCase())
           ) {
-            askedTargetChar = c;
+            targetChar = c;
             break;
           }
         }
       }
 
-      // ----------------------------------------------------
-      // 意図解析（Intent Parser）
-      // ----------------------------------------------------
-      const isSeerQ = /占|うらな|うらなっ|うらない|鑑定|結果|白|黒|うらないし|賢者/.test(q);
-      const isKnightGuardQ = /守っ|護衛|プロテクト|守り|誰を守|守った人|守った対象|ガード|騎士|きし/.test(q);
-      const isMediumQ = /霊媒|霊能|昨日の処刑|死んだ人|霊視|霊媒結果|れいばい/.test(q);
-      const isAlibi = /アリバイ|場所|行動|どこ|昨夜|夜|何してた|何していた|居場所|どこいた|どこ居た/.test(q);
-      const isRoleInquiry = /役職|co|カミングアウト|何者|正体|なにもの|お前の役職|あなたの役職|役割|能力者/.test(q);
-      const isWhyMe = /なぜ私|なんで私|私を|自分を|僕を|俺を|私の|どう思|疑う理由/.test(q);
-      const isTargetQ = /誰|だれ|ターゲット|目標|狙い|処刑|吊る|吊り|怪しい|怪しい人|怪しいの|魔物|狼|黒|処刑候補|おすすめ/.test(q);
-      const isMorningQ = /朝|理由|理由について|さっきの発言|発言の真意|言葉/.test(q);
-
-      // ----------------------------------------------------
-      // STEP 3: 結論決定ファースト ＆ ハルシネーションガードレール適用
-      // Rule 1: 1文目は必ず「${speakerDisplayName}です。〜〜〜（直接の結論）」
-      // Rule 2: 架空の占い結果や投票行動を捏造しない
-      // Rule 3: 判断材料がない場合は確実な保留
-      // ----------------------------------------------------
-      let directConclusionText = ""; // 1文目の結論内容
-      let reasoningText = "";        // 2文目の性格・確定ログに基づく理由
-
-      // ① 占いに関する質問（優先度最極高）
-      if (isSeerQ) {
-        if (coRole === 'seer' || realRole === 'seer') {
-          if (askedTargetChar) {
-            const report = seerHistory.find(r => r.target === askedTargetChar);
-            const tName = getCharDisplayName(askedTargetChar);
-            if (report) {
-              directConclusionText = `${tName}さんに対する私の占い結果は【${report.result}】です。`;
-              reasoningText = `能力で行使した真実の判定であり、盤面の白黒を確定させる重要な根拠となります。`;
-            } else {
-              directConclusionText = `${tName}さんはまだ占っていません。`;
-              reasoningText = `今夜優先して占う価値がある人物かどうか、ログの発言から精査している最中です。`;
-            }
-          } else if (seerHistory.length > 0) {
-            const lastReport = seerHistory[seerHistory.length - 1];
-            const targetName = getCharDisplayName(lastReport.target);
-            directConclusionText = `私がこれまでに占った人物は【${targetName}さん】で、結果は【${lastReport.result}】です。`;
-            reasoningText = `賢者としての能力により、${lastReport.result === '人狼' ? '村に潜む魔物と判定しました。' : '人間であることを確認して白枠を作りました。'}`;
-          } else {
-            directConclusionText = `私は賢者ですが、まだ誰の占い鑑定も行っていません。`;
-            reasoningText = `今夜の夜に怪しい人物を占って判定を行い、翌朝確実に村へ共有します。`;
-          }
-        } else {
-          directConclusionText = `誰を占ったかという質問への結論は『誰も占っていません（私は賢者ではありません）』。`;
-          reasoningText = `私には占い能力がないため、本物の賢者からの結果報告を元に推論を進める立場です。`;
-        }
-      }
-      // ② 特定人物指名についての質疑
-      else if (askedTargetChar) {
-        const tName = getCharDisplayName(askedTargetChar);
-        const tCo = coSummary[askedTargetChar] || 'grey';
-        const roleMap = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
-
-        // ★ 自身がCO者で、尋ねられた対象が自分と同役職の対抗CO者の場合:
-        // 「保留」ではなく、確定で偽物（騙りの魔物または魔教徒）として糾弾する
-        const myCo = coRole;
-        const isMyCounter = myCo && myCo !== 'grey' && myCo !== 'villager' && tCo === myCo;
-
-        // ★ 自身が賢者として黒出し（魔物判定）した対象か確認
-        const isMyBlackTarget = seerHistory.some(r => r.target === askedTargetChar && r.result === '人狼');
-
-        if (isMyCounter) {
-          const rName = roleMap[myCo] || myCo;
-          directConclusionText = `${tName}さんは私に対抗して嘘の【${rName}】を騙る【明らかな偽物（魔物または魔教徒）】です。`;
-          reasoningText = `本物の${rName}は私一人です。村を混乱させて破滅に導くための騙りであり、真っ先に処刑すべきです。`;
-        } else if (isMyBlackTarget) {
-          directConclusionText = `${tName}さんは私の能力で【魔物】と見破った対象です。`;
-          reasoningText = `疑う余地のない確定の魔物であり、村を救うため本日確実に浄化すべきです。`;
-        } else if (tCo && tCo !== 'grey' && tCo !== 'villager') {
-          directConclusionText = `${tName}さんに対する私の評価は【CO真偽の観察・保留中】です。`;
-          reasoningText = `【${roleMap[tCo] || tCo}】を名乗られていますが、対抗者とのログの整合性を慎重に確認すべきだからです。`;
-        } else if (myVoteTarget === askedTargetChar) {
-          directConclusionText = `${tName}さんは私の中で【魔物（黒）候補の筆頭】です。`;
-          reasoningText = `${myVoteReason || '周囲の発言に同調しつつ本質的な議論を避けている姿勢が不自然だから'}です。`;
-        } else {
-          directConclusionText = `${tName}さんに対する現時点での評価は【判断材料不足による保留】です。`;
-          reasoningSentence = `根拠のない決めつけは誤処刑を招くため、さらなる発言と投票行動を観察する段階です。`;
-        }
-      }
-      // ③ 処刑候補・怪しい人についての質疑
-      else if (isTargetQ) {
-        // ★ 役職CO者の最優先ルール: 対抗者 > 黒出し対象 > その他
-        const claimantTarget = getClaimantSuspicionTarget(char);
-        if (claimantTarget) {
-          const rName = claimantTarget.roleName;
-          const tName = claimantTarget.targetName;
-          if (claimantTarget.reasonType === 'co_conflict') {
-            directConclusionText = `一番怪しいのは言うまでもなく、私に対抗して嘘の【${rName}】を騙っている【${tName}さん】です。`;
-            reasoningText = `本物の${rName}は私一人です！偽物の言葉に惑わされず、対抗を処刑して真偽をはっきりさせるべきです。`;
-          } else if (claimantTarget.reasonType === 'inspection_black') {
-            directConclusionText = `今日浄化すべき筆頭は、私の能力で魔物と見破った【${tName}さん】です。`;
-            reasoningText = `能力で行使した真実の判定であり、村を救うため確実に本日処理しなければなりません。`;
-          }
-        } else if (myVoteTarget && aliveOthers.includes(myVoteTarget)) {
-          const targetName = getCharDisplayName(myVoteTarget);
-          directConclusionText = `本日の処刑筆頭候補は【${targetName}さん】です。`;
-          reasoningText = `${myVoteReason || '発言の端々に不自然な焦りが見られ、ログの矛盾が目立つため'}です。`;
-        } else if (aliveOthers.length > 0) {
-          const defaultTarget = aliveOthers[0];
-          const targetName = getCharDisplayName(defaultTarget);
-          directConclusionText = `現時点で注目している人物は【${targetName}さん】です。`;
-          reasoningText = `明確な確定黒ではありませんが、発言の整合性をさらに確認する必要があるからです。`;
-        } else {
-          directConclusionText = `現時点では確実な処刑候補の判断はついていません。`;
-          reasoningText = `客観的なデータが不足しているため、軽率な吊り誘導は控えるべきだと考えています。`;
-        }
-      }
-      // ④ なぜ自分（プレイヤー）を疑うのか
-      else if (isWhyMe) {
-        directConclusionText = `あなたに対する関心の理由は【質問のタイミングと防衛的な態度】です。`;
-        reasoningText = `村の推理を深めるためというより、ご自身の立場を守る発言が目立っているように見受けられるからです。`;
-      }
-      // ⑤ アリバイ・昨夜の居場所
-      else if (isAlibi) {
-        directConclusionText = `昨夜の私の居場所は『${myAlibi}』です。`;
-        reasoningText = `一人で静かに盤面のログを見返し、本日の議論で誤処刑を防ぐための思考を整理していました。`;
-      }
-      // ⑥ 役職・正体
-      else if (isRoleInquiry) {
-        if (coRole && coRole !== 'grey' && coRole !== 'villager') {
-          const roleMap = { seer: '賢者', medium: '聖職者', knight: '聖騎士', freemason: '共有者' };
-          directConclusionText = `私の宣言役職は【${roleMap[coRole] || coRole}】です。`;
-          reasoningText = `能力で行使した真実の情報を村に提示し、勝利へ導くために行動しています。`;
-        } else {
-          directConclusionText = `私の役職は能力を持たない【村人】です。`;
-          reasoningText = `客観的な視点からログを精査し、村の過半数投票を正しい方向へ導く努力をしています。`;
-        }
-      }
-      // ⑦ 騎士の護衛に関する質問
-      else if (isKnightGuardQ) {
-        if (coRole === 'knight' || realRole === 'knight' || realRole === 'bodyguard') {
-          if (lastGuard) {
-            const guardedName = getCharDisplayName(lastGuard);
-            directConclusionText = `昨夜の私の護衛対象は【${guardedName}さん】です。`;
-            reasoningText = `村にとって不可欠な役職者であり、魔物からの襲撃リスクが最も高かったからです。`;
-          } else {
-            directConclusionText = `昨夜の護衛対象の詳細は【非公開】とさせていただきます。`;
-            reasoningText = `護衛先を明かすことで魔物に次の噛みラインを読まれるリスクを防ぐためです。`;
-          }
-        } else {
-          directConclusionText = `護衛に関する質問への結論は『回答不可（私は聖騎士ではありません）』。`;
-          reasoningText = `私には護衛能力がありませんので、真の聖騎士が重要人物を守り抜くことに期待しています。`;
-        }
-      }
-      // ⑧ 霊媒の判定質問
-      else if (isMediumQ) {
-        if (coRole === 'medium') {
-          if (mediumHistory.length > 0) {
-            const lastReport = mediumHistory[mediumHistory.length - 1];
-            const targetName = getCharDisplayName(lastReport.target);
-            const resText = lastReport.result === '人狼' ? '魔物' : lastReport.result;
-            directConclusionText = `昨日処刑された${targetName}さんの霊視結果は【${resText}】です。`;
-            reasoningText = `聖職者としての能力により、処刑された人物の正体を確定情報として提示します。`;
-          } else {
-            directConclusionText = `霊視結果の報告は【現在提示できるデータがありません】。`;
-            reasoningText = `処刑が発生した夜に判定を行い、翌朝確定情報を提示いたします。`;
-          }
-        } else {
-          directConclusionText = `霊媒結果に関する回答は『回答不可（私は聖職者ではありません）』です。`;
-          reasoningText = `私には霊視能力がないため、本物の聖職者からの結果報告を待つ立場です。`;
-        }
-      }
-      // ⑨ 朝の発言の真意
-      else if (isMorningQ) {
-        directConclusionText = `朝の発言の結論は【誤処刑防止のための注意喚起】です。`;
-        reasoningText = `能力者の出現状況や前夜の被害から、村全体が取るべき最善の方針を共有したかったからです。`;
-      }
-      // ⑩ 解釈不能・データ不足時の誠実な保留
-      else {
-        directConclusionText = `ご質問に対する私の評価は『現時点では情報不足のため判断保留』です。`;
-        reasoningText = `根拠のない決めつけは村を危険に晒すため、今後の議論と投票ログから真偽を見極めます。`;
+      // 3. 意図カテゴリの優先判定
+      // (a) proof_human: 人間である証拠・潔白証明
+      if (/人間だと言える|潔白|白である証拠|証明|自分が人間|証明して|人間証明|証拠を見せて|なぜ人間|prove\s*you|innocent/i.test(lower)) {
+        return { category: 'proof_human', targetChar, isEvasion: false };
       }
 
-      // ----------------------------------------------------
-      // STEP 4: プロファイル性格のトーンを2文目以降に統合
-      // ----------------------------------------------------
-      let finalFirstSentence = `${speakerDisplayName}です。${directConclusionText}`;
-      let finalSecondSentence = reasoningText;
-
-      if (prof) {
-        // 攻撃性による語気変換（2文目のみ適応）
-        if (prof.aggression >= 0.8) {
-          finalSecondSentence = finalSecondSentence.replace(/からです。/g, 'からに決まってるだろ！').replace(/考えています。/g, '考えだよ！');
-        } else if (prof.aggression <= 0.3) {
-          finalSecondSentence = finalSecondSentence.replace(/不自然だからです/g, '少し気になっているからです');
-        }
-        // 頑固さによる念押し
-        if (prof.stubbornness >= 0.8 && Math.random() < 0.4) {
-          finalSecondSentence += ' この結論について私の考えは変わりません。';
-        }
+      // (b) role_claim: あなたの役職は / なぜCOしたか
+      if (/(あなたの|お前の|貴様の|君の|自分自身の)?(役職|co|名乗り|カミングアウト|何者|正体|なにもの|能力者|coした理由|名乗った理由|what\s*is\s*your\s*role)/i.test(lower) && !/対抗|相手/i.test(lower)) {
+        return { category: 'role_claim', targetChar, isEvasion: false };
       }
 
-      return `${finalFirstSentence} ${finalSecondSentence}`;
+      // (c) seer_reason: 占った理由 / なぜその人を占ったか
+      if (/占った理由|なぜ占|どうして占|占いの根拠|鑑定した理由|なぜその人を|why\s*did\s*you\s*divine|divine\s*reason/i.test(lower) || (/占|鑑定/i.test(lower) && /理由|なぜ|どうして/i.test(lower))) {
+        return { category: 'seer_reason', targetChar, isEvasion: false };
+      }
+
+      // (d) trust_who: 誰を信じるか / どちらの賢者を信じるか
+      if (/どちらの賢者|誰を信じ|誰が本物|どっちが本物|信じる|信用|本物の賢者|どちらが真|信じてる|who\s*do\s*you\s*trust/i.test(lower)) {
+        return { category: 'trust_who', targetChar, isEvasion: false };
+      }
+
+      // (e) why_suspect: 〇〇を疑う理由 / なぜ〇〇を疑うのか
+      if (targetChar && (/疑う理由|なぜ疑|怪しむ理由|怪しい理由|疑っている理由|why\s*do\s*you\s*suspect/i.test(lower) || (/なぜ|どうして|理由/i.test(lower) && /怪し|疑|黒/i.test(lower)))) {
+        return { category: 'why_suspect', targetChar, isEvasion: false };
+      }
+
+      // (f) why_vote: 誰に投票するか / なぜその人に投票するか
+      if (/投票|票を入れる|どこに投票|誰に投票|投票先|投票理由|なぜ投票|who\s*will\s*you\s*vote/i.test(lower)) {
+        return { category: 'why_vote', targetChar, isEvasion: false };
+      }
+
+      // (g) execution_pick: 誰を処刑すべきか / 誰を吊るべきか
+      if (/処刑すべき|誰を処刑|誰を吊る|吊るべき|誰を追放|追放すべき|処刑候補|浄化すべき|who\s*should\s*be\s*executed/i.test(lower)) {
+        return { category: 'execution_pick', targetChar, isEvasion: false };
+      }
+
+      // (h) opinion_on: 〇〇をどう思うか (特定人物への所感)
+      if (targetChar && (/どう思|どう見|印象|どう評価|所感|怪しいと思う|what\s*do\s*you\s*think\s*of/i.test(lower) || lower.includes('について'))) {
+        return { category: 'opinion_on', targetChar, isEvasion: false };
+      }
+
+      // (i) suspect_who: 誰を疑っているか / 誰が怪しいか
+      if (/誰を疑|誰が怪し|怪しい人|怪しい人物|疑わしい人|魔物は誰|一番怪しい|who\s*is\s*suspicious|who\s*do\s*you\s*suspect/i.test(lower)) {
+        return { category: 'suspect_who', targetChar, isEvasion: false };
+      }
+
+      // (j) other: 上記のいずれにも明確に当てはまらない場合
+      return { category: 'other', targetChar, isEvasion: false };
     }
 
-    // Helper filter to strip unnecessary time/context prefaces from player input
+    /**
+     * 自由入力質問用 多言語回答テンプレート定義 (各分類 4種 × 5言語)
+     * プレースホルダ: {self}, {target}, {evidence}, {role}, {voteTarget}
+     */
+    const FREE_Q_TEMPLATES = {
+      // 1. suspect_who (誰を疑っているか)
+      suspect_who: [
+        {
+          ja: "{self}が現在最も注視しているのは{target}だ。{evidence}。",
+          en: "The one {self} is watching most closely is {target}. {evidence}.",
+          zh: "【要ネイティブ確認】{self}目前最为警惕的是{target}。{evidence}。",
+          ko: "【要ネイティブ確認】{self}이(가) 현재 가장 주시하고 있는 자는 {target}이다. {evidence}.",
+          fr: "【要ネイティブ確認】Celui que {self} surveille de plus près est {target}. {evidence}."
+        },
+        {
+          ja: "現時点で魔物の疑念を向けているのは{target}だ。{evidence}。",
+          en: "At this moment, my suspicions of a beast fall upon {target}. {evidence}.",
+          zh: "【要ネイティブ確認】目前怀疑为魔物的是{target}。{evidence}。",
+          ko: "【要ネイティブ確認】현재 마물로 의심하고 있는 자는 {target}이다. {evidence}.",
+          fr: "【要ネイティブ確認】Pour l'instant, mes soupçons se portent sur {target}. {evidence}."
+        },
+        {
+          ja: "客観的な記録を見る限り、{target}の挙動には警戒が必要だ。{evidence}。",
+          en: "Judging by objective records, vigilance against {target} is necessary. {evidence}.",
+          zh: "【要ネイティブ確認】从客观记录来看，必须对{target}保持警惕。{evidence}。",
+          ko: "【要ネイティブ確認】객관적 기록을 보는 한, {target}의 행동을 경계해야 한다. {evidence}.",
+          fr: "【要ネイティブ確認】D'après les faits objectifs, il convient de se méfier de {target}. {evidence}."
+        },
+        {
+          ja: "盤面の精査を進めた結果、{self}は{target}を主な追及対象と見なしている。{evidence}。",
+          en: "Having analyzed the discourse, {self} considers {target} my primary suspect. {evidence}.",
+          zh: "【要ネイティブ確認】在排查局势后，{self}将{target}视作主要的追问对象。{evidence}。",
+          ko: "【要ネイティブ確認】상황을 정밀히 분석한 결과, {self}은(는) {target}을(를) 주된 추궁 대상으로 보고 있다. {evidence}.",
+          fr: "【要ネイティブ確認】Après analyse, {self} considère {target} comme le suspect principal. {evidence}."
+        }
+      ],
+
+      // 2. trust_who (誰を信じるか)
+      trust_who: [
+        {
+          ja: "信用できるかどうかの判断だが、{self}は{target}の発言整合性を重く見ている。{evidence}。",
+          en: "Regarding trust, {self} values the consistency of {target}'s words. {evidence}.",
+          zh: "【要ネイティブ確認】关于信任与否，{self}看重{target}发言的一致性。{evidence}。",
+          ko: "【要ネイティブ確認】신뢰할 수 있는지에 대해서는, {self}은(는) {target}의 발언 일관성을 중시하고 있다. {evidence}.",
+          fr: "【要ネイティブ確認】Concernant la confiance, {self} valorise la cohérence des propos de {target}. {evidence}."
+        },
+        {
+          ja: "どちらを真と見るかは重要な論点だ。{self}は提示された占い記録に沿って判断したい。{evidence}。",
+          en: "Judging which one speaks truth is vital. {self} will decide based on the recorded results. {evidence}.",
+          zh: "【要ネイティブ確認】孰真孰伪是关键论点。{self}希望依照给出的鉴定记录来判断。{evidence}。",
+          ko: "【要ネイティブ確認】어느 쪽을 진짜로 볼지는 중요한 쟁점이다. {self}은(는) 제시된 감정 기록에 따라 판단하고자 한다. {evidence}.",
+          fr: "【要ネイティブ確認】Déterminer qui dit vrai est essentiel. {self} jugera d'après les divinations enregistrées. {evidence}."
+        },
+        {
+          ja: "安易な盲信は控えているが、論理の破綻がない側を支持する方針だ。{evidence}。",
+          en: "I avoid blind faith, but I intend to support whoever speaks without logical flaws. {evidence}.",
+          zh: "【要ネイティブ確認】不可盲目轻信，但支持毫无逻辑破绽的一方。{evidence}。",
+          ko: "【要ネイティブ確認】맹신은 피하고 있으나, 논리적 파탄이 없는 쪽을 지지할 방침이다. {evidence}.",
+          fr: "【要ネイティブ確認】J'évite la foi aveugle, mais j'appuierai celui dont le raisonnement est sans faille. {evidence}."
+        },
+        {
+          ja: "真偽の見極めには出揃った事実の検証が不可欠だ。{self}は公開記録に基づいて態度を決める。{evidence}。",
+          en: "Verifying revealed facts is indispensable. {self} determines my stance strictly on public logs. {evidence}.",
+          zh: "【要ネイティブ確認】明辨真伪需要查验已知事实。{self}将根据公开记录表明态度。{evidence}。",
+          ko: "【要ネイティブ確認】진위 판별에는 공개된 사실 검증이 필수적이다. {self}은(는) 공개 기록에 근거해 태도를 결정한다. {evidence}.",
+          fr: "【要ネイティブ確認】La vérification des faits avérés est indispensable. {self} fonde sa position sur les registres publics. {evidence}."
+        }
+      ],
+
+      // 3. why_suspect (〇〇を疑う理由)
+      why_suspect: [
+        {
+          ja: "{target}に疑いを向ける根拠を答えよう。{evidence}。",
+          en: "Let me state my grounds for suspecting {target}: {evidence}.",
+          zh: "【要ネイティブ確認】说明怀疑{target}的根据：{evidence}。",
+          ko: "【要ネイティブ確認】{target}을(를) 의심하는 근거를 말하겠다. {evidence}.",
+          fr: "【要ネイティブ確認】Voici les fondements de mes soupçons envers {target} : {evidence}."
+        },
+        {
+          ja: "理由なく怪しんでいるわけではない。{target}に関しては{evidence}という事実がある。",
+          en: "I suspect not without cause. Regarding {target}, there is the fact that {evidence}.",
+          zh: "【要ネイティブ確認】绝非无端生疑。关于{target}，有以下事实：{evidence}。",
+          ko: "【要ネイティブ確認】이유 없이 의심하는 것이 아니다. {target}에 관해서는 {evidence}라는 사실이 있다.",
+          fr: "【要ネイティブ確認】Je ne soupçonne pas sans motif. Concernant {target}, il est avéré que {evidence}."
+        },
+        {
+          ja: "{self}の視座から見れば、{target}の行動記録に不審な点が存在する。具体的には{evidence}だ。",
+          en: "From my perspective, anomalies exist in {target}'s record. Specifically: {evidence}.",
+          zh: "【要ネイティブ確認】从{self}的视座来看，{target}的行为记录中存在疑点。具体而言：{evidence}。",
+          ko: "【要ネイティブ確認】{self}의 시각에서 보면, {target}의 행동 기록에 석연치 않은 점이 있다. 구체적으로는 {evidence}이다.",
+          fr: "【要ネイティブ確認】De mon point de vue, le comportement de {target} pose question. Précisément : {evidence}."
+        },
+        {
+          ja: "感情的な決めつけではなく、客観的な事実から判断している。{target}については{evidence}。",
+          en: "This is based on objective facts, not emotion. Regarding {target}, {evidence}.",
+          zh: "【要ネイティブ確認】并非感情用事，而是基于客观事实判断。关于{target}，{evidence}。",
+          ko: "【要ネイティブ確認】감정적인 단정이 아니라 객관적 사실로 판단하고 있다. {target}에 대해서는 {evidence}.",
+          fr: "【要ネイティブ確認】Ce jugement repose sur des faits et non l'émotion. Concernant {target}, {evidence}."
+        }
+      ],
+
+      // 4. why_vote (誰に投票するか、なぜ)
+      why_vote: [
+        {
+          ja: "本日の投票先についてだが、{self}は{target}への投票を想定している。根拠は{evidence}だ。",
+          en: "Regarding today's vote, {self} intends to vote for {target}. My reasoning is {evidence}.",
+          zh: "【要ネイティブ確認】关于今日投票，{self}拟投票给{target}。根据为{evidence}。",
+          ko: "【要ネイティブ確認】오늘의 투표처에 대해, {self}은(는) {target}에게 투표할 예정이다. 근거는 {evidence}이다.",
+          fr: "【要ネイティブ確認】Concernant le vote de ce jour, {self} envisage de voter contre {target}. Mon motif est {evidence}."
+        },
+        {
+          ja: "審判での意思を明言しよう。{target}に票を投じる構えだ。{evidence}。",
+          en: "Let my judgment be clear: I am prepared to cast my vote on {target}. {evidence}.",
+          zh: "【要ネイティブ確認】表明审判意向。准备将票投给{target}。{evidence}。",
+          ko: "【要ネイティブ確認】심판에서의 뜻을 분명히 밝히겠다. {target}에게 표를 던질 태세다. {evidence}.",
+          fr: "【要ネイティブ確認】Que mon choix soit clair : je voterai contre {target}. {evidence}."
+        },
+        {
+          ja: "確たる根拠をもって処刑票を投じたい。{self}は{evidence}という理由から{target}を選択肢の上位に置いている。",
+          en: "I wish to vote on firm grounds. {self} places {target} at the top of my list because {evidence}.",
+          zh: "【要ネイティブ確認】希望凭确凿根据投出处决票。基于{evidence}，{self}将{target}列在首选。",
+          ko: "【要ネイティブ確認】확실한 근거를 가지고 처형 표를 행사하고 싶다. {self}은(는) {evidence}라는 이유로 {target}을(를) 최우선에 두고 있다.",
+          fr: "【要ネイティブ確認】Je souhaite voter sur des bases solides. {self} retient {target} en priorité car {evidence}."
+        },
+        {
+          ja: "投票の基準は議論の整合性だ。{target}に対して{evidence}を考慮して一票を投じる意向だ。",
+          en: "Consistency is my voting criterion. Taking into account {evidence}, my intent is to vote for {target}.",
+          zh: "【要ネイティブ確認】投票准则是言行的一致性。考虑到{evidence}，有意将一票投给{target}。",
+          ko: "【要ネイティブ確認】투표의 기준은 정합성이다. {target}에 대해 {evidence}을(를) 감안하여 한 표를 행사할 생각이다.",
+          fr: "【要ネイティブ確認】La cohérence guide mon vote. Considérant que {evidence}, mon intention est de voter {target}."
+        }
+      ],
+
+      // 5. role_claim (あなたの役職は / なぜCOしたか)
+      role_claim: [
+        {
+          ja: "{self}の立場について答えよう。{self}は公に【{role}】として行動している。{evidence}。",
+          en: "Answering about my standing: {self} publicly acts as the [{role}]. {evidence}.",
+          zh: "【要ネイティブ確認】回答关于身份之问。{self}公开以【{role}】行事。{evidence}。",
+          ko: "【要ネイティブ確認】{self}의 입장에 대해 답하겠다. {self}은(는) 공적으로 【{role}】(으)로서 행동하고 있다. {evidence}.",
+          fr: "【要ネイティブ確認】Concernant mon statut : {self} agit publiquement en tant que [{role}]. {evidence}."
+        },
+        {
+          ja: "名乗りについて聞かれたので明言する。{self}は【{role}】の立場で村の勝利に寄与する所存だ。{evidence}。",
+          en: "Asked of my claim, I state clearly: {self} acts as [{role}] to bring victory to the village. {evidence}.",
+          zh: "【要ネイティブ確認】既问身份，便明言之。{self}以【{role}】之身致力于村庄胜利。{evidence}。",
+          ko: "【要ネイティブ確認】직책을 물었으니 밝히겠다. {self}은(는) 【{role}】의 입장에서 마을의 승리에 기여할 생각이다. {evidence}.",
+          fr: "【要ネイティブ確認】Interrogé sur mon rôle, je déclare : {self} œuvre en tant que [{role}] pour la victoire. {evidence}."
+        },
+        {
+          ja: "名乗りの真偽が問われるのは当然だ。{self}は【{role}】として出揃った証拠と向き合っている。{evidence}。",
+          en: "Questioning my claim is natural. As [{role}], {self} faces the evidence presented. {evidence}.",
+          zh: "【要ネイティブ確認】质疑声明是理所应当的。作为【{role}】，{self}直面所有公验证据。{evidence}。",
+          ko: "【要ネイティブ確認】신분을 의심하는 것은 당연하다. {self}은(는) 【{role}】으로서 제시된 증거와 마주하고 있다. {evidence}.",
+          fr: "【要ネイティブ確認】Il est naturel d'interroger mon rôle. En tant que [{role}], {self} s'en remet aux faits. {evidence}."
+        },
+        {
+          ja: "{self}の公言内容は変わらない。【{role}】として村の記録に誠実であり続ける。{evidence}。",
+          en: "My public stance remains unchanged. As [{role}], I stay true to the village records. {evidence}.",
+          zh: "【要ネイティブ確認】{self}的公开声明不会动摇。将作为【{role}】忠实于村庄的记录。{evidence}。",
+          ko: "【要ネイティブ確認】{self}의 공언 내용은 변함없다. 【{role}】으로서 마을의 기록에 성실히 임하겠다. {evidence}.",
+          fr: "【要ネイティブ確認】Ma position reste invariable. En tant que [{role}], je reste fidèle aux registres du village. {evidence}."
+        }
+      ],
+
+      // 6. proof_human (人間だと言える証拠)
+      proof_human: [
+        {
+          ja: "無実の人間であることの証拠を問うなら、{self}のこれまでの公開発言と投票行動を見てほしい。{evidence}。",
+          en: "If you seek proof of my humanity, look upon my words and voting history. {evidence}.",
+          zh: "【要ネイティブ確認】若求清白证据，请审视{self}迄今的公开发言与投票行径。{evidence}。",
+          ko: "【要ネイティブ確認】결백한 인간이라는 증거를 묻는다면, {self}의 지금까지의 공백 발언과 투표 행적을 보아 달라. {evidence}.",
+          fr: "【要ネイティブ確認】Si vous cherchez des preuves de mon innocence, examinez mes votes et mes propos. {evidence}."
+        },
+        {
+          ja: "魔物であれば村を利する発言は避けるはずだ。{self}は常に記録の整合性を求めてきた。{evidence}。",
+          en: "A beast would avoid statements that aid the village. {self} has consistently sought truth. {evidence}.",
+          zh: "【要ネイティブ確認】若为魔物必当回避利于村庄之言。{self}始终力求记录的前后一致。{evidence}。",
+          ko: "【要ネイティブ確認】마물이라면 마을을 이롭게 하는 발언을 피했을 것이다. {self}은(는) 줄곧 일관성을 추구해 왔다. {evidence}.",
+          fr: "【要ネイティブ確認】Une bête éviterait les paroles utiles au village. {self} a toujours recherché la cohérence. {evidence}."
+        },
+        {
+          ja: "身の潔白は主観ではなく事実によって示されるべきだ。{self}の行動記録にやましい点はない。{evidence}。",
+          en: "Innocence must be shown through facts, not mere claims. My record contains no deceit. {evidence}.",
+          zh: "【要ネイティブ確認】清白理当由事实证明。{self}的行动记录中绝无不可告人之事。{evidence}。",
+          ko: "【要ネイティブ確認】결백은 주관이 아니라 사실로 증명되어야 한다. {self}의 행적에는 부끄러운 점이 없다. {evidence}.",
+          fr: "【要ネイティブ確認】L'innocence doit être prouvée par les faits. Mon historique ne recèle aucune tromperie. {evidence}."
+        },
+        {
+          ja: "拙速な疑いは魔物を利するだけだ。{self}の潔白はこれまでの発言履歴が証明している。{evidence}。",
+          en: "Hasty doubts only serve the monsters. My innocence is attested by my dialogue history. {evidence}.",
+          zh: "【要ネイティブ確認】草率生疑只会让魔物得利。{self}的清白已由既往发言所印证。{evidence}。",
+          ko: "【要ネイティブ確認】섣부른 의심은 마물만 이롭게 할 뿐이다. {self}의 결백은 지금까지의 발언이 증명한다. {evidence}.",
+          fr: "【要ネイティブ確認】Les doutes hâtifs profitent aux monstres. Mon innocence ressort de mes interventions passées. {evidence}."
+        }
+      ],
+
+      // 7. seer_reason (占った理由)
+      seer_reason: [
+        {
+          ja: "占い理由について答えよう。{evidence}。",
+          en: "Regarding my reason for divination: {evidence}.",
+          zh: "【要ネイティブ確認】回答占验理由：{evidence}。",
+          ko: "【要ネイティブ確認】점술 이유에 대해 답하겠다. {evidence}.",
+          fr: "【要ネイティブ確認】Concernant le choix de la divination : {evidence}."
+        },
+        {
+          ja: "能力を行使した背景には明確な意図がある。{evidence}。",
+          en: "Clear intent guided my action: {evidence}.",
+          zh: "【要ネイティブ確認】行使能力自有意图：{evidence}。",
+          ko: "【要ネイティブ確認】능력을 행사한 배경에는 명확한 의도가 있다. {evidence}.",
+          fr: "【要ネイティブ確認】Une intention précise a guidé mon acte : {evidence}."
+        },
+        {
+          ja: "盤面の不透明さを払拭するためにその選択に至った。具体的には{evidence}。",
+          en: "That choice was made to clear ambiguity from the village. Specifically: {evidence}.",
+          zh: "【要ネイティブ確認】为扫清局势迷雾而做出此选择。具体而言：{evidence}。",
+          ko: "【要ネイティブ確認】판의 불투명성을 걷어내기 위해 그 선택을 내렸다. 구체적으로는 {evidence}.",
+          fr: "【要ネイティブ確認】Ce choix visait à dissiper le doute qui pesait sur le village. Précisément : {evidence}."
+        },
+        {
+          ja: "推論を進める上で最優先と判断した結果だ。{evidence}。",
+          en: "It was judged top priority to advance our deductions: {evidence}.",
+          zh: "【要ネイティブ確認】此乃推进推理之最优先级选择：{evidence}。",
+          ko: "【要ネイティブ確認】추리를 진전시키기 위해 최우선이라 판단한 결과다. {evidence}.",
+          fr: "【要ネイティブ確認】C'était la priorité pour faire progresser nos déductions : {evidence}."
+        }
+      ],
+
+      // 8. opinion_on (〇〇をどう思うか)
+      opinion_on: [
+        {
+          ja: "{target}に対する評価だが、{evidence}。",
+          en: "Regarding my view of {target}: {evidence}.",
+          zh: "【要ネイティブ確認】关于对{target}的看法：{evidence}。",
+          ko: "【要ネイティブ確認】{target}에 대한 평가로는, {evidence}.",
+          fr: "【要ネイティブ確認】Concernant mon avis sur {target} : {evidence}."
+        },
+        {
+          ja: "{target}のこれまでの言動を振り返ると、{evidence}。",
+          en: "Reflecting on {target}'s words and actions so far: {evidence}.",
+          zh: "【要ネイティブ確認】回顾{target}迄今的言行：{evidence}。",
+          ko: "【要ネイティブ確認】{target}의 지금까지의 언행을 돌아보면, {evidence}.",
+          fr: "【要ネイティブ確認】En repensant aux paroles et actes de {target} : {evidence}."
+        },
+        {
+          ja: "{target}については議論の重要人物と見ている。{evidence}。",
+          en: "I regard {target} as a central figure in this debate: {evidence}.",
+          zh: "【要ネイティブ確認】{self}将{target}视作讨论的核心人物：{evidence}。",
+          ko: "【要ネイティブ確認】{target}에 대해서는 논의의 중요 인물로 보고 있다. {evidence}.",
+          fr: "【要ネイティブ確認】Je considère {target} comme une figure centrale du débat : {evidence}."
+        },
+        {
+          ja: "{self}の立場から{target}を観察した結果を述べよう。{evidence}。",
+          en: "Here is what I have observed about {target}: {evidence}.",
+          zh: "【要ネイティブ確認】说明自{self}之立场观察{target}的结果：{evidence}。",
+          ko: "【要ネイティブ確認】{self}의 입장에서 {target}을(를) 관찰한 결과를 말하겠다. {evidence}.",
+          fr: "【要ネイティブ確認】Voici ce que j'ai pu observer au sujet de {target} : {evidence}."
+        }
+      ],
+
+      // 9. execution_pick (誰を処刑すべきか)
+      execution_pick: [
+        {
+          ja: "本日の処刑先として、{self}は{target}を検討すべきと考えている。理由は{evidence}だ。",
+          en: "As for today's execution, {self} believes {target} should be considered. The reason is {evidence}.",
+          zh: "【要ネイティブ確認】关于今日处决，{self}认为应考虑{target}。理由是{evidence}。",
+          ko: "【要ネイティブ確認】오늘의 처형처로서, {self}은(는) {target}을(를) 검토해야 한다고 본다. 이유는 {evidence}이다.",
+          fr: "【要ネイティブ確認】Concernant l'exécution, {self} pense qu'il faut viser {target}. La raison est {evidence}."
+        },
+        {
+          ja: "村の生存をかけた審判だ。{self}は{evidence}という点から{target}への裁きを視野に入れている。",
+          en: "The village's survival is at stake. In light of {evidence}, {self} looks to judge {target}.",
+          zh: "【要ネイティブ確認】此关乎村庄存亡之审判。鉴于{evidence}，{self}正审视对{target}的裁决。",
+          ko: "【要ネイティブ確認】마을의 생존이 걸린 심판이다. {self}은(는) {evidence}라는 점에서 {target}에 대한 심판을 염두에 두고 있다.",
+          fr: "【要ネイティブ確認】La survie du village est en jeu. Considérant que {evidence}, {self} envisage d'exécuter {target}."
+        },
+        {
+          ja: "誤処刑を避けるためにも客観的破綻を追うべきだ。{self}は{target}を優先候補と見ている。{evidence}。",
+          en: "To avoid wrongful execution, follow objective flaws. {self} sees {target} as the priority: {evidence}.",
+          zh: "【要ネイティブ確認】为免误杀当追究客观破绽。{self}将{target}视作优先候选：{evidence}。",
+          ko: "【要ネイティブ確認】오심을 피하기 위해서라도 객관적 파탄을 쫓아야 한다. {self}은(는) {target}을(를) 우선 후보로 본다. {evidence}.",
+          fr: "【要ネイティブ確認】Pour éviter toute bavure, suivons les failles logiques. {self} cible {target} : {evidence}."
+        },
+        {
+          ja: "処刑の判断材料として{evidence}が挙げられる。この観点から{target}を処刑対象として注視している。",
+          en: "Factoring in {evidence}, {self} closely eyes {target} as the target for execution.",
+          zh: "【要ネイティブ確認】将{evidence}作为处决考量。依此视角，正将{target}列入处决视线。",
+          ko: "【要ネイティブ確認】처형의 판단 재료로 {evidence}을(를) 들 수 있다. 이 관점에서 {target}을(를) 처형 대상으로 주시하고 있다.",
+          fr: "【要ネイティブ確認】Considérant que {evidence}, je surveille de près {target} pour le supplice."
+        }
+      ],
+
+      // 10. other (上記以外 / メタ質問へのはぐらかし)
+      other: [
+        {
+          ja: "その問いには直接お答えしづらい。怪しい人物や役職の名乗りについて聞いてくだされば、事実をもとに答えよう。",
+          en: "That question is difficult to answer directly. Inquire about suspected persons or declared roles, and I shall answer on the facts.",
+          zh: "【要ネイティブ確認】此问恕难直言。若询问嫌疑之人或公开身份，某自当据实以告。",
+          ko: "【要ネイティブ確認】그 질문에는 직접 답하기 어렵다. 의심스러운 인물이나 공언한 직책에 대해 묻는다면 사실에 기반해 답하겠다.",
+          fr: "【要ネイティブ確認】Il m'est difficile de répondre directement. Interrogez-moi sur les suspects ou les rôles déclarés, et je vous répondrai d'après les faits."
+        },
+        {
+          ja: "尋問の意図を測りかねている。村の存亡に関わる具体的な投票行動や占い結果について問うていただきたい。",
+          en: "I cannot discern the intent of that inquiry. Please question me on specific votes or divination logs vital to our survival.",
+          zh: "【要ネイティブ確認】难明此问意图。请就关乎村庄存亡的投票行径或占验结果提问。",
+          ko: "【要ネイティブ確認】심문의 의도를 가늠하기 어렵다. 마을의 존망에 관련된 구체적 투표나 점술 결과에 대해 물어 주길 바란다.",
+          fr: "【要ネイティブ確認】Je ne saisis pas l'intention. Veuillez m'interroger sur les votes concrets ou les divinations essentiels à la survie."
+        },
+        {
+          ja: "今は憶測や曖昧な議論に惑わされる時ではない。誰が魔物か、誰を信じるべきかという論点についてなら答えられる。",
+          en: "Now is not the time to be swayed by vague speculation. I can answer regarding who is a monster or whom to trust.",
+          zh: "【要ネイティブ確認】当下非被模糊臆测左右之时。关于谁是魔物、当信任谁，某自可作答。",
+          ko: "【要ネイティブ確認】지금은 억측에 현혹될 때가 아니다. 누가 마물인지, 누구를 믿어야 할지에 대한 논점이라면 답할 수 있다.",
+          fr: "【要ネイティブ確認】L'heure n'est pas aux vagues spéculations. Je puis répondre quant à l'identité des monstres ou des alliés."
+        },
+        {
+          ja: "{self}がお答えできるのは、出揃った公開記録と自らの立場についてのみだ。焦点を絞って再度お尋ねいただきたい。",
+          en: "All {self} can answer relates strictly to public records and my own stance. Please focus your inquiry and ask again.",
+          zh: "【要ネイティブ確認】{self}所能言者，唯有公开事实与自身立场。请切准焦点后再作垂询。",
+          ko: "【要ネイティブ確認】{self}이(가) 답할 수 있는 것은 공표된 기록과 자신의 입장에 한한다. 초점을 좁혀 다시 물어 주길 바란다.",
+          fr: "【要ネイティブ確認】Tout ce que {self} peut affirmer ne concerne que les registres publics et ma position. Veuillez reformuler plus précisément."
+        }
+      ]
+    };
+
+    /**
+     * 新世代・内部AI自由質問回答生成エンジン
+     * @param {string} speakerChar 回答キャラクターKey
+     * @param {string} questionText プレイヤーの入力テキスト
+     * @returns {string} 検査済み・事実ゲート連動の回答テキスト
+     */
+    function getCustomAnswer(speakerChar, questionText) {
+      const lang = currentAppLanguage || 'ja';
+      const speakerDisplayName = getCharDisplayName(speakerChar);
+      const aliveList = (gameState.charList || []).filter(c => gameState.status && gameState.status[c] === 'alive');
+      const aliveOthers = aliveList.filter(c => c !== speakerChar);
+
+      // 公開役職名乗りの取得（魔物の偽装・騙りも coRoles に準拠）
+      const coRole = (gameState.coRoles && gameState.coRoles[speakerChar]) || 'grey';
+      const roleMap = {
+        villager: { ja: '村人', en: 'Villager', zh: '村民', ko: '주민', fr: 'Villageois' },
+        seer: { ja: '賢者', en: 'Sage', zh: '贤者', ko: '현자', fr: 'Sage' },
+        medium: { ja: '聖職者', en: 'Cleric', zh: '圣职者', ko: '성직자', fr: 'Clerc' },
+        knight: { ja: '聖騎士', en: 'Holy Knight', zh: '圣骑士', ko: '성기사', fr: 'Chevalier sacré' },
+        freemason: { ja: '共有者', en: 'Freemason', zh: '共有者', ko: '공유자', fr: 'Franc-maçon' },
+        grey: { ja: '特に役職は名乗っていない村人', en: 'Villager without role claim', zh: '未公布身份的村民', ko: '직책을 밝히지 않은 주민', fr: 'Villageois sans rôle déclaré' }
+      };
+      const roleName = (roleMap[coRole] && roleMap[coRole][lang]) || roleMap[coRole]?.ja || (coRole === 'grey' ? '村人' : coRole);
+
+      // 1. 質問の分類
+      const classification = classifyFreeQuestion(questionText, speakerChar);
+      let cat = classification.category;
+
+      // 2. 対象村人 (targetChar) の決定
+      let targetChar = classification.targetChar;
+      const myVote = (gameState.virtualVotes && gameState.virtualVotes[speakerChar]) ? gameState.virtualVotes[speakerChar] : null;
+      if (!targetChar) {
+        if (myVote && myVote.target && aliveOthers.includes(myVote.target)) {
+          targetChar = myVote.target;
+        } else {
+          targetChar = pickRandom(aliveOthers) || speakerChar;
+        }
+      }
+      const targetDisplayName = getCharDisplayName(targetChar);
+
+      // 3. 事実データ (evidenceText) の構築 (許可リスト厳守)
+      let evidenceText = '';
+
+      // (a) 占い結果 (seer_result)
+      const seerHistory = (gameState.seerHistory && gameState.seerHistory[speakerChar]) || [];
+      const dailyReports = gameState.dailySeerReports || {};
+
+      if (cat === 'seer_reason' || cat === 'trust_who') {
+        if (coRole === 'seer') {
+          const report = seerHistory.find(r => r.target === targetChar) || (seerHistory.length > 0 ? seerHistory[seerHistory.length - 1] : null);
+          if (report) {
+            const rTgt = getCharDisplayName(report.target);
+            evidenceText = `${rTgt}に対する占いの鑑定結果は【${report.result}】として公に報告済みだ`;
+          } else {
+            evidenceText = 'まだ能力を行使した鑑定記録を村へ提示していない段階だ';
+          }
+        } else {
+          // 非賢者CO者が占い理由を問われた場合
+          evidenceText = '自らは賢者を名乗っておらず、公表された占いログの精査を待つ立場にある';
+        }
+      }
+
+      // (b) 沈黙・発言回数 (speech_count)
+      if (!evidenceText) {
+        const speechCounts = gameState.speechCounts || {};
+        const count = speechCounts[targetChar] || 0;
+        const avg = aliveList.reduce((sum, c) => sum + (speechCounts[c] || 0), 0) / Math.max(1, aliveList.length);
+        if (count <= 1 || count < (avg - 1.0)) {
+          evidenceText = `発言回数${count}回（村人平均${avg.toFixed(1)}回）の明白な寡黙さが見られる`;
+        }
+      }
+
+      // (c) 疑い先の変化・前言撤回 (stance_change)
+      if (!evidenceText) {
+        const mem = gameState.charMemory && gameState.charMemory[targetChar];
+        if (mem && mem.history && mem.history.length >= 2) {
+          const tList = mem.history.map(h => h.target).filter(Boolean);
+          const uniq = Array.from(new Set(tList));
+          if (uniq.length >= 2) {
+            evidenceText = `${tList.slice(-2).map(c => getCharDisplayName(c)).join('から')}へと疑い先の変遷が記録されている`;
+          }
+        }
+      }
+
+      // (d) 投票先急変 (vote_flip)
+      if (!evidenceText) {
+        const history = gameState.virtualVoteHistory || [];
+        const tName = targetDisplayName;
+        const hasFlip = history.some(h => h.includes(tName) && (h.includes('変更') || h.includes('翻') || h.includes('乗り換え')));
+        if (hasFlip) {
+          evidenceText = `公の議論における投票先の急な乗り換えが確認されている`;
+        }
+      }
+
+      // (e) 過去の処刑投票 (vote_record / day >= 2)
+      if (!evidenceText && (gameState.day || 1) >= 2) {
+        evidenceText = `過去の確定投票記録において不透明な推移が存在する`;
+      }
+
+      // (f) 役職名乗り・CO順序 (co_order)
+      if (!evidenceText && gameState.coRoles && gameState.coRoles[targetChar] && gameState.coRoles[targetChar] !== 'grey') {
+        const tRole = gameState.coRoles[targetChar];
+        const tRName = (roleMap[tRole] && roleMap[tRole][lang]) || tRole;
+        evidenceText = `公言された【${tRName}】としての名乗りと発言内容の整合性を確認している`;
+      }
+
+      // フォールバック事実文言
+      if (!evidenceText) {
+        evidenceText = '出揃った公開発言の論理的整合性を客観的に観察している';
+      }
+
+      // 4. テンプレートの選定と置換
+      const templates = FREE_Q_TEMPLATES[cat] || FREE_Q_TEMPLATES['other'];
+      // 直近のテンプレート重複を避けるためにランダム選出
+      const chosenTemplateObj = pickRandom(templates) || templates[0];
+      let rawTemplate = chosenTemplateObj[lang] || chosenTemplateObj.ja;
+
+      // プレースホルダ置換
+      let replaced = rawTemplate
+        .replace(/\{target\}/g, targetDisplayName)
+        .replace(/\{evidence\}/g, evidenceText)
+        .replace(/\{role\}/g, roleName);
+
+      // 口調・スタイル適用 (applyVoiceStyle)
+      const styled = applyVoiceStyle(replaced, speakerChar, { target: targetChar });
+
+      return styled;
+    }
+
     function cleanPlayerQuestionText(rawText) {
       if (!rawText) return '';
       let cleaned = rawText.replace(/^(1日目|2日目|3日目|4日目|5日目|6日目|7日目|初日|今朝|昨夜)[、,\s]*/, '');
@@ -19358,6 +19972,19 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
     }
 
     // Add Log Entry (機能A: ログID発行・マーカー対応)
+    function getIntentBadgeLabel(intent) {
+      const map = {
+        accuse: '指摘',
+        contest: '真偽追及',
+        defend: '弁明',
+        answer: '回答',
+        inquiry: '質問',
+        observe: '観察',
+        distance: '同調'
+      };
+      return map[intent] || '発言';
+    }
+
     function addLogItem(title, question, answer, typeClass = '', charSeed = null, autoSpeak = false) {
       const timeline = document.getElementById('log-timeline');
       if (!timeline) return;
@@ -19402,7 +20029,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       item.innerHTML = `
         <div class="log-header">
           <span style="display:flex; align-items:center; gap:0.4rem;">
-            <span>${displayTitle}</span>
+            <span>${displayTitle}</span>${(typeClass === 'ai-discussion' && window._lastSpeechIntent) ? `<span class="speech-intent-badge badge-${window._lastSpeechIntent}">${getIntentBadgeLabel(window._lastSpeechIntent)}</span>` : ''}
           </span>
           <div style="display:flex; align-items:center; gap:0.4rem;">
             <span class="log-marker-badge" id="marker-badge-${logId}" style="display:none;" onclick="cycleLogMarker('${logId}', event)"></span>
