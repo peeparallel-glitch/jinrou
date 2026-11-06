@@ -4031,7 +4031,7 @@
     // =====================================================
     // 🌐 Cloudflare Workers プロキシ経由 Gemini API 通信モジュール
     // =====================================================
-    const AI_PROXY_URL = "https://werewolf-proxy.peeaizero.workers.dev";
+    const AI_PROXY_URL = "";
     let isOfflineMode = false;     // 自動ローカルAIモード（通信上限・エラー時）
     let useLLMMode = true;         // 手動LLMモードスイッチ
     let llmConsecutiveFailures = 0; // 連続失敗カウント

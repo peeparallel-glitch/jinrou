@@ -1005,28 +1005,28 @@
       box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
     }
 
-    /* ===== 発言中カード2色点滅 ===== */
+    /* ===== 発言中カード2色点滅（金色 #FFC107 ↔ 水色 #00d2ff） ===== */
     :root {
       --speak-color-1: #FFC107;
-      --speak-color-2: #4FC3F7;
-      --speak-shadow-1: rgba(255, 193, 7, 0.6);
-      --speak-shadow-2: rgba(79, 195, 247, 0.6);
+      --speak-color-2: #00d2ff;
+      --speak-shadow-1: rgba(255, 193, 7, 0.75);
+      --speak-shadow-2: rgba(0, 210, 255, 0.75);
     }
 
     @keyframes speakingPulse {
-      0%, 49% {
-        border-color: var(--speak-color-1);
-        box-shadow: 0 0 7px var(--speak-shadow-1);
+      0%, 49.9% {
+        border-color: #FFC107;
+        box-shadow: 0 0 14px rgba(255, 193, 7, 0.85);
       }
       50%, 100% {
-        border-color: var(--speak-color-2);
-        box-shadow: 0 0 7px var(--speak-shadow-2);
+        border-color: #00d2ff;
+        box-shadow: 0 0 14px rgba(0, 210, 255, 0.85);
       }
     }
 
     .char-card.face-speaking {
-      border-color: var(--speak-color-1) !important;
-      box-shadow: 0 0 7px var(--speak-shadow-1) !important;
+      border: 3px solid #FFC107 !important;
+      box-shadow: 0 0 14px rgba(255, 193, 7, 0.85) !important;
       animation: speakingPulse 1s step-start infinite;
     }
 
@@ -1642,6 +1642,33 @@
       min-height: 5.5rem;
       white-space: pre-line;
       transition: opacity 0.6s ease;
+    }
+
+    /* 夜・朝フェーズ用スキップボタン（オーバーレイ下部配置） */
+    .seamless-skip-btn {
+      position: absolute;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(30, 64, 175, 0.92);
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(59, 130, 246, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      user-select: none;
+      z-index: 260;
+      animation: speechSkipPulse 1.2s ease-in-out infinite;
+      white-space: nowrap;
+    }
+    .seamless-skip-btn.visible {
+      display: inline-flex !important;
     }
 
     /* Modal Overlay & Extended Layout */
@@ -4134,6 +4161,9 @@
     </div>
     <div class="seamless-title" id="seamless-title">🌕 魔物の夜襲 🌕</div>
     <div class="seamless-desc" id="seamless-desc">― 夜が訪れました ―<br>魔物たちが暗闇の中で目を光らせ、村人を狙っています…</div>
+    <button class="seamless-skip-btn" id="speech-skip-night" onclick="triggerSpeechSkip(event)" ontouchstart="triggerSpeechSkip(event)">
+      <span>⏭</span><span class="skip-btn-text">スキップ</span>
+    </button>
   </div>
 
   <!-- Modal Result Screen -->
@@ -4349,6 +4379,12 @@
         </div>
 
         <div class="setting-item" style="margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+          <div class="setting-label-row" style="margin-bottom: 0.45rem;">
+            <label id="lbl-name-setting" style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:var(--text-secondary); font-weight:600; letter-spacing:0.01em;">
+              📒 村人の名前変更
+            </label>
+            <span id="name-setting-status" style="font-size:0.78rem; color:var(--text-muted); font-weight:400; margin-left:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%;"></span>
+          </div>
           <button class="btn btn-secondary" id="btn-open-name-modal" onclick="openNameModal()" style="width: 100%; font-weight: bold; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 0.7rem; font-size: 0.9rem;">
             📝 村人の名前設定（カスタマイズ）
           </button>
@@ -4398,6 +4434,23 @@
             <option value="true" selected>ON (有効)</option>
             <option value="false">OFF (無効)</option>
           </select>
+        </div>
+
+        <div class="setting-item" id="gender-voice-setting-item">
+          <div class="setting-label-row">
+            <label for="gender-voice-toggle" id="lbl-gender-voice-toggle">👥 性別に合わせた音声</label>
+          </div>
+          <select id="gender-voice-toggle" class="setting-select" onchange="updateGenderVoiceSetting(this.value)">
+            <option value="true" selected>ON (顔の性別・年齢で切り替え)</option>
+            <option value="false">OFF (従来の固定音声)</option>
+          </select>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
+            <button type="button" class="btn btn-secondary" style="flex: 1; padding: 0.35rem 0.6rem; font-size: 0.8rem;" onclick="testPreviewVoice('male')">🔊 男性の声を試聴</button>
+            <button type="button" class="btn btn-secondary" style="flex: 1; padding: 0.35rem 0.6rem; font-size: 0.8rem;" onclick="testPreviewVoice('female')">🔊 女性の声を試聴</button>
+          </div>
+          <div id="gender-voice-notice" style="display: none; font-size: 0.72rem; color: #fbbf24; margin-top: 0.3rem;">
+            ⚠️ お使いの環境では、男女の声の差が小さい場合があります
+          </div>
         </div>
 
         <div class="setting-item">
@@ -5885,9 +5938,11 @@ ${speakerName}の発言:`;
       data.heroIQ = Math.min(200, Math.max(50, currentIQ + iqChange));
       data.totalScore = Math.max(0, currentScore + scoreGained);
       data.rankTitle = getRankTitle(data.heroIQ, data.totalScore);
-      // ★ 信頼度の永続化（全章共通で維持）
-      if (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') {
-        data.playerTrust = gameState.playerTrust;
+      // ★ 信頼度の永続化（ストーリーモードプレイ時のみ冒険の書に保存・維持）
+      if (typeof currentPlayMode !== 'undefined' && currentPlayMode === 'story') {
+        if (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') {
+          data.playerTrust = gameState.playerTrust;
+        }
       }
       data.updatedAt = new Date().toLocaleString("ja-JP");
 
@@ -6036,9 +6091,10 @@ ${speakerName}の発言:`;
     }
 
     /**
-     * アクティブな冒険の書の信頼度のみを即時保存・永続化
+     * アクティブな冒険の書の信頼度のみを即時保存・永続化（※ストーリーモード専用）
      */
     function saveActiveBookTrust(trustVal) {
+      if (typeof currentPlayMode === 'undefined' || currentPlayMode !== 'story') return; // フリーモード時は冒険の書に保存しない
       if (!activeSaveSlot) return;
       const targetTrust = (typeof trustVal === 'number') ? trustVal : (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number' ? gameState.playerTrust : null);
       if (typeof targetTrust !== 'number') return;
@@ -6415,6 +6471,26 @@ ${speakerName}の発言:`;
         if (!gameState.charGenders) gameState.charGenders = {};
         if (!gameState.charFaces || Object.keys(gameState.charFaces).length === 0) {
           assignFaces(gameState.charList || []);
+          if (typeof autoSaveCurrentGame === 'function') autoSaveCurrentGame();
+        } else if (!gameState.charVoiceProfiles || Object.keys(gameState.charVoiceProfiles).length === 0) {
+          // charVoiceProfiles がない古いセーブデータの場合、既存の charFaces から再構成
+          gameState.charVoiceProfiles = {};
+          const genderSlots = { male: 0, female: 0, unknown: 0 };
+          (gameState.charList || []).forEach(char => {
+            const faceId = gameState.charFaces[char] || '01';
+            const faceObj = FACE_IMAGES.find(f => f.id === faceId);
+            const gender = (faceObj && faceObj.gender) ? faceObj.gender : (FACE_GENDER_MAP[faceId] || 'male');
+            const ageGroup = (faceObj && faceObj.ageGroup) ? faceObj.ageGroup : getFaceAgeGroup(faceId);
+            const slot = genderSlots[gender] || 0;
+            genderSlots[gender] = slot + 1;
+            gameState.charVoiceProfiles[char] = {
+              gender,
+              slot,
+              pitchOffset: 0,
+              rateOffset: 0,
+              ageGroup
+            };
+          });
           if (typeof autoSaveCurrentGame === 'function') autoSaveCurrentGame();
         }
 
@@ -8773,6 +8849,14 @@ ${speakerName}の発言:`;
       const speechToggle = document.getElementById('speech-enabled-toggle');
       if (speechToggle) speechToggle.value = isSpeechEnabled ? 'true' : 'false';
 
+      const savedGenderVoice = localStorage.getItem('jinnrou_genderVoiceEnabled');
+      if (savedGenderVoice !== null) {
+        isGenderVoiceEnabled = (savedGenderVoice === 'true');
+      }
+      const genderVoiceToggle = document.getElementById('gender-voice-toggle');
+      if (genderVoiceToggle) genderVoiceToggle.value = isGenderVoiceEnabled ? 'true' : 'false';
+      checkVoiceGenderNotice();
+
       if (savedNames) {
         try {
           const parsed = JSON.parse(savedNames);
@@ -8805,6 +8889,11 @@ ${speakerName}の発言:`;
       }
       seHowling.volume = 0.6 * (seVolume / 100);
       seRooster.volume = 0.5 * (seVolume / 100);
+
+      // 名前設定ステータスの初期表示（DOM確実反映後に実行）
+      setTimeout(() => {
+        if (typeof updateNameSettingStatus === 'function') updateNameSettingStatus();
+      }, 100);
     }
 
     function updateSpeechEnabled(val) {
@@ -8813,6 +8902,77 @@ ${speakerName}の発言:`;
       if (!isSpeechEnabled) {
         cancelSpeech();
       }
+    }
+
+    function updateGenderVoiceSetting(val) {
+      isGenderVoiceEnabled = (val === 'true');
+      saveSettings();
+    }
+
+    function checkVoiceGenderNotice() {
+      const notice = document.getElementById('gender-voice-notice');
+      if (!notice) return;
+      const lang = currentAppLanguage || 'ja';
+      const locale = LANG_LOCALE_MAP[lang] || 'ja-JP';
+      const langCache = _voicesByLangGender[locale];
+      if (langCache) {
+        const hasMale = langCache.male.length > 0;
+        const hasFemale = langCache.female.length > 0;
+        if (!hasMale || !hasFemale) {
+          notice.style.display = 'block';
+          return;
+        }
+      }
+      notice.style.display = 'none';
+    }
+
+    function testPreviewVoice(gender) {
+      const lang = currentAppLanguage || 'ja';
+      const previewSentences = {
+        ja: {
+          male: '私はこの村の者です。潔白を証明いたします。',
+          female: '私はこの村の者です。怪しい者ではありません。'
+        },
+        en: {
+          male: 'I am a villager of this town. I have nothing to hide.',
+          female: 'I am a villager of this town. You can trust me.'
+        },
+        zh: {
+          male: '我是这村庄的村民，绝无二心。',
+          female: '我是这村庄的村民，请相信我。'
+        },
+        ko: {
+          male: '저는 이 마을의 주민입니다. 결백합니다.',
+          female: '저는 이 마을의 주민입니다. 믿어주세요.'
+        },
+        fr: {
+          male: 'Je suis un habitant de ce village, innocent et loyal.',
+          female: 'Je suis une habitante de ce village, vous pouvez me faire confiance.'
+        }
+      };
+
+      const pMap = previewSentences[lang] || previewSentences.ja;
+      const text = pMap[gender] || pMap.male;
+
+      // 模擬的なプロファイルを作成して buildCharUtteranceParams を経由して再生
+      const dummyProfile = {
+        gender: gender,
+        slot: 0,
+        pitchOffset: 0,
+        rateOffset: 0,
+        ageGroup: 'adult'
+      };
+
+      cancelSpeech();
+      if (!('speechSynthesis' in window)) return;
+      const params = buildCharUtteranceParams(dummyProfile, lang);
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = LANG_LOCALE_MAP[lang] || 'ja-JP';
+      utterance.pitch = params.pitch;
+      utterance.rate = params.rate;
+      utterance.volume = Math.max(0, Math.min(1, voiceVolume / 100));
+      if (params.voice) utterance.voice = params.voice;
+      window.speechSynthesis.speak(utterance);
     }
 
     /**
@@ -8877,6 +9037,7 @@ ${speakerName}の発言:`;
       localStorage.setItem('jinnrou_seVolume', seVolume);
       localStorage.setItem('jinnrou_voiceVolume', voiceVolume);
       localStorage.setItem('jinnrou_speechEnabled', isSpeechEnabled);
+      localStorage.setItem('jinnrou_genderVoiceEnabled', isGenderVoiceEnabled);
       localStorage.setItem('jinnrou_discussionTime', discussionTimeSetting);
       localStorage.setItem('custom_player_names', JSON.stringify(playerCustomNames));
       localStorage.setItem('custom_player_genders', JSON.stringify(playerCustomGenders));
@@ -8917,6 +9078,12 @@ ${speakerName}の発言:`;
         gameState.charFaces[char] = picked.id;
         if (!gameState.charGenders) gameState.charGenders = {};
         gameState.charGenders[char] = targetGender;
+
+        // 音声プロファイルも追従更新
+        if (gameState.charVoiceProfiles && gameState.charVoiceProfiles[char]) {
+          gameState.charVoiceProfiles[char].gender = picked.gender;
+          gameState.charVoiceProfiles[char].ageGroup = picked.ageGroup || getFaceAgeGroup(picked.id);
+        }
       }
     }
 
@@ -8977,6 +9144,7 @@ ${speakerName}の発言:`;
 
       saveSettings();
       closeNameModal();
+      updateNameSettingStatus(); // ラベルの設定内容表示を更新
 
       // ゲーム画面の表示を一括更新
       if (typeof renderCharacters === 'function') renderCharacters();
@@ -8984,6 +9152,36 @@ ${speakerName}の発言:`;
       if (typeof renderBulletinBoard === 'function') renderBulletinBoard();
       if (typeof renderMorningCommentsBox === 'function') renderMorningCommentsBox();
       if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
+    }
+
+    // 名前設定ステータス表示を更新する関数
+    function updateNameSettingStatus() {
+      const statusEl = document.getElementById('name-setting-status');
+      const lblEl = document.getElementById('lbl-name-setting');
+      if (!statusEl) return;
+
+      // デフォルトと異なる名前を集計
+      const customized = Object.entries(playerCustomNames).filter(([k, v]) => v !== DEFAULT_CHAR_NAMES[k]);
+      const lang = currentAppLanguage || 'ja';
+
+      if (customized.length === 0) {
+        // デフォルトのまま
+        const defText = lang === 'en' ? 'Default names' : (lang === 'fr' ? 'Noms par défaut' : (lang === 'zh' ? '默认名称' : (lang === 'ko' ? '기본 이름' : 'デフォルト名')));
+        statusEl.textContent = defText;
+        statusEl.style.color = 'var(--text-muted)';
+      } else {
+        // 最初の3件の名前例を表示
+        const examples = customized.slice(0, 3).map(([, v]) => v).join('・');
+        const suffix = customized.length > 3 ? ` 他${customized.length - 3}件` : '';
+        statusEl.textContent = examples + suffix;
+        statusEl.style.color = 'var(--accent-gold)';
+      }
+
+      // ラベルの言語対応
+      if (lblEl) {
+        const labelText = lang === 'en' ? '📒 Villager Name Settings' : (lang === 'fr' ? '📒 Noms des Villageois' : (lang === 'zh' ? '📒 村民名称设置' : (lang === 'ko' ? '📒 마을 주민 이름 설정' : '📒 村人の名前変更')));
+        lblEl.childNodes[0].textContent = '\n              ' + labelText + '\n            ';
+      }
     }
 
     const RANDOM_NAME_PRESETS = {
@@ -9121,6 +9319,18 @@ ${speakerName}の発言:`;
       const _scrollToggle = document.getElementById('auto-scroll-speaker-toggle');
       if (_scrollToggle) {
         _scrollToggle.value = autoScrollToSpeaker ? 'true' : 'false';
+      }
+      // 性別音声設定の初期値＆注意書きチェック
+      const _genderVoiceToggle = document.getElementById('gender-voice-toggle');
+      if (_genderVoiceToggle) {
+        _genderVoiceToggle.value = isGenderVoiceEnabled ? 'true' : 'false';
+      }
+      if (typeof checkVoiceGenderNotice === 'function') {
+        checkVoiceGenderNotice();
+      }
+      // 名前設定ステータス表示を最新状態に更新
+      if (typeof updateNameSettingStatus === 'function') {
+        updateNameSettingStatus();
       }
     }
     window.openSettingsModal = openSettingsModal;
@@ -9264,7 +9474,15 @@ ${speakerName}の発言:`;
     }
 
     // Global Speech Interruption & Cancel Function (AndroidHost + Web Speech API)
+    // [BUG FIX] speaking poller cleanup用のグローバルハンドラ
+    let _speechPollCleanup = null;
+
     function cancelSpeech() {
+      // 1. speaking poller / 安全タイマーが残っていれば即座にクリア
+      if (typeof _speechPollCleanup === 'function') {
+        try { _speechPollCleanup(); } catch(e) {}
+        _speechPollCleanup = null;
+      }
       if (window.AndroidHost && typeof window.AndroidHost.stop === 'function') {
         try { window.AndroidHost.stop(); } catch(e) { console.log('AndroidHost.stop error:', e); }
       }
@@ -9286,6 +9504,10 @@ ${speakerName}の発言:`;
         const res = currentSpeechResolver;
         currentSpeechResolver = null;
         res();
+      }
+      // スキップ直後の議論ウォッチドッグ誤判定防止: 音声活動タイムスタンプを即座に更新
+      if (typeof recordDiscussionSpeechActivity === 'function') {
+        recordDiscussionSpeechActivity();
       }
     }
 
@@ -9403,12 +9625,170 @@ ${speakerName}の発言:`;
 
     function getCharVoiceProfileKey(charSeed) {
       if (!charSeed) return 'NARRATOR';
+      // [B-2] 性別音声システム有効時、charSeedが村人IDならそのままcharSeedを返してplaySpeechAsync内でcharVoiceProfilesを参照させる
+      if (isGenderVoiceEnabled && gameState && gameState.charVoiceProfiles && gameState.charVoiceProfiles[charSeed]) {
+        return charSeed;
+      }
+      // 従来モードフォールバック（CHAR_VOICE_MAP）
       const idx = charSeed.charCodeAt(0) - 'A'.charCodeAt(0);
       if (idx >= 0 && idx < CHAR_VOICE_MAP.length) return CHAR_VOICE_MAP[idx];
       return 'NARRATOR';
     }
 
-    // --- Natural Speech Synthesis (TTS) Engine ---
+    // =====================================================
+    // 🎭 性別音声システム（B-1〜B-6）
+    // =====================================================
+
+    // 設定フラグ（localStorage: jinnrou_genderVoiceEnabled）
+    let isGenderVoiceEnabled = true;
+
+    // 声の読み込み完了管理（最大2秒待ち）
+    let _voicesReadyResolve = null;
+    const _voicesReadyPromise = new Promise(resolve => { _voicesReadyResolve = resolve; });
+    let _voicesReady = false;
+    function _markVoicesReady() {
+      if (!_voicesReady) {
+        _voicesReady = true;
+        if (_voicesReadyResolve) { _voicesReadyResolve(); _voicesReadyResolve = null; }
+      }
+    }
+    // 2秒後に強制完了（声が取れなくてもブロックしない）
+    setTimeout(_markVoicesReady, 2000);
+
+    // 言語コード → BCP47 ロケール
+    const LANG_LOCALE_MAP = { ja:'ja-JP', en:'en-US', zh:'zh-CN', ko:'ko-KR', fr:'fr-FR' };
+
+    // 声の性別判定キーワード対応表（後で実際の声一覧をもとに更新）
+    // 女性を先に判定してからマッチしなければ男性判定とする（unknownは両方マッチせず）
+    const VOICE_GENDER_KEYWORDS = {
+      female: [
+        'Female','female',
+        // 日本語
+        'Kyoko','Haruka','Mizuki','Nanami','O-Ren','Yui',
+        // 英語（Microsoft Edge / Windows / Google）
+        'Zira','Hazel','Susan','Jenny','Aria','Ana','Emma','Libby',
+        'Mia','Natasha','Clara','Sonia','Leah','Neerja','Zoe','Ava','Amala','Abbi',
+        // 中国語
+        'XiaoXiao','XiaoYi','XiaoMo','XiaoZhen','XiaoRui','XiaoShu','XiaoQiu',
+        'HiuMaan','HiuGaai',
+        // 韓国語
+        'SunHi','InAh','YuJin','Jimin',
+        // フランス語
+        'Denise','Brigitte','Eloise','Vivienne','Josephine','Bette',
+      ],
+      male: [
+        'Male','male',
+        // 日本語
+        'Ichiro','Otoya','Hattori','Takumi','Kenji','Yashiro',
+        // 英語（Microsoft Edge / Windows / Google）
+        'David','James','Mark','Daniel','Richard','George','Ryan','Guy','Liam',
+        'Noah','Oliver','William','Elias','Matthew','Andrew','Christopher','Davis',
+        'Derek','Dustin','Eric','Evan','Jacob',
+        // 中国語
+        'Yunyang','Yunjian','Yunxi','Yunfeng','Yunhao','Yunye','Yunze','HiuGaai',
+        'Yunjing',
+        // 韓国語
+        'InJoon','HyunSu','BongJin','Seoyeon',
+        // フランス語
+        'Henri','Antoine','Alain','Alexis','Guillaume','Pierre','Remy',
+      ]
+    };
+
+    // 言語ごとの性別別声キャッシュ（initVoice で構築）
+    // { 'ja-JP': { male: [Voice,...], female: [Voice,...], all: [Voice,...] }, ... }
+    let _voicesByLangGender = {};
+
+    // 声の性別を名前で判定
+    function detectVoiceGender(voiceName) {
+      if (!voiceName) return 'unknown';
+      for (const kw of VOICE_GENDER_KEYWORDS.female) {
+        if (voiceName.includes(kw)) return 'female';
+      }
+      for (const kw of VOICE_GENDER_KEYWORDS.male) {
+        if (voiceName.includes(kw)) return 'male';
+      }
+      return 'unknown';
+    }
+
+    // 声プロファイルの基準値定数（性別・年齢補正）
+    const GENDER_VOICE_BASE = {
+      male:    { pitch: 0.85, rate: 1.0  },
+      female:  { pitch: 1.15, rate: 1.05 },
+      unknown: { pitch: 1.0,  rate: 1.0  }
+    };
+    const VOICE_PITCH_CLAMP = { min: 0.7, max: 1.3  };
+    const VOICE_RATE_CLAMP  = { min: 0.85, max: 1.15 };
+
+    // 声の解決: charProfile と言語から SpeechSynthesisVoice を返す（null=ブラウザ既定）
+    function resolveVoice(charProfile, lang) {
+      const locale = LANG_LOCALE_MAP[lang] || 'ja-JP';
+      const langVoices = _voicesByLangGender[locale];
+      if (!langVoices || langVoices.all.length === 0) return null; // 声なし → ブラウザ既定
+
+      const gender = charProfile.gender; // 'male' | 'female' | 'unknown'
+      const slot   = charProfile.slot || 0;
+
+      // ケース1,2: target性別の声がある
+      const targetVoices = (gender !== 'unknown') ? (langVoices[gender] || []) : [];
+      if (targetVoices.length > 0) {
+        return targetVoices[slot % targetVoices.length];
+      }
+
+      // ケース3: target性別がない → 逆性別または不明声を優先し pitch で代用
+      const opposite = gender === 'male' ? 'female' : 'male';
+      const oppVoices = langVoices[opposite] || [];
+      if (oppVoices.length > 0) return oppVoices[slot % oppVoices.length];
+
+      // 判定不能な声（unknown）から選ぶ
+      const unknownVoices = langVoices.all.filter(v => detectVoiceGender(v.name) === 'unknown');
+      const pool = unknownVoices.length > 0 ? unknownVoices : langVoices.all;
+      return pool[slot % pool.length];
+    }
+
+    // charProfile から utterance 用 { pitch, rate, voice } を組み立てる
+    function buildCharUtteranceParams(charProfile, lang) {
+      const gender   = charProfile.gender   || 'unknown';
+      const ageGroup = charProfile.ageGroup || 'adult';
+      const base = GENDER_VOICE_BASE[gender] || GENDER_VOICE_BASE.unknown;
+
+      let pitch = base.pitch;
+      let rate  = base.rate;
+
+      // 年齢補正
+      if (ageGroup === 'old') {
+        pitch -= 0.05;
+        rate  -= 0.08;
+      } else if (ageGroup === 'young') {
+        rate += 0.05;
+      }
+
+      // 個人差補正（±0.1 pitch, ±0.08 rate）
+      pitch += (charProfile.pitchOffset || 0);
+      rate  += (charProfile.rateOffset  || 0);
+
+      // クランプ（上限・下限）
+      pitch = Math.max(VOICE_PITCH_CLAMP.min, Math.min(VOICE_PITCH_CLAMP.max, pitch));
+      rate  = Math.max(VOICE_RATE_CLAMP.min,  Math.min(VOICE_RATE_CLAMP.max,  rate));
+
+      const voice = resolveVoice(charProfile, lang);
+      return { pitch, rate, voice };
+    }
+
+    // 開発用: 利用可能な声の一覧をコンソールに出力
+    function listAvailableVoices() {
+      const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      ['ja','en','zh','ko','fr'].forEach(lang => {
+        const matched = voices.filter(v => v.lang.toLowerCase().startsWith(lang));
+        console.group(`%c🔊 ${lang} (${matched.length}件)`, 'color:#38bdf8;font-weight:bold');
+        matched.forEach(v => {
+          const g = detectVoiceGender(v.name);
+          console.log(`  ${g === 'female' ? '♀' : g === 'male' ? '♂' : '?'} ${v.name} | ${v.lang} | local:${v.localService} | default:${v.default}`);
+        });
+        console.groupEnd();
+      });
+      console.log('%c_voicesByLangGender cache:', 'color:#34d399', _voicesByLangGender);
+    }
+    window.listAvailableVoices = listAvailableVoices;
     let preferredJapaneseVoice = null;
     let japaneseVoiceMale = null;
     let japaneseVoiceFemale = null;
@@ -9424,11 +9804,44 @@ ${speakerName}の発言:`;
 
       const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) {
+          _markVoicesReady();
+        }
+
         const jaVoices = voices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja'));
         const enVoices = voices.filter(v => v.lang === 'en-US' || v.lang === 'en_US' || v.lang.startsWith('en'));
         const zhVoices = voices.filter(v => v.lang === 'zh-CN' || v.lang === 'zh_CN' || v.lang.startsWith('zh'));
         const koVoices = voices.filter(v => v.lang === 'ko-KR' || v.lang === 'ko_KR' || v.lang.startsWith('ko'));
         const frVoices = voices.filter(v => v.lang === 'fr-FR' || v.lang === 'fr_FR' || v.lang.startsWith('fr'));
+
+        // 言語別キャッシュ
+        _voicesByLangGender = {
+          'ja-JP': {
+            male: jaVoices.filter(v => detectVoiceGender(v.name) === 'male'),
+            female: jaVoices.filter(v => detectVoiceGender(v.name) === 'female'),
+            all: jaVoices
+          },
+          'en-US': {
+            male: enVoices.filter(v => detectVoiceGender(v.name) === 'male'),
+            female: enVoices.filter(v => detectVoiceGender(v.name) === 'female'),
+            all: enVoices
+          },
+          'zh-CN': {
+            male: zhVoices.filter(v => detectVoiceGender(v.name) === 'male'),
+            female: zhVoices.filter(v => detectVoiceGender(v.name) === 'female'),
+            all: zhVoices
+          },
+          'ko-KR': {
+            male: koVoices.filter(v => detectVoiceGender(v.name) === 'male'),
+            female: koVoices.filter(v => detectVoiceGender(v.name) === 'female'),
+            all: koVoices
+          },
+          'fr-FR': {
+            male: frVoices.filter(v => detectVoiceGender(v.name) === 'male'),
+            female: frVoices.filter(v => detectVoiceGender(v.name) === 'female'),
+            all: frVoices
+          }
+        };
 
         cachedVoiceMap['ja-JP'] = jaVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural')) || jaVoices[0] || null;
         cachedVoiceMap['en-US'] = enVoices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Natural')) || enVoices[0] || null;
@@ -9438,17 +9851,14 @@ ${speakerName}の発言:`;
 
         preferredJapaneseVoice = cachedVoiceMap['ja-JP'];
 
-        // 男性・女性ボイスを識別してキャッシュ
-        const maleKeywords = ['Male', 'Ichiro', 'Otoya', 'Hattori', 'Takumi', 'Kenji', 'male'];
-        const femaleKeywords = ['Female', 'Kyoko', 'Haruka', 'Mizuki', 'Nanami', 'female', 'O-Ren'];
-
+        // 日本語男性・女性ボイスの後方互換キャッシュ
         japaneseVoiceFemale =
-          jaVoices.find(v => femaleKeywords.some(kw => v.name.includes(kw))) ||
-          jaVoices.find(v => !maleKeywords.some(kw => v.name.includes(kw))) ||
+          (_voicesByLangGender['ja-JP'].female[0]) ||
+          jaVoices.find(v => !['Male','male','Ichiro','Otoya','Hattori','Takumi','Kenji'].some(kw => v.name.includes(kw))) ||
           preferredJapaneseVoice;
 
         japaneseVoiceMale =
-          jaVoices.find(v => maleKeywords.some(kw => v.name.includes(kw))) ||
+          (_voicesByLangGender['ja-JP'].male[0]) ||
           jaVoices.find(v => v !== japaneseVoiceFemale) ||
           preferredJapaneseVoice;
       };
@@ -9534,6 +9944,13 @@ ${speakerName}の発言:`;
           if (txtSpan) txtSpan.textContent = skipLabel;
         }
       });
+      // 夜・朝のフェーズ用スキップボタン（オーバーレイ内）
+      const nightBtn = document.getElementById('speech-skip-night');
+      if (nightBtn) {
+        nightBtn.classList.add('visible');
+        const txtSpan = nightBtn.querySelector('.skip-btn-text');
+        if (txtSpan) txtSpan.textContent = skipLabel;
+      }
       isSpeechPlaying = true;
     }
 
@@ -9542,25 +9959,45 @@ ${speakerName}の発言:`;
         const btn = document.getElementById('speech-skip-tab' + idx);
         if (btn) btn.classList.remove('visible');
       });
+      const nightBtn = document.getElementById('speech-skip-night');
+      if (nightBtn) nightBtn.classList.remove('visible');
       isSpeechPlaying = false;
     }
 
+    let _speechSkipThrottle = false;
     function triggerSpeechSkip(e) {
       if (e) {
         try { e.preventDefault(); } catch(err) {}
         try { e.stopPropagation(); } catch(err) {}
       }
-      if (isSpeechPlaying) {
-        cancelSpeech();
+      // 連打・二重発火（onclick + ontouchstart）防止
+      if (_speechSkipThrottle) return;
+      _speechSkipThrottle = true;
+      setTimeout(() => { _speechSkipThrottle = false; }, 300);
+
+      // スキップボタン押下時は発言中カードの枠もクリア
+      if (typeof setSpeakingCard === 'function') {
+        setSpeakingCard(null);
       }
+      cancelSpeech();
     }
 
 
 
     // Synchronous Speech Promise Function: Supports AndroidHost.speak + Web Speech API Fallback
-    function playSpeechAsync(text, voiceProfileKey = 'NARRATOR') {
+    async function playSpeechAsync(text, voiceProfileKey = 'NARRATOR') {
+      // 声一覧の準備完了を待つ（最大2秒）
+      if (!_voicesReady) {
+        await Promise.race([
+          _voicesReadyPromise,
+          new Promise(r => setTimeout(r, 2000))
+        ]);
+      }
+
+      // [BUG FIX] cancelSpeech を Promise外で先に呼ぶことで、
+      // 前のresolver呼び出しと新しいPromise生成のタイミング競合を防ぐ
+      cancelSpeech();
       return new Promise((resolve) => {
-        cancelSpeech();
 
         // ボイス / 読み上げ (TTS) が無効、または音量0の場合は読み上げを行わずに即座に完了
         if (!isSpeechEnabled || voiceVolume <= 0) {
@@ -9590,11 +10027,15 @@ ${speakerName}の発言:`;
                 currentSpeechResolver = null;
                 delete window.__androidSpeechDoneCallback;
                 hideSpeechSkipIndicator();
+                if (typeof recordDiscussionSpeechActivity === 'function') {
+                  recordDiscussionSpeechActivity();
+                }
                 resolve();
               }
             };
 
             window.__androidSpeechDoneCallback = done;
+            currentSpeechResolver = done;
 
             // Safe duration estimate timer for Android TTS (minimum 1.8s, 200ms per character)
             const waitMs = Math.max(1800, processedText.length * 200);
@@ -9623,44 +10064,117 @@ ${speakerName}の発言:`;
           'ko': 'ko-KR',
           'fr': 'fr-FR'
         };
-        const targetLocale = langMap[currentAppLanguage] || 'ja-JP';
+        const currentLangKey = currentAppLanguage || 'ja';
+        const targetLocale = langMap[currentLangKey] || 'ja-JP';
         utterance.lang = targetLocale;
-
-        // 音声プロファイルに基づいてpitch/rateを設定
-        const profile = VOICE_PROFILES[voiceProfileKey] || VOICE_PROFILES.NARRATOR;
-        utterance.rate = profile.rate;
-        utterance.pitch = profile.pitch;
         utterance.volume = Math.max(0, Math.min(1, voiceVolume / 100));
 
-        // 日本語時は男女プロファイルボイス、他言語時はキャッシュされた該当言語ボイスを使用
-        if (targetLocale === 'ja-JP') {
-          if (profile.preferGender === 'male' && japaneseVoiceMale) {
-            utterance.voice = japaneseVoiceMale;
-          } else if (profile.preferGender === 'female' && japaneseVoiceFemale) {
-            utterance.voice = japaneseVoiceFemale;
-          } else if (preferredJapaneseVoice) {
-            utterance.voice = preferredJapaneseVoice;
-          }
-        } else if (cachedVoiceMap[targetLocale]) {
-          utterance.voice = cachedVoiceMap[targetLocale];
+        // 村人のキャラIDまたはプロファイルキーから設定を解決
+        // voiceProfileKey が村人ID（gameState.charVoiceProfiles に存在）、または VOICE_PROFILES にない文字列の場合は村人として解決
+        let charProfile = null;
+        if (gameState && gameState.charVoiceProfiles && gameState.charVoiceProfiles[voiceProfileKey]) {
+          charProfile = gameState.charVoiceProfiles[voiceProfileKey];
         }
 
+        if (isGenderVoiceEnabled && charProfile) {
+          // B-1〜B-3 性別・年齢に合わせた音声パラメータ適用
+          const params = buildCharUtteranceParams(charProfile, currentLangKey);
+          utterance.pitch = params.pitch;
+          utterance.rate  = params.rate;
+          if (params.voice) {
+            utterance.voice = params.voice;
+          } else if (cachedVoiceMap[targetLocale]) {
+            utterance.voice = cachedVoiceMap[targetLocale];
+          }
+        } else {
+          // 従来モード or ナレーター（VOICE_PROFILES 基準）
+          const profile = VOICE_PROFILES[voiceProfileKey] || VOICE_PROFILES.NARRATOR;
+          utterance.rate = profile.rate;
+          utterance.pitch = profile.pitch;
+
+          if (targetLocale === 'ja-JP') {
+            if (profile.preferGender === 'male' && japaneseVoiceMale) {
+              utterance.voice = japaneseVoiceMale;
+            } else if (profile.preferGender === 'female' && japaneseVoiceFemale) {
+              utterance.voice = japaneseVoiceFemale;
+            } else if (preferredJapaneseVoice) {
+              utterance.voice = preferredJapaneseVoice;
+            }
+          } else if (cachedVoiceMap[targetLocale]) {
+            utterance.voice = cachedVoiceMap[targetLocale];
+          }
+        }
+
+        // [FIX] safetyTimer と speakPollInterval を互いにクリアできるよう、
+        // done を最初から「両方クリア＋resolve」として定義する。
+        // 旧実装は done が safetyTimer/speakPollInterval をクリアしないため、
+        // 前の発言の safetyTimer が次の発言中に cancel() を呼んで議論が止まるバグがあった。
+        let _pollIntervalRef = null;
+        let _safetyTimerRef = null;
         let resolved = false;
         const done = () => {
           if (!resolved) {
             resolved = true;
+            // まずポーラーとタイマーを両方停止（どこから呼ばれても必ず実行）
+            if (_pollIntervalRef !== null) { clearInterval(_pollIntervalRef); _pollIntervalRef = null; }
+            if (_safetyTimerRef !== null) { clearTimeout(_safetyTimerRef); _safetyTimerRef = null; }
+            _speechPollCleanup = null;
             currentSpeechResolver = null;
             hideSpeechSkipIndicator();
+            if (typeof recordDiscussionSpeechActivity === 'function') {
+              recordDiscussionSpeechActivity();
+            }
             resolve();
           }
         };
 
+        // currentSpeechResolver と cleanup を done に結びつけて早期resolveと二重タイマークリアを確実に同期
+        currentSpeechResolver = done;
+        _speechPollCleanup = done;
+
+      // [BUG FIX] 読み上げ安全タイムアウトの計算式
+      // 1文字あたり250ms(標準的な発話速度は1秒あたり4〜5文字 = 200〜250ms/char) + 最低待機4000ms + 余白3000ms
+      // 長文や通信遅延でも途中で打ち切られないよう上限は30000ms (30秒) に設定
+      const charWait = processedText.length * 250;
+      const maxWaitTime = Math.min(30000, Math.max(4000, charWait + 3000));
+      _safetyTimerRef = setTimeout(() => {
+        if (window.DEBUG_DISCUSSION) {
+          console.warn(`[TTS] 安全タイムアウト到達 (${maxWaitTime}ms): cancel() を呼んで次へ進みます`);
+        }
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch(e) {}
+        }
+        done();
+      }, maxWaitTime);
+
+        // [BUG FIX] speaking=falseになったら即座にresolve するpoller
+        // onendが発火しないケースをポーリングで補完する
+        // B-3: paused状態で止まっている場合は resume() を試し、それでも動かなければ cancel() する
+        let pausedCheckCount = 0;
+        _pollIntervalRef = setInterval(() => {
+          if (window.speechSynthesis.paused) {
+            pausedCheckCount++;
+            if (pausedCheckCount === 2) {
+              try { window.speechSynthesis.resume(); } catch(e) {}
+            } else if (pausedCheckCount >= 4) {
+              try { window.speechSynthesis.cancel(); } catch(e) {}
+              done();
+              return;
+            }
+          } else {
+            pausedCheckCount = 0;
+          }
+
+          if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+            done();
+          }
+        }, 300);
+
+        // [BUG FIX] cancelSpeech からも interval/timer をクリアできるよう登録
+        // done() 自体が両方クリアするので、cleanup は done() を呼ぶだけでよい
+        _speechPollCleanup = () => { done(); };
         utterance.onend = done;
         utterance.onerror = done;
-
-        // Fallback safety timeout
-        const maxWaitTime = Math.max(3000, processedText.length * 300);
-        setTimeout(done, maxWaitTime);
 
         window.speechSynthesis.speak(utterance);
       });
@@ -9679,7 +10193,8 @@ ${speakerName}の発言:`;
         if (onEndCallback) onEndCallback();
         return;
       }
-      const profileKey = isNarration ? 'NARRATOR' : getCharVoiceProfileKey(charSeed);
+      // ナレーションでなく、かつ charSeed がある場合は直接 charSeed を渡して性別音声システムに任せる
+      const profileKey = isNarration ? 'NARRATOR' : (charSeed || 'NARRATOR');
       playSpeechAsync(text, profileKey).then(() => {
         if (onEndCallback) onEndCallback();
       });
@@ -9737,6 +10252,7 @@ ${speakerName}の発言:`;
       logItemsList: [],         // list of log items with unique IDs
       accusationHistory: [],    // Array of { day, target, reasonKey, reasonLabel, evidenceLogIds, evidenceTexts, targetRole, isWolf }
       correlationLines: [],     // Array of { id, from, to, labelType, labelText }
+      charVoiceProfiles: {},    // char -> { gender, slot, pitchOffset, rateOffset, ageGroup }
       gameOver: false
     };
 
@@ -10670,21 +11186,56 @@ const SHOP_ROLE_DEFS = [
 
     function toggleDiscussionPause() {
       isDiscussionPaused = !isDiscussionPaused;
+      if (typeof window._discProfiler !== 'undefined') {
+        window._discProfiler.recordButtonPress(isDiscussionPaused ? 'pause' : 'resume');
+      }
       const btn = document.getElementById('btn-toggle-discussion-pause');
       const t = I18N_TRANSLATIONS[currentAppLanguage] || I18N_TRANSLATIONS.ja;
-      if (btn) {
-        if (isDiscussionPaused) {
+
+      if (isDiscussionPaused) {
+        // --- 【一時停止処理】 ---
+        // 音声を直ちに停止し、発言枠の点滅もクリア
+        cancelSpeech();
+        if (typeof setSpeakingCard === 'function') setSpeakingCard(null);
+
+        if (btn) {
           const resumeText = t.btn_resume_disc || '▶️ 議論を再開';
           btn.innerHTML = `<span>${resumeText}</span>`;
           btn.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
           btn.style.borderColor = '#fbbf24';
           btn.style.color = '#fff';
-        } else {
+        }
+      } else {
+        // --- 【再開・更新処理】 ---
+        // 議論が止まっていた場合でも確実に更新して再開する
+        if (btn) {
           const pauseText = t.btn_pause_disc || '⏸️ 議論を一時停止';
           btn.innerHTML = `<span>${pauseText}</span>`;
           btn.style.background = 'linear-gradient(135deg, #3a3f58, #2a2d42)';
           btn.style.borderColor = 'var(--accent-amber)';
           btn.style.color = '#fff';
+        }
+
+        // 議論フェーズ中なら、スタックやフラグを解除し、世代を進めて議論ループを完全にリフレッシュ・更新
+        if (gameState && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+          isInterrogatingActive = false; // 尋問の未解除スタックも安全に解除
+          cancelSpeech();               // スタックした音声キューをクリア
+
+          // 世代番号を更新して旧ループを確実に消滅させ、新世代の議論ループを開始
+          discussionGenerationId++;
+          recordDiscussionSpeechActivity();
+          aiDiscussionActive = false;
+
+          // 前のループ終了を微小時間待ってから確実に新規起動
+          setTimeout(() => {
+            if (!isDiscussionPaused && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+              startAIDiscussionTimer();
+            }
+          }, 200);
+
+          if (window.DEBUG_DISCUSSION) {
+            console.log('[toggleDiscussionPause] 議論を更新・再開しました (Generation: ' + discussionGenerationId + ')');
+          }
         }
       }
     }
@@ -10733,34 +11284,302 @@ const SHOP_ROLE_DEFS = [
       showNotification(_msgResume);
     }
 
+    // =====================================================
+    // 🔍 議論停止原因特定・プロファイラ (DEBUG_DISCUSSION)
+    // 既定: false (?debug=1 または console で window.DEBUG_DISCUSSION = true)
+    // =====================================================
+    window.DEBUG_DISCUSSION = (typeof window !== 'undefined' && window.location && window.location.search.includes('debug=1')) || false;
+
+    window._discProfiler = {
+      currentAwaitLocation: 'none',
+      currentStepId: 0,
+      stepRecords: [],      // 直近50件のステップ詳細
+      pauseSnapshots: [],   // 直近100件の一時停止/再開スナップショット
+      freezeEvents: [],     // 直近100件の10秒停止検知イベント
+
+      // 高精度時刻オブジェクト取得
+      getNow() {
+        return {
+          iso: new Date().toISOString(),
+          perf: (typeof performance !== 'undefined' && typeof performance.now === 'function') ? Math.round(performance.now() * 100) / 100 : Date.now()
+        };
+      },
+
+      // 現在待機中の await 場所を記録（無効時はノーオペレーション即 return）
+      setAwaitLoc(loc) {
+        if (!window.DEBUG_DISCUSSION) return;
+        this.currentAwaitLocation = loc;
+        const currentRecord = this.stepRecords[this.stepRecords.length - 1];
+        if (currentRecord && currentRecord.stepId === this.currentStepId) {
+          currentRecord.phases[loc] = this.getNow();
+        }
+      },
+
+      // ステップ開始
+      startStep() {
+        if (!window.DEBUG_DISCUSSION) return;
+        this.currentStepId++;
+        const rec = {
+          stepId: this.currentStepId,
+          speaker: null,
+          startedAt: this.getNow(),
+          phases: {}
+        };
+        this.stepRecords.push(rec);
+        if (this.stepRecords.length > 50) this.stepRecords.shift();
+      },
+
+      // ステップ内属性記録（speakerなど）
+      recordStepDetail(key, val) {
+        if (!window.DEBUG_DISCUSSION) return;
+        const currentRecord = this.stepRecords[this.stepRecords.length - 1];
+        if (currentRecord) currentRecord[key] = val;
+      },
+
+      // ボタン操作（一時停止・再開）のスナップショット記録
+      recordButtonPress(action) {
+        if (!window.DEBUG_DISCUSSION) return;
+        const snap = {
+          action,
+          time: this.getNow(),
+          speaking: (window.speechSynthesis ? window.speechSynthesis.speaking : false),
+          pending: (window.speechSynthesis ? window.speechSynthesis.pending : false),
+          paused: (window.speechSynthesis ? window.speechSynthesis.paused : false),
+          currentAwait: this.currentAwaitLocation,
+          subPhase: (typeof gameState !== 'undefined' && gameState.subPhase) || 'unknown',
+          aiDiscussionActive: (typeof aiDiscussionActive !== 'undefined') ? aiDiscussionActive : 'unknown',
+          isDiscussionPaused: (typeof isDiscussionPaused !== 'undefined') ? isDiscussionPaused : 'unknown',
+          isInterrogatingActive: (typeof isInterrogatingActive !== 'undefined') ? isInterrogatingActive : 'unknown'
+        };
+        this.pauseSnapshots.push(snap);
+        if (this.pauseSnapshots.length > 100) this.pauseSnapshots.shift();
+        console.warn(`[Profiler] ボタン操作 (${action}) スナップショット:`, snap);
+      },
+
+      // 10秒停止検知時のスナップショット記録
+      recordFreeze(elapsedMs) {
+        if (!window.DEBUG_DISCUSSION) return;
+        const freeze = {
+          detectedAt: this.getNow(),
+          elapsedMs,
+          stuckAtAwait: this.currentAwaitLocation,
+          speaking: (window.speechSynthesis ? window.speechSynthesis.speaking : false),
+          pending: (window.speechSynthesis ? window.speechSynthesis.pending : false),
+          paused: (window.speechSynthesis ? window.speechSynthesis.paused : false),
+          isDiscussionPaused: (typeof isDiscussionPaused !== 'undefined') ? isDiscussionPaused : 'unknown',
+          isInterrogatingActive: (typeof isInterrogatingActive !== 'undefined') ? isInterrogatingActive : 'unknown',
+          aiDiscussionActive: (typeof aiDiscussionActive !== 'undefined') ? aiDiscussionActive : 'unknown',
+          lastStep: this.stepRecords.length > 0 ? this.stepRecords[this.stepRecords.length - 1] : null
+        };
+        this.freezeEvents.push(freeze);
+        if (this.freezeEvents.length > 100) this.freezeEvents.shift();
+        console.error(`[Profiler 🚨] 議論停止検知 (待機箇所: ${this.currentAwaitLocation}):`, freeze);
+      },
+
+      // dump(): 記録全体を整形済みJSON文字列として出力（コピー&ペースト用）
+      dump() {
+        const payload = {
+          exportedAt: this.getNow(),
+          flags: {
+            subPhase: (typeof gameState !== 'undefined' && gameState.subPhase) || 'unknown',
+            aiDiscussionActive: (typeof aiDiscussionActive !== 'undefined') ? aiDiscussionActive : 'unknown',
+            isDiscussionPaused: (typeof isDiscussionPaused !== 'undefined') ? isDiscussionPaused : 'unknown',
+            isInterrogatingActive: (typeof isInterrogatingActive !== 'undefined') ? isInterrogatingActive : 'unknown',
+            isSpeechEnabled: (typeof isSpeechEnabled !== 'undefined') ? isSpeechEnabled : 'unknown',
+            voiceVolume: (typeof voiceVolume !== 'undefined') ? voiceVolume : 'unknown',
+            currentAwaitLocation: this.currentAwaitLocation
+          },
+          speechSynthesis: {
+            speaking: (window.speechSynthesis ? window.speechSynthesis.speaking : false),
+            pending: (window.speechSynthesis ? window.speechSynthesis.pending : false),
+            paused: (window.speechSynthesis ? window.speechSynthesis.paused : false)
+          },
+          watchdogRecoveryStats: (typeof watchdogRecoveryStats !== 'undefined') ? watchdogRecoveryStats : {},
+          freezeEvents: this.freezeEvents,
+          pauseSnapshots: this.pauseSnapshots,
+          recentSteps: this.stepRecords
+        };
+        const jsonStr = JSON.stringify(payload, null, 2);
+        console.log('%c📋 [Profiler Dump] JSONをクリップボード等にコピー可能です:', 'color:#38bdf8;font-weight:bold');
+        return jsonStr;
+      }
+    };
+
+    // =====================================================
+    // 🛡️ 議論堅牢化＆ウォッチドッグ（B-2, B-4）
+    // =====================================================
+    let discussionGenerationId = 0;
+    let lastDiscussionSpeechTimestamp = Date.now();
+    let watchdogTimer = null;
+    let watchdogRecoveryStats = {
+      total: 0,
+      speech_stuck: 0,
+      step_timeout: 0,
+      empty_candidates: 0,
+      step_exception: 0,
+      unknown: 0
+    };
+
+    function recordDiscussionSpeechActivity() {
+      lastDiscussionSpeechTimestamp = Date.now();
+    }
+
+    function initDiscussionWatchdog() {
+      if (watchdogTimer) {
+        clearInterval(watchdogTimer);
+        watchdogTimer = null;
+      }
+
+      watchdogTimer = setInterval(() => {
+        // 発動除外条件の判定
+        // 1. 議論中以外（subPhase !== 'discussion'、処刑済み、ゲームオーバー）
+        if (!gameState || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) return;
+        // 2. プレイヤーが一時停止中
+        if (isDiscussionPaused) return;
+        // 3. 尋問・一斉質問の処理中
+        if (isInterrogatingActive) return;
+        // 4. 画面が非表示（裏タブ）
+        if (typeof document !== 'undefined' && document.hidden) return;
+
+        // 5. 読み上げ中かつ安全タイムアウト範囲内
+        const isSpeaking = (typeof window !== 'undefined' && window.speechSynthesis && (window.speechSynthesis.speaking || window.speechSynthesis.pending));
+        const timeSinceLastSpeech = Date.now() - lastDiscussionSpeechTimestamp;
+
+        // 待機閾値の決定（読み上げON時: 読み上げ進行中なら最大35秒まで許容、OFF時: 10秒）
+        const timeoutLimit = (isSpeechEnabled && voiceVolume > 0) ? (isSpeaking ? 35000 : 15000) : 10000;
+
+        if (isSpeaking && timeSinceLastSpeech < timeoutLimit) {
+          // 正常に読み上げが進行中
+          return;
+        }
+
+        if (timeSinceLastSpeech >= timeoutLimit) {
+          // プロファイラに10秒以上停止イベントを記録
+          if (typeof window._discProfiler !== 'undefined') {
+            window._discProfiler.recordFreeze(timeSinceLastSpeech);
+          }
+
+          // 原因の分析と分類
+          let reason = 'unknown';
+          if (isSpeaking || (window.speechSynthesis && window.speechSynthesis.pending)) {
+            reason = 'speech_stuck';
+          } else if (timeSinceLastSpeech >= timeoutLimit + 5000) {
+            reason = 'step_timeout';
+          }
+
+          watchdogRecoveryStats.total++;
+          watchdogRecoveryStats[reason] = (watchdogRecoveryStats[reason] || 0) + 1;
+
+          console.warn(`[Watchdog] 議論停止を検知し自動復旧を発動しました (原因: ${reason}, 累計: ${watchdogRecoveryStats.total}回)`);
+
+          if (window.DEBUG_DISCUSSION) {
+            console.log('[Watchdog Debug Snapshot]', {
+              aiDiscussionActive,
+              isDiscussionPaused,
+              isInterrogatingActive,
+              subPhase: gameState.subPhase,
+              speaking: window.speechSynthesis ? window.speechSynthesis.speaking : false,
+              paused: window.speechSynthesis ? window.speechSynthesis.paused : false,
+              pending: window.speechSynthesis ? window.speechSynthesis.pending : false,
+              timeSinceLastSpeech,
+              stats: { ...watchdogRecoveryStats }
+            });
+          }
+
+          // 復旧手順:
+          // 1. スタックした音声を完全リセット
+          cancelSpeech();
+          // 2. 世代番号を更新して古いループを確実に終了させ、新しいループを起動
+          discussionGenerationId++;
+          aiDiscussionActive = false;
+          recordDiscussionSpeechActivity();
+
+          setTimeout(() => {
+            if (gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver && !isDiscussionPaused) {
+              startAIDiscussionTimer();
+            }
+          }, 300);
+        }
+      }, 2000);
+    }
+
     async function startAIDiscussionTimer() {
-      // 既に走っている場合は何もしない
-      if (aiDiscussionActive) return;
+      // 世代番号を進めて新ループを開始
+      discussionGenerationId++;
+      const currentGen = discussionGenerationId;
       aiDiscussionActive = true;
+      recordDiscussionSpeechActivity();
 
       // 初回遅延（2.5秒）
+      if (typeof window._discProfiler !== 'undefined') window._discProfiler.setAwaitLoc('startAIDiscussionTimer:initial_delay');
       await new Promise(r => setTimeout(r, 2500));
 
       // 非同期ループ：読み上げ完了を待ってから次の発言を生成
       while (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+        // 世代チェック: 新しいループが始まっていたら旧ループは直ちに消滅
+        if (discussionGenerationId !== currentGen) {
+          if (window.DEBUG_DISCUSSION) console.log(`[AI議論] 旧世代ループ (${currentGen}) を終了します`);
+          break;
+        }
+
         // 一時停止状態またはプレイヤー尋問（質問回答）中の場合は完了するまで待機
         while ((isDiscussionPaused || isInterrogatingActive) && aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+          if (discussionGenerationId !== currentGen) break;
+          if (typeof window._discProfiler !== 'undefined') window._discProfiler.setAwaitLoc('startAIDiscussionTimer:pause_or_interrogate_wait');
           await new Promise(r => setTimeout(r, 500));
         }
-        if (!aiDiscussionActive || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver) break;
+        if (!aiDiscussionActive || gameState.subPhase !== 'discussion' || gameState.executedToday || gameState.gameOver || discussionGenerationId !== currentGen) break;
 
+        // 1回のステップ生成（思考・文生成・ログ追加）に5秒の制限時間を設定
+        let stepResult = null;
         try {
-          await generateAIDiscussionStep();
+          if (typeof window._discProfiler !== 'undefined') {
+            window._discProfiler.startStep();
+            window._discProfiler.setAwaitLoc('startAIDiscussionTimer:step_race');
+          }
+          stepResult = await Promise.race([
+            generateAIDiscussionStep(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('STEP_TIMEOUT')), 5000))
+          ]);
         } catch (stepErr) {
-          console.error('[AI議論] ステップ生成中にエラーが発生しました:', stepErr);
+          if (stepErr && stepErr.message === 'STEP_TIMEOUT') {
+            console.warn('[AI議論] ステップ生成（思考）が5秒を超過したため破棄して次へ進みます');
+            watchdogRecoveryStats.step_timeout++;
+          } else {
+            console.error('[AI議論] ステップ生成中にエラーが発生しました:', stepErr);
+            watchdogRecoveryStats.step_exception++;
+          }
+        }
+
+        // 発言が正常に生成された場合、読み上げを待機（スキップ等で早期終了しても確実に次ループへ進行）
+        if (stepResult && stepResult.formattedMsg) {
+          if (typeof window._discProfiler !== 'undefined') {
+            window._discProfiler.setAwaitLoc('generateAIDiscussionStep:speech_play');
+          }
+          try {
+            await playSpeechAsync(stepResult.formattedMsg, getCharVoiceProfileKey(stepResult.speaker));
+          } catch(speechErr) {
+            console.warn('[AI議論] 音声再生待機中にエラー:', speechErr);
+          }
+          if (typeof window._discProfiler !== 'undefined') {
+            window._discProfiler.setAwaitLoc('generateAIDiscussionStep:speech_done');
+          }
+          recordDiscussionSpeechActivity();
+        } else {
+          recordDiscussionSpeechActivity();
         }
 
         // 発言間に少し間を空ける（1.5秒）
-        if (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver) {
+        if (aiDiscussionActive && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver && discussionGenerationId === currentGen) {
+          if (typeof window._discProfiler !== 'undefined') window._discProfiler.setAwaitLoc('startAIDiscussionTimer:interval_gap');
           await new Promise(r => setTimeout(r, 1500));
         }
       }
-      aiDiscussionActive = false;
+
+      if (discussionGenerationId === currentGen) {
+        aiDiscussionActive = false;
+        if (typeof window._discProfiler !== 'undefined') window._discProfiler.setAwaitLoc('none');
+      }
     }
 
     function startDiscussionTimer() {
@@ -10771,6 +11590,8 @@ const SHOP_ROLE_DEFS = [
       gameState.timeLeftSeconds = discussionTimeSetting;
       updateTimerDisplay();
 
+      // ウォッチドッグの初期化・起動
+      initDiscussionWatchdog();
       startAIDiscussionTimer();
 
       timerInterval = setInterval(() => {
@@ -10849,6 +11670,10 @@ const SHOP_ROLE_DEFS = [
         clearInterval(timerInterval);
         timerInterval = null;
       }
+      if (watchdogTimer) {
+        clearInterval(watchdogTimer);
+        watchdogTimer = null;
+      }
       aiDiscussionActive = false;
       lastPauseTimestamp = null;
       // タイマー停止時は発言中の枠を外す（ポーズ・フェーズ移行・ゲームオーバー共通）
@@ -10923,6 +11748,14 @@ const SHOP_ROLE_DEFS = [
         resumeAllAudio();
         resumeActiveTimers();
         console.log('Game resumed: returned to foreground');
+        // B-5: タブが前面に戻ったときに議論状態を確認し、必要なら安全に再起動
+        if (gameState && gameState.subPhase === 'discussion' && !gameState.executedToday && !gameState.gameOver && !isDiscussionPaused) {
+          recordDiscussionSpeechActivity();
+          if (!aiDiscussionActive) {
+            console.log('[Visibility] 議論フェーズ復帰に伴い議論ループを再起動します');
+            startAIDiscussionTimer();
+          }
+        }
       }
     });
 
@@ -11050,6 +11883,15 @@ const SHOP_ROLE_DEFS = [
       '28':'male', '30':'male', '38':'male', '39':'male', '40':'male'
     };
 
+    // 年齢グループマップ（指示書の仮分類。違うものは後で修正可）
+    const FACE_AGE_MAP_OLD   = new Set(['01','04','07','11','15','19','25','28','33','36']);
+    const FACE_AGE_MAP_YOUNG = new Set(['02','05','09','12','14','17','20','23','26','29','31','34','37','38']);
+    function getFaceAgeGroup(faceId) {
+      if (FACE_AGE_MAP_OLD.has(faceId))   return 'old';
+      if (FACE_AGE_MAP_YOUNG.has(faceId)) return 'young';
+      return 'adult';
+    }
+
     /**
      * 顔画像40枚の定義（必ず相対パスで参照しSteam配布等にも完全対応）
      */
@@ -11058,7 +11900,8 @@ const SHOP_ROLE_DEFS = [
       return {
         id,
         src: `cyara_IMG/${id}.png`,
-        gender: FACE_GENDER_MAP[id] || 'male'
+        gender: FACE_GENDER_MAP[id] || 'male',
+        ageGroup: getFaceAgeGroup(id)   // 'old' | 'young' | 'adult'
       };
     });
 
@@ -11176,6 +12019,34 @@ const SHOP_ROLE_DEFS = [
         });
       }
 
+      // =====================================================
+      // 🎭 音声プロファイル (voiceProfile) の割り当て (B-1)
+      // 役職割り当てとは完全に独立した乱数で生成
+      // =====================================================
+      if (!gameState.charVoiceProfiles) gameState.charVoiceProfiles = {};
+      const genderSlots = { male: 0, female: 0, unknown: 0 };
+      characters.forEach(char => {
+        const faceId = gameState.charFaces[char] || '01';
+        const faceObj = FACE_IMAGES.find(f => f.id === faceId);
+        const gender = (faceObj && faceObj.gender) ? faceObj.gender : (FACE_GENDER_MAP[faceId] || 'male');
+        const ageGroup = (faceObj && faceObj.ageGroup) ? faceObj.ageGroup : getFaceAgeGroup(faceId);
+
+        const slot = genderSlots[gender] || 0;
+        genderSlots[gender] = slot + 1;
+
+        // 個人差の補正 (pitch ±0.1, rate ±0.08)
+        const pitchOffset = Math.round((randFn() * 0.2 - 0.1) * 100) / 100;
+        const rateOffset  = Math.round((randFn() * 0.16 - 0.08) * 100) / 100;
+
+        gameState.charVoiceProfiles[char] = {
+          gender,
+          slot,
+          pitchOffset,
+          rateOffset,
+          ageGroup
+        };
+      });
+
       // デバッグ出力
       if (window.DEBUG_FACES) {
         console.log('%c👤 [DEBUG_FACES] 村人の顔画像割り当て結果:', 'color: #38bdf8; font-weight: bold;');
@@ -11185,7 +12056,8 @@ const SHOP_ROLE_DEFS = [
           '性別': gameState.charGenders[c] || 'any',
           '顔ID': gameState.charFaces[c],
           '顔の性別': FACE_GENDER_MAP[gameState.charFaces[c]],
-          '画像パス': `cyara_IMG/${gameState.charFaces[c]}.png`
+          '画像パス': `cyara_IMG/${gameState.charFaces[c]}.png`,
+          '音声プロファイル': gameState.charVoiceProfiles ? gameState.charVoiceProfiles[c] : null
         }));
         console.table(debugTable);
       }
@@ -12293,12 +13165,14 @@ const SHOP_ROLE_DEFS = [
         if (textEl) textEl.textContent = '';
       }
 
-      // 冒険の書（アクティブスロット）から信頼度を引き継ぐ（未設定時は100）
+      // 冒険の書（アクティブスロット）から信頼度を引き継ぐ（ストーリーモード時のみ。フリーモード時は常に100から開始）
       let preservedTrust = 100;
-      if (typeof activeSaveSlot !== 'undefined' && typeof loadGameData === 'function') {
-        const slotData = loadGameData(activeSaveSlot);
-        if (slotData && typeof slotData.playerTrust === 'number') {
-          preservedTrust = slotData.playerTrust;
+      if (typeof currentPlayMode !== 'undefined' && currentPlayMode === 'story') {
+        if (typeof activeSaveSlot !== 'undefined' && typeof loadGameData === 'function') {
+          const slotData = loadGameData(activeSaveSlot);
+          if (slotData && typeof slotData.playerTrust === 'number') {
+            preservedTrust = slotData.playerTrust;
+          }
         }
       }
 
@@ -13205,7 +14079,12 @@ const SHOP_ROLE_DEFS = [
             roleDistribution.push(r);
           }
         }
-      } else if (selectedGameCategory === 'daily') {
+      } else {
+        // ★ フリーモード・デイリー・カスタム: 冒険の書の信頼度とは完全に独立（毎ゲーム100%から開始）
+        gameState.playerTrust = 100;
+        renderTrustUI();
+
+        if (selectedGameCategory === 'daily') {
         const todayStr = new Date().toISOString().split('T')[0];
         if (!currentDailyConfig) currentDailyConfig = generateDailyVillage(todayStr);
 
@@ -13280,6 +14159,7 @@ const SHOP_ROLE_DEFS = [
           ];
         }
       }
+    }
 
       const chars = CHAR_NAMES_15.slice(0, size);
       gameState.villageSize = size;
@@ -14661,6 +15541,8 @@ const SHOP_ROLE_DEFS = [
       const prevInterrogating = isInterrogatingActive;
       isInterrogatingActive = true;
       cancelSpeech();
+      // [BUG FIX] try/finally で isInterrogatingActive のリセット漏れを防止
+      try {
 
       // プレイヤーの一斉質問発言をログに記録
       const callTextMap = {
@@ -14825,9 +15707,14 @@ const SHOP_ROLE_DEFS = [
         } catch(e) { console.warn('Silence speech warn:', e); }
       }
 
-      // ボタン再有効化 & 尋問フラグ解除
-      isInterrogatingActive = prevInterrogating ? true : false;
-      updateMassCallButtons();
+      } catch(massCallErr) {
+        // [BUG FIX] 一斉質問処理中の例外をキャッチ（isInterrogatingActiveのリセット漏れ防止）
+        console.error('[一斉質問] エラーが発生しました:', massCallErr);
+      } finally {
+        // ボタン再有効化 & 尋問フラグ解除（例外があっても必ずリセット）
+        isInterrogatingActive = prevInterrogating ? true : false;
+        updateMassCallButtons();
+      }
     }
 
     // 一斉質問ボタンの有効/無効を更新
@@ -16885,13 +17772,18 @@ function realizeSpeech(plan, speaker, mode = 'template') {
       const baseFilteredIds = topicFilteredIds.length > 0 ? topicFilteredIds : factFilteredIds;
       let allowedIds = baseFilteredIds.filter(id => isTemplateAllowed(id, speaker));
       if (allowedIds.length === 0) {
-        // 重複が尽きた場合は観察型(observe)から未使用のものを探す
-        const observeUnused = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith('observe') && isTemplateAllowed(id, speaker));
-        if (observeUnused.length > 0) {
-          allowedIds = observeUnused;
+        // 重複が尽きた場合: B-4 指示書に従い、質問型(inquiry)・観察型(observe)から直近10重複禁止をかけて選ぶ
+        const safeCandidates = Object.keys(PIPELINE_TEMPLATES).filter(id => 
+          (id.startsWith('inquiry') || id.startsWith('observe')) && isTemplateAllowed(id, speaker)
+        );
+        if (safeCandidates.length > 0) {
+          allowedIds = safeCandidates;
         } else {
-          // それでも尽きた場合は最も古い履歴のIDを採用
-          allowedIds = factFilteredIds;
+          // それでも尽きた場合は null を返して1周回スキップ（無理に同じ文を繰り返さない）
+          if (window.DEBUG_DISCUSSION) {
+            console.warn(`[realizeSpeech] 重複制限により利用可能なテンプレートが存在しません: speaker=${speaker}`);
+          }
+          return null;
         }
       }
 
@@ -16904,7 +17796,8 @@ function realizeSpeech(plan, speaker, mode = 'template') {
       const minCount = _recentGlobalTemplateIds.filter(id => id === allowedIds[0]).length;
       const leastUsedGroup = allowedIds.filter(id => _recentGlobalTemplateIds.filter(x => x === id).length === minCount);
 
-      const chosenId = pickRandom(leastUsedGroup) || allowedIds[0] || 'observe.general_flow.01';
+      const chosenId = pickRandom(leastUsedGroup) || allowedIds[0];
+      if (!chosenId) return null;
       const factData = evaluateFactGate(chosenId, speaker, target, { plan });
 
       // 使用記録と計画履歴の保存
@@ -17435,6 +18328,10 @@ function generatePipelineDiscussionSpeech(speaker, context) {
       const aliveChars = gameState.charList.filter(c => gameState.status[c] === 'alive');
       if (aliveChars.length < 2) return;
 
+      if (typeof window._discProfiler !== 'undefined') {
+        window._discProfiler.setAwaitLoc('generateAIDiscussionStep:candidate_selection');
+      }
+
       // 直近の他AI発言ログを取得
       const recentHistory = (gameState.aiDiscussionHistory || []).slice(-8);
       const lastItem = recentHistory.length > 0 ? recentHistory[recentHistory.length - 1] : null;
@@ -17504,19 +18401,72 @@ function generatePipelineDiscussionSpeech(speaker, context) {
       consecutiveSpeakerHistory.push(speaker);
       if (consecutiveSpeakerHistory.length > 10) consecutiveSpeakerHistory.shift();
 
-      // 直近ログを取得（冒頭のrecentHistory/lastItemを使用）
+      if (typeof window._discProfiler !== 'undefined') {
+        window._discProfiler.recordStepDetail('speaker', speaker);
+        window._discProfiler.setAwaitLoc('generateAIDiscussionStep:planning');
+      }
 
       // ----------------------------------------------------
       // ★ 共通計画層(planSpeechAct)による発言意図・対象・事実の決定
       // ----------------------------------------------------
       const plan = planSpeechAct(speaker, { lastItem });
 
+      if (typeof window._discProfiler !== 'undefined') {
+        window._discProfiler.recordStepDetail('planIntent', plan ? plan.intent : null);
+        window._discProfiler.setAwaitLoc('generateAIDiscussionStep:realize_speech');
+      }
+
       // ----------------------------------------------------
       // ★ 言い回し生成(realizeSpeech): API版 / 内蔵版の共通実行
+      // B-2: 候補なし時は発言者を最大3人まで替えて再試行
       // ----------------------------------------------------
       const chosenMode = (useLLMMode && aiModeSetting !== 'template_only') ? 'llm' : 'template';
       window._lastSpeechIntent = plan.intent;
-      let msg = await realizeSpeech(plan, speaker, chosenMode);
+
+      let msg = null;
+      try {
+        msg = await realizeSpeech(plan, speaker, chosenMode);
+      } catch (rErr) {
+        if (window.DEBUG_DISCUSSION) console.warn('[realizeSpeech] エラー:', rErr);
+      }
+
+      // 1. 発言者を替えて再試行（最大3人）
+      if (!msg) {
+        const retryPool = aliveChars.filter(c => c !== speaker && c !== lastAISpeaker);
+        for (let attempt = 0; attempt < Math.min(3, retryPool.length); attempt++) {
+          const altSpeaker = retryPool[attempt];
+          const altPlan = planSpeechAct(altSpeaker, { lastItem });
+          try {
+            msg = await realizeSpeech(altPlan, altSpeaker, chosenMode);
+            if (msg) {
+              speaker = altSpeaker;
+              lastAISpeaker = altSpeaker;
+              if (window.DEBUG_DISCUSSION) console.log(`[realizeSpeech] 発言者再試行成功: ${altSpeaker}`);
+              break;
+            }
+          } catch(e) {}
+        }
+      }
+
+      // 2. それでも作れなければ、事実を主張しない質問型・観察型の重複許容候補で試行
+      if (!msg) {
+        const safeFallbackKeys = Object.keys(PIPELINE_TEMPLATES).filter(k => k.startsWith('observe') || k.startsWith('inquiry'));
+        if (safeFallbackKeys.length > 0) {
+          const fallbackKey = pickRandom(safeFallbackKeys);
+          const tmpl = PIPELINE_TEMPLATES[fallbackKey];
+          const raw = tmpl[currentAppLanguage || 'ja'] || tmpl.ja;
+          const targetChar = aliveChars.find(c => c !== speaker) || speaker;
+          msg = resolveTemplatePlaceholders(raw, speaker, targetChar);
+        }
+      }
+
+      // 3. それでも作れなければ、このステップをスキップ（無理に同じ文を言わせず次周回へ）
+      if (!msg) {
+        if (window.DEBUG_DISCUSSION) {
+          console.warn('[AI議論] 発言候補が完全に空のため、ステップをスキップして1.5秒後に再試行します');
+        }
+        return null;
+      }
 
       // 防衛CO発生時の仮想投票・ログ同期
       if (plan.coAnnounce) {
@@ -17550,15 +18500,20 @@ function generatePipelineDiscussionSpeech(speaker, context) {
         updateCharMemory(speaker, plan.intent, plan.target, plan.evidences[0]?.type, msg);
       }
 
+      if (typeof window._discProfiler !== 'undefined') {
+        window._discProfiler.setAwaitLoc('generateAIDiscussionStep:dom_render');
+      }
+
       const formattedMsg = msg;
       const speakerDisplayName = getCharDisplayName(speaker);
 addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', speaker, false);
 
-      // 発言者カードの枠を即時切り替え（DOM再生成なし）
+      // [BUG FIX] setSpeakingCard は playSpeechAsync の後(cancelSpeech完了後)に呼ぶ
+      // playSpeechAsync冒頭のcancelSpeechがspeakingカードIDをリセットするため、
+      // その後に設定しないと前のキャラの枠が残ったり新カードが即消えたりするバグが発生する
       if (typeof setSpeakingCard === 'function') setSpeakingCard(speaker);
 
-      // 非同期音声読み上げ
-      await playSpeechAsync(formattedMsg, getCharVoiceProfileKey(speaker));
+      return { speaker, formattedMsg };
     }
 
     // プレイヤーによる「🎯 発言を追及する」アクション
@@ -21703,6 +22658,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       const reveal = document.getElementById('modal-reveal');
 
       modal.classList.remove('hidden');
+      modal.style.display = 'flex'; // [BUG FIX] closeModal()のstyle.display='none'残留を上書き
 
       const lang = currentAppLanguage || 'ja';
       const t = I18N_TRANSLATIONS[lang] || I18N_TRANSLATIONS.ja;
@@ -21921,8 +22877,10 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
             `;
           } else {
             // 第5章勝利 ＝ 「次へ進む（エンディングへ）」ボタン
+            // [BUG FIX] 信頼度は実際のgameState.playerTrustを参照（ハードコード100から修正）
+            const ch5Trust = typeof gameState.playerTrust === 'number' ? gameState.playerTrust : 100;
             actionBtnsContainer.innerHTML = `
-              <button class="btn-result-action btn-result-restart" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="triggerGrandEndingTest(100)">
+              <button class="btn-result-action btn-result-restart" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="triggerGrandEndingTest(${ch5Trust})">
                 ${grandEndingText}
               </button>
               <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">${returnTitleText}</button>
@@ -23246,6 +24204,13 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
     window.triggerGrandEndingTest = triggerGrandEndingTest;
     window.showGrandEndingModal = showGrandEndingModal;
     window.triggerEndingByTrust = triggerEndingByTrust;
+    window.watchdogRecoveryStats = watchdogRecoveryStats;
+    window.initDiscussionWatchdog = initDiscussionWatchdog;
+    window.updateGenderVoiceSetting = updateGenderVoiceSetting;
+    window.testPreviewVoice = testPreviewVoice;
+    window.buildCharUtteranceParams = buildCharUtteranceParams;
+    window.resolveVoice = resolveVoice;
+    window.detectVoiceGender = detectVoiceGender;
     window.playEndingBgm = playEndingBgm;
     window.stopEndingBgm = stopEndingBgm;
     window.returnToTitleFromGrandEnding = returnToTitleFromGrandEnding;
