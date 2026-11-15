@@ -82,6 +82,7 @@
     .badge-answer { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
     .badge-inquiry { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
     .badge-observe { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); }
+    .badge-scenario { background: rgba(14, 165, 233, 0.2); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.4); }
     .badge-distance { background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
 
     /* Screen Management & Game Screen Backgrounds */
@@ -1032,13 +1033,6 @@
 
     /* prefers-reduced-motion: 色の切り替えだけの点滅はOSのアニメーション設定に左右しない */
     /* 位置・大きさが変わるアニメーションは別途 no-transform-anim クラスで制御 */
-
-    /* 設定でオフにした場合は金色固定 */
-    body.no-speak-blink .char-card.face-speaking {
-      animation: none !important;
-      border-color: var(--speak-color-1) !important;
-      box-shadow: 0 0 7px var(--speak-shadow-1) !important;
-    }
 
     /* 発言中かつ選択中: 点滅枠の内側に白い outline で選択状態を表示 */
     .char-card.face-speaking.selected {
@@ -2324,41 +2318,269 @@
     }
 
     /* Name Settings Modal Styling */
-    .name-input-scroll-container {
-      max-height: 55vh;
+    #name-settings-modal .modal-content {
+      max-width: 720px;
+      width: 95%;
+      height: 85vh;
+      max-height: 850px;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+    #name-settings-modal .modal-header {
+      padding: 0.8rem 1.2rem;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    #name-settings-modal .modal-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0.6rem 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+    #name-settings-modal .modal-footer {
+      padding: 0.7rem 1.2rem;
+      flex-shrink: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Fixed Toolbar */
+    .name-modal-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.5rem;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 0.6rem;
+      flex-shrink: 0;
+    }
+    .name-toolbar-btn {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.78rem;
+      font-weight: bold;
+      background: rgba(30, 41, 59, 0.9);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .name-toolbar-btn:hover {
+      background: rgba(51, 65, 85, 0.95);
+      border-color: var(--accent-gold);
+      color: #fff;
+    }
+    .name-toolbar-btn.active {
+      background: rgba(37, 99, 235, 0.8);
+      border-color: #60a5fa;
+      color: #fff;
+    }
+    .name-toolbar-select {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.78rem;
+      background: rgba(30, 41, 59, 0.9);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Collapsible Panels (Positioned over or pinned with own scroll) */
+    .name-sub-panel {
+      position: absolute;
+      top: 3.4rem;
+      left: 1rem;
+      right: 1rem;
+      max-height: calc(100% - 4.5rem);
+      background: rgba(15, 23, 42, 0.97);
+      border: 1.5px solid var(--accent-amber);
+      border-radius: 8px;
+      padding: 0.8rem;
+      z-index: 40;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
       overflow-y: auto;
+      backdrop-filter: blur(8px);
+    }
+    .name-sub-panel.hidden {
+      display: none !important;
+    }
+
+    /* Random Dropdown Menu */
+    .name-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 210px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1.5px solid var(--accent-gold);
+      border-radius: 8px;
+      padding: 0.5rem;
+      z-index: 50;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .name-dropdown-menu.hidden {
+      display: none !important;
+    }
+    .name-dropdown-menu .name-toolbar-btn {
+      width: 100%;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.82rem;
+      text-align: left;
+      justify-content: flex-start;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .name-dropdown-menu .name-toolbar-btn:hover {
+      background: rgba(37, 99, 235, 0.8);
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    .name-input-scroll-container {
+      flex: 1;
+      min-height: 220px;
+      overflow-y: auto;
+      overflow-x: hidden !important; /* 横スクロールバーの発生を防止 */
       padding-right: 0.4rem;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 0.6rem;
-      margin: 0.8rem 0;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 0.5rem;
+      margin: 0;
     }
 
     .name-input-row {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
+      gap: 0.25rem;
       background: rgba(15, 23, 42, 0.6);
-      padding: 0.4rem 0.5rem;
+      padding: 0.45rem 0.55rem;
       border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+      box-sizing: border-box;
+      min-width: 0;
     }
-
-    .name-input-row label {
-      font-size: 0.75rem;
+    .name-input-row:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .name-row-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .name-row-header label {
+      font-size: 0.78rem;
       color: var(--accent-amber);
       font-weight: bold;
     }
-
-    .name-input-row input {
-      width: 100%;
-      padding: 0.35rem 0.45rem;
-      font-size: 0.85rem;
+    .name-preview-voice-btn {
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(37, 99, 235, 0.4);
+      color: #93c5fd;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      padding: 0.1rem 0.35rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.15rem;
+      transition: background 0.15s;
+    }
+    .name-preview-voice-btn:hover {
+      background: rgba(37, 99, 235, 0.5);
+      color: #fff;
+    }
+    .name-row-fields {
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      min-width: 0;
+    }
+    .name-row-fields input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 0.3rem 0.45rem;
+      font-size: 0.82rem;
       background: rgba(10, 15, 30, 0.8);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
       border-radius: 4px;
       box-sizing: border-box;
+    }
+    .name-row-fields select {
+      width: 78px;
+      flex-shrink: 0;
+      padding: 0.3rem 0.2rem;
+      font-size: 0.75rem;
+      background: rgba(10, 15, 30, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+      box-sizing: border-box;
+    }
+    .name-row-fields select {
+      width: 82px;
+      padding: 0.3rem 0.2rem;
+      font-size: 0.75rem;
+      background: rgba(10, 15, 30, 0.8);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+    .name-reading-row {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-top: 0.15rem;
+    }
+    .name-reading-row.hidden {
+      display: none !important;
+    }
+    .name-reading-row input {
+      flex: 1;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.75rem;
+      background: rgba(15, 23, 42, 0.9);
+      color: #93c5fd;
+      border: 1px dashed rgba(147, 197, 253, 0.4);
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 1366px), (max-height: 768px) {
+      #name-settings-modal .modal-content {
+        height: 90vh;
+        max-height: 700px;
+      }
+      .name-toolbar-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.74rem;
+      }
+      .name-input-scroll-container {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.4rem;
+        min-height: 180px;
+      }
+      .name-input-row {
+        padding: 0.35rem 0.45rem;
+      }
     }
 
     .name-input-row input:focus {
@@ -3013,7 +3235,8 @@
       display: none !important; /* 画面フロートは廃止 */
     }
     .skip-btn-header-inline {
-      display: none;
+      display: inline-flex; /* 常に場所を確保してレイアウトシフトを防止 */
+      visibility: hidden;   /* 非表示時はスペースだけ保持 */
       align-items: center;
       gap: 0.25rem;
       background: rgba(37, 99, 235, 0.92);
@@ -3026,13 +3249,14 @@
       border: 1px solid rgba(255, 255, 255, 0.5);
       cursor: pointer;
       user-select: none;
-      animation: speechSkipPulse 1.2s ease-in-out infinite;
+      animation: none; /* 非表示中はアニメーション停止 */
       white-space: nowrap;
       flex-shrink: 0;
       margin-left: auto;
     }
     .skip-btn-header-inline.visible {
-      display: inline-flex !important;
+      visibility: visible !important;
+      animation: speechSkipPulse 1.2s ease-in-out infinite;
     }
         @keyframes speechSkipPulse {
       0%, 100% { opacity: 0.7; }
@@ -4473,17 +4697,6 @@
           </select>
         </div>
 
-        <div class="setting-item">
-          <div class="setting-label-row">
-            <label for="speak-blink-toggle">✨ 発言中の枠の点滅</label>
-          </div>
-          <select id="speak-blink-toggle" class="setting-select" onchange="toggleSpeakBlink(this.value)">
-            <option value="true" selected>ON (金↔水色で点滅)</option>
-            <option value="false">OFF (金色固定)</option>
-          </select>
-        </div>
-
-
 
         <div class="setting-item">
           <div class="setting-label-row">
@@ -4503,32 +4716,193 @@
 
   <!-- Name Settings Modal (村人の名前カスタマイズ) -->
   <div id="name-settings-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeNameModal()">
-    <div class="modal-content modal-large">
+    <div class="modal-content">
       <div class="modal-header">
-        <h2>📝 村人の名前設定</h2>
+        <h2 id="name-settings-modal-title">📝 村人の名前設定</h2>
         <button class="modal-close-btn" onclick="closeNameModal()">✕</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.5rem 0;">
-          ゲーム内に登場する村人たちの名前（A〜T）を自由に変更できます。
-        </p>
+        <!-- 固定道具バー -->
+        <div class="name-modal-toolbar">
+          <button class="name-toolbar-btn" id="btn-toolbar-bulk" onclick="toggleNameSubPanel('bulk')">
+            <span>📋</span> <span id="lbl-toolbar-bulk">一括入力</span>
+          </button>
+          <button class="name-toolbar-btn" id="btn-toolbar-export" onclick="exportCurrentNames()">
+            <span>📤</span> <span id="lbl-toolbar-export">名前を書き出す</span>
+          </button>
+          <button class="name-toolbar-btn" id="btn-toolbar-gender" onclick="toggleNameSubPanel('gender')">
+            <span>⚧️</span> <span id="lbl-toolbar-gender">性別を一括設定</span>
+          </button>
+          
+          <!-- ランダム生成プルダウン/ボタン群 -->
+          <div style="position:relative; display:inline-block;">
+            <button class="name-toolbar-btn" id="btn-toolbar-random" onclick="toggleNameSubPanel('random')">
+              <span>🎲</span> <span id="lbl-toolbar-random">ランダム生成 ▼</span>
+            </button>
+            <div id="name-random-dropdown" class="name-dropdown-menu hidden">
+              <button class="name-toolbar-btn" onclick="generateRandomNames('auto'); toggleNameSubPanel(null);">🌐 言語に合わせて自動</button>
+              <button class="name-toolbar-btn" onclick="generateRandomNames('japanese'); toggleNameSubPanel(null);">🌸 和風</button>
+              <button class="name-toolbar-btn" onclick="generateRandomNames('western'); toggleNameSubPanel(null);">🏰 洋風</button>
+              <button class="name-toolbar-btn" onclick="generateRandomNames('chinese'); toggleNameSubPanel(null);">🏮 中華風</button>
+              <button class="name-toolbar-btn" onclick="generateRandomNames('korean'); toggleNameSubPanel(null);">🥢 韓流風</button>
+            </div>
+          </div>
 
-        <div id="name-input-list" class="name-input-scroll-container">
-          <!-- JavaScriptで入力フォームを動的生成 -->
+          <!-- 名前セット管理 -->
+          <button class="name-toolbar-btn" id="btn-toolbar-set" onclick="toggleNameSubPanel('set')">
+            <span>📁</span> <span id="lbl-toolbar-set">名前セット</span>
+          </button>
+
+          <button class="name-toolbar-btn" id="btn-toolbar-default" onclick="resetDefaultNames()" style="margin-left:auto;">
+            <span>🔄</span> <span id="lbl-toolbar-default">デフォルト</span>
+          </button>
+
+          <!-- よみ入力表示トグル -->
+          <label style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.75rem; color:#93c5fd; cursor:pointer; margin-left:0.3rem; user-select:none;">
+            <input type="checkbox" id="toggle-reading-inputs" onchange="toggleReadingInputs(this.checked)" style="cursor:pointer;">
+            <span id="lbl-toggle-reading">よみを表示</span>
+          </label>
         </div>
 
-        <div class="modal-btn-group" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-          <button id="btn-name-random-auto" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #60a5fa;" onclick="generateRandomNames('auto')">🎲 言語に合わせてランダム</button>
-          <button id="btn-name-random-ja" onclick="generateRandomNames('japanese')">🎲 和風</button>
-          <button id="btn-name-random-western" onclick="generateRandomNames('western')">🎲 洋風</button>
-          <button id="btn-name-random-zh" onclick="generateRandomNames('chinese')">🎲 中華風</button>
-          <button id="btn-name-random-ko" onclick="generateRandomNames('korean')">🎲 韓流風</button>
-          <button id="btn-name-reset-default" onclick="resetDefaultNames()">🔄 デフォルト</button>
+        <!-- パネル1: 一括入力パネル -->
+        <div id="name-panel-bulk" class="name-sub-panel hidden">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <h4 style="margin:0; font-size:0.9rem; color:var(--accent-gold);">📋 名前の一括入力</h4>
+            <button class="modal-close-btn" style="font-size:0.85rem;" onclick="toggleNameSubPanel(null)">✕</button>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 0.4rem 0; line-height:1.4;">
+            1行に1人。カンマまたはタブ区切り。<br>
+            形式: <code>名前</code> または <code>名前,男</code> または <code>名前,男,よみ</code><br>
+            ※性別: 男/女/male/female/m/f (その他はおまかせ)。※よみ: <b>ひらがな・カタカナ・長音(ー)のみ</b>（英字名の読みもカタカナで入力）。最大全角8文字(半角16文字)。
+          </p>
+          <textarea id="bulk-name-textarea" rows="5" style="width:100%; font-size:0.8rem; background:rgba(10,15,30,0.85); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:4px; padding:0.4rem; box-sizing:border-box; font-family:monospace;" placeholder="アリス,女,ありす&#10;ボブ,男,ぼぶ&#10;チャーリー,男,ちゃーりー"></textarea>
+          
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.6rem; margin:0.4rem 0;">
+            <div style="font-size:0.78rem; display:flex; align-items:center; gap:0.3rem;">
+              <span>開始位置:</span>
+              <select id="bulk-start-pos" class="name-toolbar-select"></select>
+            </div>
+            <div style="font-size:0.78rem; display:flex; align-items:center; gap:0.3rem;">
+              <span>順序:</span>
+              <select id="bulk-assign-order" class="name-toolbar-select">
+                <option value="sequential">上から順に</option>
+                <option value="shuffle">シャッフルして割り当て</option>
+              </select>
+            </div>
+            <div style="margin-left:auto; display:flex; gap:0.4rem;">
+              <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="updateBulkPreview()">プレビュー更新</button>
+              <button class="btn btn-primary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="applyBulkInput()">一覧に反映</button>
+            </div>
+          </div>
+
+          <!-- プレビュー＆警告領域 -->
+          <div id="bulk-warning-box" style="display:none; font-size:0.75rem; color:#f87171; background:rgba(239,68,68,0.15); border:1px solid #ef4444; border-radius:4px; padding:0.3rem 0.5rem; margin-bottom:0.4rem;"></div>
+          <div id="bulk-preview-container" style="max-height:160px; overflow-y:auto; border:1px solid rgba(255,255,255,0.1); border-radius:4px; background:rgba(0,0,0,0.3); padding:0.3rem; font-size:0.75rem;">
+            <span style="color:var(--text-muted);">テキストを入力してプレビューを確認してください</span>
+          </div>
+        </div>
+
+        <!-- パネル2: 書き出しパネル -->
+        <div id="name-panel-export" class="name-sub-panel hidden">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <h4 style="margin:0; font-size:0.9rem; color:var(--accent-gold);">📤 名前の書き出し（エクスポート）</h4>
+            <button class="modal-close-btn" style="font-size:0.85rem;" onclick="toggleNameSubPanel(null)">✕</button>
+          </div>
+          <p id="export-status-msg" style="font-size:0.75rem; color:#4ade80; margin:0 0 0.3rem 0;">
+            現在の村人設定を書き出しました。コピーして保存や一括入力の再利用が可能です。
+          </p>
+          <textarea id="export-name-textarea" rows="8" readonly style="width:100%; font-size:0.8rem; background:rgba(10,15,30,0.85); color:#93c5fd; border:1px solid rgba(255,255,255,0.2); border-radius:4px; padding:0.4rem; box-sizing:border-box; font-family:monospace;"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:0.4rem; margin-top:0.4rem;">
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="copyExportedText()">📋 クリップボードにコピー</button>
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="toggleNameSubPanel(null)">閉じる</button>
+          </div>
+        </div>
+
+        <!-- パネル3: 性別一括設定パネル -->
+        <div id="name-panel-gender" class="name-sub-panel hidden">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <h4 style="margin:0; font-size:0.9rem; color:var(--accent-gold);">⚧️ 性別の一括設定</h4>
+            <button class="modal-close-btn" style="font-size:0.85rem;" onclick="toggleNameSubPanel(null)">✕</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.8rem; margin:0.4rem 0;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span>設定パターン:</span>
+              <select id="bulk-gender-mode" class="name-toolbar-select" style="flex:1;">
+                <option value="any">全員おまかせ</option>
+                <option value="male">全員男性 (👨)</option>
+                <option value="female">全員女性 (👩)</option>
+                <option value="alternate">男女を交互に (A=男, B=女…)</option>
+                <option value="random">ランダム (男女が半々)</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span>適用範囲:</span>
+              <select id="bulk-gender-range" class="name-toolbar-select" style="flex:1;">
+                <option value="all">全員 (A〜DD 30人)</option>
+                <option value="current">現在の村人数のみ</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.4rem; margin-top:0.5rem;">
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="toggleNameSubPanel(null)">キャンセル</button>
+            <button class="btn btn-primary" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="applyBulkGenderSetting()">一括適用</button>
+          </div>
+        </div>
+
+        <!-- パネル4: 名前セット管理パネル -->
+        <div id="name-panel-set" class="name-sub-panel hidden">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <h4 style="margin:0; font-size:0.9rem; color:var(--accent-gold);">📁 名前セットの保存・呼び出し</h4>
+            <button class="modal-close-btn" style="font-size:0.85rem;" onclick="toggleNameSubPanel(null)">✕</button>
+          </div>
+          
+          <!-- 新規保存 -->
+          <div style="display:flex; gap:0.4rem; align-items:center; margin-bottom:0.6rem;">
+            <input type="text" id="name-set-title-input" placeholder="セット名を入力 (例: ホラー村, 勇者パーティ)" style="flex:1; padding:0.3rem 0.5rem; font-size:0.8rem; background:rgba(10,15,30,0.8); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:4px;">
+            <button class="btn btn-primary" style="font-size:0.75rem; padding:0.25rem 0.6rem; white-space:nowrap;" onclick="saveCurrentToNameSet()">💾 現在の内容を保存</button>
+          </div>
+
+          <!-- ファイルインポート (.txt / .csv) -->
+          <div style="display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0.5rem; background:rgba(30,41,59,0.5); border-radius:4px; margin-bottom:0.6rem; font-size:0.75rem;">
+            <span>📄 ファイルから読み込み:</span>
+            <input type="file" id="name-set-file-input" accept=".txt,.csv" style="display:none;" onchange="handleNameFileImport(event)">
+            <button class="btn btn-secondary" style="font-size:0.72rem; padding:0.2rem 0.5rem;" onclick="document.getElementById('name-set-file-input').click()">ファイル選択 (.txt / .csv)</button>
+            <span id="name-file-encoding-info" style="color:var(--accent-amber); font-weight:bold;"></span>
+          </div>
+
+          <!-- 保存済みセット一覧 -->
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.2rem;">保存済みセット一覧 (最大20個):</div>
+          <div id="name-set-list-container" style="max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:0.3rem; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:0.3rem; background:rgba(0,0,0,0.3);">
+            <!-- 動的挿入 -->
+          </div>
+        </div>
+
+        <!-- 一覧スクロールコンテナ -->
+        <div id="name-input-list" class="name-input-scroll-container">
+          <!-- JavaScriptで入力フォームを動的生成 -->
         </div>
       </div>
       <div class="modal-footer" style="gap: 0.5rem;">
         <button class="btn btn-secondary" onclick="closeNameModal()">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveCustomNames()">設定を保存</button>
+        <button class="btn btn-primary" onclick="validateAndSaveCustomNames()">設定を保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 重複・空文字確認モーダル -->
+  <div id="name-duplicate-modal" class="modal-overlay hidden" style="z-index:9999;" onclick="if(event.target===this) closeModal('name-duplicate-modal')">
+    <div class="modal-content" style="max-width:440px; border:2px solid var(--accent-amber);">
+      <div class="modal-header">
+        <h3 style="margin:0; font-size:0.95rem; color:var(--accent-gold);">⚠️ 名前の重複・検証</h3>
+        <button class="modal-close-btn" onclick="closeModal('name-duplicate-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0.8rem;">
+        <div id="name-duplicate-msg" style="font-size:0.82rem; color:var(--text-primary); line-height:1.45; margin-bottom:0.6rem;"></div>
+        <div id="name-duplicate-list" style="font-size:0.75rem; color:#f87171; max-height:120px; overflow-y:auto; background:rgba(0,0,0,0.4); padding:0.4rem; border-radius:4px; margin-bottom:0.6rem;"></div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:0.5rem;">
+        <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="closeModal('name-duplicate-modal')">修正に戻る</button>
+        <button class="btn btn-primary" style="font-size:0.8rem; background:linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="resolveDuplicatesWithNumbers()">自動で番号を付けて保存</button>
       </div>
     </div>
   </div>
@@ -6648,6 +7022,14 @@ ${speakerName}の発言:`;
         settings_title: "⚙ ゲーム設定",
         lbl_language: "🌐 Language / 言語",
         btn_custom_names: "📝 村人の名前設定（カスタマイズ）",
+        name_modal_title: "📝 村人の名前設定",
+        name_modal_toolbar_bulk: "一括入力",
+        name_modal_toolbar_export: "名前を書き出す",
+        name_modal_toolbar_gender: "性別を一括設定",
+        name_modal_toolbar_random: "ランダム生成 ▼",
+        name_modal_toolbar_set: "名前セット",
+        name_modal_toolbar_default: "デフォルト",
+        name_modal_toggle_reading: "よみを表示",
         lbl_discussion_time: "💬 昼の議論時間",
         lbl_bgm_vol: "🎵 BGM 音量",
         lbl_se_vol: "🔔 SE (効果音) 音量",
@@ -6820,7 +7202,7 @@ ${speakerName}の発言:`;
         result_total_score: "📊 合計スコア",
         result_reveal_title: "【全員の実際の役職と最終状態】",
         result_btn_next_chapter: "⚔️ 次の章へ進む（第{ch}章）",
-        result_btn_grand_ending: "✨🏆 グランドエンディングを見る",
+        result_btn_grand_ending: "✨📜 エンディングへ",
         result_btn_replay: "🔄 もう一度プレイ",
         result_btn_to_title: "🏠 タイトルへ"
       },
@@ -6860,6 +7242,14 @@ ${speakerName}の発言:`;
         settings_title: "⚙ Game Settings",
         lbl_language: "🌐 Language / 言語",
         btn_custom_names: "📝 Customize Villager Names",
+        name_modal_title: "📝 Villager Name Settings",
+        name_modal_toolbar_bulk: "Bulk Input",
+        name_modal_toolbar_export: "Export Names",
+        name_modal_toolbar_gender: "Set All Genders",
+        name_modal_toolbar_random: "Randomize ▼",
+        name_modal_toolbar_set: "Name Sets",
+        name_modal_toolbar_default: "Default",
+        name_modal_toggle_reading: "Show Reading",
         lbl_discussion_time: "💬 Day Discussion Time",
         lbl_bgm_vol: "🎵 BGM Volume",
         lbl_se_vol: "🔔 SFX Volume",
@@ -7032,7 +7422,7 @@ ${speakerName}の発言:`;
         result_total_score: "📊 Total Score",
         result_reveal_title: "【True Roles and Final States of All Villagers】",
         result_btn_next_chapter: "⚔️ Advance to Chapter {ch}",
-        result_btn_grand_ending: "✨🏆 View Grand Ending",
+        result_btn_grand_ending: "✨📜 To Ending",
         result_btn_replay: "🔄 Play Again",
         result_btn_to_title: "🏠 Back to Title"
       },
@@ -7072,6 +7462,14 @@ ${speakerName}の発言:`;
         settings_title: "⚙ 游戏设置",
         lbl_language: "🌐 Language / 语言",
         btn_custom_names: "📝 自定义村民姓名",
+        name_modal_title: "📝 村民名称设置", /* 要ネイティブ確認 */
+        name_modal_toolbar_bulk: "批量输入", /* 要ネイティブ確認 */
+        name_modal_toolbar_export: "导出名称", /* 要ネイティブ確認 */
+        name_modal_toolbar_gender: "批量设置性别", /* 要ネイティブ確認 */
+        name_modal_toolbar_random: "随机生成 ▼", /* 要ネイティブ確認 */
+        name_modal_toolbar_set: "名称方案", /* 要ネイティブ確認 */
+        name_modal_toolbar_default: "恢复默认", /* 要ネイティブ確認 */
+        name_modal_toggle_reading: "显示读音", /* 要ネイティブ確認 */
         lbl_discussion_time: "💬 白天讨论时长",
         lbl_bgm_vol: "🎵 背景音乐 音量",
         lbl_se_vol: "🔔 音效 音量",
@@ -7244,7 +7642,7 @@ ${speakerName}の発言:`;
         result_total_score: "📊 最终总分",
         result_reveal_title: "【所有人的真实身份与最终状态】",
         result_btn_next_chapter: "⚔️ 进军下一章（第{ch}章）",
-        result_btn_grand_ending: "✨🏆 观赏宏大结局",
+        result_btn_grand_ending: "✨📜 前往结局",
         result_btn_replay: "🔄 再玩一次",
         result_btn_to_title: "🏠 返回标题界面"
       },
@@ -7284,6 +7682,14 @@ ${speakerName}の発言:`;
         settings_title: "⚙ 게임 설정",
         lbl_language: "🌐 Language / 언어",
         btn_custom_names: "📝 주민 이름 설정（커스텀）",
+        name_modal_title: "📝 마을 주민 이름 설정", /* 要ネイティブ確認 */
+        name_modal_toolbar_bulk: "일괄 입력", /* 要ネイティブ確認 */
+        name_modal_toolbar_export: "이름 내보내기", /* 要ネイティブ確認 */
+        name_modal_toolbar_gender: "성별 일괄 설정", /* 要ネイティブ確認 */
+        name_modal_toolbar_random: "랜덤 생성 ▼", /* 要ネイティブ確認 */
+        name_modal_toolbar_set: "이름 세트", /* 要ネイティブ確認 */
+        name_modal_toolbar_default: "기본값", /* 要ネイティブ確認 */
+        name_modal_toggle_reading: "발음 표기", /* 要ネイティブ確認 */
         lbl_discussion_time: "💬 낮 토론 시간",
         lbl_bgm_vol: "🎵 BGM 볼륨",
         lbl_se_vol: "🔔 효과음 볼륨",
@@ -7456,7 +7862,7 @@ ${speakerName}の発言:`;
         result_total_score: "📊 최종 점수",
         result_reveal_title: "【전원의 실제 직업 및 최종 상태】",
         result_btn_next_chapter: "⚔️ 다음 장으로 진행 (제{ch}장)",
-        result_btn_grand_ending: "✨🏆 그랜드 엔딩 감상",
+        result_btn_grand_ending: "✨📜 엔딩으로",
         result_btn_replay: "🔄 다시 플레이",
         result_btn_to_title: "🏠 타이틀로"
       },
@@ -7496,6 +7902,14 @@ ${speakerName}の発言:`;
         settings_title: "⚙ Paramètres du jeu",
         lbl_language: "🌐 Langue / Language",
         btn_custom_names: "📝 Personnaliser les noms des villageois",
+        name_modal_title: "📝 Configuration des Noms des Villageois", /* 要ネイティブ確認 */
+        name_modal_toolbar_bulk: "Saisie groupée", /* 要ネイティブ確認 */
+        name_modal_toolbar_export: "Exporter les noms", /* 要ネイティブ確認 */
+        name_modal_toolbar_gender: "Genre groupé", /* 要ネイティブ確認 */
+        name_modal_toolbar_random: "Aléatoire ▼", /* 要ネイティブ確認 */
+        name_modal_toolbar_set: "Packs de noms", /* 要ネイティブ確認 */
+        name_modal_toolbar_default: "Par défaut", /* 要ネイティブ確認 */
+        name_modal_toggle_reading: "Afficher phonétique", /* 要ネイティブ確認 */
         lbl_discussion_time: "💬 Durée du débat de jour",
         lbl_bgm_vol: "🎵 Volume de la musique",
         lbl_se_vol: "🔔 Volume des effets sonores",
@@ -7656,7 +8070,7 @@ ${speakerName}の発言:`;
         result_total_score: "📊 Score Total",
         result_reveal_title: "【Rôles Véritables et États Finaux de Tous les Villageois】",
         result_btn_next_chapter: "⚔️ Passer au Chapitre {ch}",
-        result_btn_grand_ending: "✨🏆 Voir la Grande Fin",
+        result_btn_grand_ending: "✨📜 Vers la Fin",
         result_btn_replay: "🔄 Rejouer",
         result_btn_to_title: "🏠 Retour au Titre"
       },
@@ -8082,21 +8496,21 @@ ${speakerName}の発言:`;
 
       // 村人名前設定モーダル (#name-settings-modal)
       const nameModalH2 = document.querySelector('#name-settings-modal .modal-header h2');
-      if (nameModalH2 && t.name_settings_title) nameModalH2.textContent = t.name_settings_title;
-      const nameModalDesc = document.querySelector('#name-settings-modal .modal-body p');
-      if (nameModalDesc && t.name_settings_desc) nameModalDesc.textContent = t.name_settings_desc;
-      const btnAuto = document.getElementById('btn-name-random-auto');
-      if (btnAuto && t.btn_random_auto) btnAuto.textContent = t.btn_random_auto;
-      const btnJa = document.getElementById('btn-name-random-ja');
-      if (btnJa && t.btn_random_japanese) btnJa.textContent = t.btn_random_japanese;
-      const btnWestern = document.getElementById('btn-name-random-western');
-      if (btnWestern && t.btn_random_western) btnWestern.textContent = t.btn_random_western;
-      const btnZh = document.getElementById('btn-name-random-zh');
-      if (btnZh && t.btn_random_chinese) btnZh.textContent = t.btn_random_chinese;
-      const btnKo = document.getElementById('btn-name-random-ko');
-      if (btnKo && t.btn_random_korean) btnKo.textContent = t.btn_random_korean;
-      const btnDefault = document.getElementById('btn-name-reset-default');
-      if (btnDefault && t.btn_reset_default_names) btnDefault.textContent = t.btn_reset_default_names;
+      if (nameModalH2 && (t.name_modal_title || t.name_settings_title)) nameModalH2.textContent = t.name_modal_title || t.name_settings_title;
+      const lblBulk = document.getElementById('lbl-toolbar-bulk');
+      if (lblBulk && t.name_modal_toolbar_bulk) lblBulk.textContent = t.name_modal_toolbar_bulk;
+      const lblExport = document.getElementById('lbl-toolbar-export');
+      if (lblExport && t.name_modal_toolbar_export) lblExport.textContent = t.name_modal_toolbar_export;
+      const lblGender = document.getElementById('lbl-toolbar-gender');
+      if (lblGender && t.name_modal_toolbar_gender) lblGender.textContent = t.name_modal_toolbar_gender;
+      const lblRandom = document.getElementById('lbl-toolbar-random');
+      if (lblRandom && t.name_modal_toolbar_random) lblRandom.textContent = t.name_modal_toolbar_random;
+      const lblSet = document.getElementById('lbl-toolbar-set');
+      if (lblSet && t.name_modal_toolbar_set) lblSet.textContent = t.name_modal_toolbar_set;
+      const lblDefault = document.getElementById('lbl-toolbar-default');
+      if (lblDefault && t.name_modal_toolbar_default) lblDefault.textContent = t.name_modal_toolbar_default;
+      const lblReading = document.getElementById('lbl-toggle-reading');
+      if (lblReading && t.name_modal_toggle_reading) lblReading.textContent = t.name_modal_toggle_reading;
       const nameModalCancel = document.querySelector('#name-settings-modal .modal-footer .btn-secondary');
       if (nameModalCancel && t.btn_cancel) nameModalCancel.textContent = t.btn_cancel;
       const nameModalSave = document.querySelector('#name-settings-modal .modal-footer .btn-primary');
@@ -8815,6 +9229,16 @@ ${speakerName}の発言:`;
 
     let playerCustomGenders = { ...DEFAULT_CHAR_GENDERS };
 
+    const DEFAULT_CHAR_READINGS = {
+      'A':'', 'B':'', 'C':'', 'D':'', 'E':'',
+      'F':'', 'G':'', 'H':'', 'I':'', 'J':'',
+      'K':'', 'L':'', 'M':'', 'N':'', 'O':'',
+      'P':'', 'Q':'', 'R':'', 'S':'', 'T':'',
+      'U':'', 'V':'', 'W':'', 'X':'', 'Y':'',
+      'Z':'', 'AA':'', 'BB':'', 'CC':'', 'DD':''
+    };
+    let playerCustomReadings = { ...DEFAULT_CHAR_READINGS };
+
     function loadSettings() {
       const savedBgm = localStorage.getItem('jinnrou_bgmVolume');
       const savedSe = localStorage.getItem('jinnrou_seVolume');
@@ -8824,6 +9248,10 @@ ${speakerName}の発言:`;
       const savedGenders = localStorage.getItem('custom_player_genders');
       if (savedGenders) {
         try { playerCustomGenders = Object.assign({}, DEFAULT_CHAR_GENDERS, JSON.parse(savedGenders)); } catch(e) {}
+      }
+      const savedReadings = localStorage.getItem('custom_player_readings');
+      if (savedReadings) {
+        try { playerCustomReadings = Object.assign({}, DEFAULT_CHAR_READINGS, JSON.parse(savedReadings)); } catch(e) {}
       }
 
       // 言語設定の初期化・読み込み
@@ -9041,6 +9469,7 @@ ${speakerName}の発言:`;
       localStorage.setItem('jinnrou_discussionTime', discussionTimeSetting);
       localStorage.setItem('custom_player_names', JSON.stringify(playerCustomNames));
       localStorage.setItem('custom_player_genders', JSON.stringify(playerCustomGenders));
+      localStorage.setItem('custom_player_readings', JSON.stringify(playerCustomReadings));
     }
 
     // アルファベットID（A〜DD）からカスタム表示名（例: 「村人A」「Villager A」または「アリス」）を取得
@@ -9087,64 +9516,740 @@ ${speakerName}の発言:`;
       }
     }
 
+    // HTMLエスケープユーティリティ
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     // 名前カスタマイズモーダルの操作ロジック
-    function openNameModal() {
-      const container = document.getElementById('name-input-list');
-      if (!container) return;
-      container.innerHTML = '';
+    let _showReadingInputs = false;
+    let _activeNameSubPanel = null;
+
+    // パネル開閉
+    function toggleNameSubPanel(panelType) {
+      const panels = ['bulk', 'export', 'gender', 'random', 'set'];
+      const buttons = {
+        bulk: 'btn-toolbar-bulk',
+        export: 'btn-toolbar-export',
+        gender: 'btn-toolbar-gender',
+        random: 'btn-toolbar-random',
+        set: 'btn-toolbar-set'
+      };
+
+      if (_activeNameSubPanel === panelType || !panelType) {
+        // すべて閉じる
+        panels.forEach(p => {
+          const el = document.getElementById(p === 'random' ? 'name-random-dropdown' : `name-panel-${p}`);
+          if (el) el.classList.add('hidden');
+          const btn = document.getElementById(buttons[p]);
+          if (btn) btn.classList.remove('active');
+        });
+        _activeNameSubPanel = null;
+        return;
+      }
+
+      // 指定パネルのみ開く
+      panels.forEach(p => {
+        const el = document.getElementById(p === 'random' ? 'name-random-dropdown' : `name-panel-${p}`);
+        const btn = document.getElementById(buttons[p]);
+        if (p === panelType) {
+          if (el) el.classList.remove('hidden');
+          if (btn) btn.classList.add('active');
+        } else {
+          if (el) el.classList.add('hidden');
+          if (btn) btn.classList.remove('active');
+        }
+      });
+      _activeNameSubPanel = panelType;
+
+      if (panelType === 'bulk') {
+        updateBulkPreview();
+      } else if (panelType === 'set') {
+        renderNameSetList();
+      }
+    }
+
+    // よみ入力欄の表示/非表示切替
+    function toggleReadingInputs(show) {
+      _showReadingInputs = show;
+      const readingRows = document.querySelectorAll('.name-reading-row');
+      readingRows.forEach(row => {
+        if (show) row.classList.remove('hidden');
+        else row.classList.add('hidden');
+      });
+    }
+
+    // 音声試聴ボタン（名前/よみ）
+    function previewSingleCharVoice(key) {
+      const nameInput = document.getElementById(`name-input-${key}`);
+      const readingInput = document.getElementById(`reading-input-${key}`);
+      const genderSelect = document.getElementById(`gender-select-${key}`);
+
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      const readingVal = readingInput ? readingInput.value.trim() : '';
+      const textToSpeak = readingVal || nameVal || getDefaultCharName(key);
+
+      const gender = (genderSelect && genderSelect.value !== 'any') ? genderSelect.value : 'female';
       const lang = currentAppLanguage || 'ja';
 
-      CHAR_NAMES_20.forEach(key => {
-        const row = document.createElement('div');
-        row.className = 'name-input-row';
-        const currentName = playerCustomNames[key];
-        const displayVal = (currentName && !/^村人[A-Z]+$/.test(currentName) && !/^村民[A-Z]+$/.test(currentName) && !/^주민[A-Z]+$/.test(currentName) && !/^Villager\s+[A-Z]+$/i.test(currentName))
-          ? currentName
-          : getDefaultCharName(key, lang);
+      if (!('speechSynthesis' in window)) return;
+      cancelSpeech();
 
-        const curGender = playerCustomGenders[key] || 'any';
-        row.innerHTML = `
-          <label style="min-width:48px;">ID ${key}:</label>
-          <input type="text" id="name-input-${key}" value="${displayVal}" maxlength="14" style="flex:1;">
-          <select id="gender-select-${key}" class="setting-select" style="width:90px; padding:0.3rem 0.2rem; font-size:0.75rem; margin-left:0.4rem;">
-            <option value="any" ${curGender === 'any' ? 'selected' : ''}>おまかせ</option>
-            <option value="male" ${curGender === 'male' ? 'selected' : ''}>👨 男性</option>
-            <option value="female" ${curGender === 'female' ? 'selected' : ''}>👩 女性</option>
-          </select>
-        `;
-        container.appendChild(row);
-      });
+      const dummyProfile = {
+        gender: gender,
+        slot: 0,
+        pitchOffset: 0,
+        rateOffset: 0,
+        ageGroup: 'adult'
+      };
+      const params = buildCharUtteranceParams(dummyProfile, lang);
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = LANG_LOCALE_MAP[lang] || 'ja-JP';
+      utterance.pitch = params.pitch;
+      utterance.rate = params.rate;
+      utterance.volume = Math.max(0, Math.min(1, voiceVolume / 100));
+      if (params.voice) utterance.voice = params.voice;
+      window.speechSynthesis.speak(utterance);
+    }
 
-      openModal('name-settings-modal');
+    // モーダルオープン
+    function openNameModal() {
+      try {
+        const container = document.getElementById('name-input-list');
+        if (!container) return;
+        container.innerHTML = '';
+        const lang = currentAppLanguage || 'ja';
+
+        // 開始位置セレクトボックスの初期化
+        const startPosSelect = document.getElementById('bulk-start-pos');
+        if (startPosSelect) {
+          startPosSelect.innerHTML = '';
+          CHAR_NAMES_20.forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = `ID ${k}`;
+            startPosSelect.appendChild(opt);
+          });
+        }
+
+        // よみチェックボックスの状態同期
+        const toggleCheck = document.getElementById('toggle-reading-inputs');
+        if (toggleCheck) toggleCheck.checked = _showReadingInputs;
+
+        CHAR_NAMES_20.forEach(key => {
+          const row = document.createElement('div');
+          row.className = 'name-input-row';
+          const currentName = playerCustomNames[key];
+          const displayVal = (currentName && !/^村人[A-Z]+$/.test(currentName) && !/^村民[A-Z]+$/.test(currentName) && !/^주민[A-Z]+$/.test(currentName) && !/^Villager\s+[A-Z]+$/i.test(currentName))
+            ? currentName
+            : getDefaultCharName(key, lang);
+
+          const curGender = playerCustomGenders[key] || 'any';
+          const curReading = playerCustomReadings[key] || '';
+
+          row.innerHTML = `
+            <div class="name-row-header">
+              <label>ID ${key}</label>
+              <button type="button" class="name-preview-voice-btn" onclick="previewSingleCharVoice('${key}')" title="音声で試聴">
+                ▶ 試聴
+              </button>
+            </div>
+            <div class="name-row-fields">
+              <input type="text" id="name-input-${key}" value="${escapeHtml(displayVal)}" maxlength="16" placeholder="名前">
+              <select id="gender-select-${key}" class="setting-select">
+                <option value="any" ${curGender === 'any' ? 'selected' : ''}>おまかせ</option>
+                <option value="male" ${curGender === 'male' ? 'selected' : ''}>👨 男</option>
+                <option value="female" ${curGender === 'female' ? 'selected' : ''}>👩 女</option>
+              </select>
+            </div>
+            <div class="name-reading-row ${_showReadingInputs ? '' : 'hidden'}" id="reading-row-${key}">
+              <span style="font-size:0.7rem; color:#93c5fd; white-space:nowrap;">よみ:</span>
+              <input type="text" id="reading-input-${key}" value="${escapeHtml(curReading)}" maxlength="20" placeholder="ひらがな/カタカナ">
+            </div>
+          `;
+          container.appendChild(row);
+        });
+
+        toggleNameSubPanel(null);
+        openModal('name-settings-modal');
+      } catch (err) {
+        console.error('openNameModal error:', err);
+        // フォールバックでモーダル自体は必ず開く
+        openModal('name-settings-modal');
+      }
     }
 
     function closeNameModal() {
+      toggleNameSubPanel(null);
       closeModal('name-settings-modal');
     }
 
-    function saveCustomNames() {
-      const lang = currentAppLanguage || 'ja';
-      CHAR_NAMES_20.forEach(key => {
-        const input = document.getElementById(`name-input-${key}`);
-        if (input) {
-          const val = input.value.trim();
-          playerCustomNames[key] = val || getDefaultCharName(key, lang);
+    // 文字列のサニタイズ（全角8文字 / 半角16文字換算、絵文字・タグ除去）
+    function sanitizeCustomName(str) {
+      if (!str) return '';
+      // HTMLタグ除去
+      let s = str.replace(/<[^>]*>/g, '');
+      // 絵文字・制御文字除去
+      s = s.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|\uFE0F|[\u200D\u200C]/g, '');
+      // 前後空白・全角スペーストリム
+      s = s.replace(/^[\s　]+|[\s　]+$/g, '');
+
+      // 長さ制限: 全角=2、半角=1として計算し合計16（全角8文字相当）で切り詰め
+      let totalLen = 0;
+      let cutIndex = s.length;
+      for (let i = 0; i < s.length; i++) {
+        const code = s.charCodeAt(i);
+        const charLen = (code >= 0x00 && code <= 0x7E) || (code >= 0xFF61 && code <= 0xFF9F) ? 1 : 2;
+        if (totalLen + charLen > 16) {
+          cutIndex = i;
+          break;
         }
-        const gSelect = document.getElementById(`gender-select-${key}`);
-        if (gSelect) {
-          const oldGender = playerCustomGenders[key] || 'any';
-          const newGender = gSelect.value;
-          playerCustomGenders[key] = newGender;
-          // 性別が変更された場合のみ顔を再抽選
-          if (oldGender !== newGender && gameState && gameState.charFaces && gameState.charFaces[key]) {
-            reassignSingleCharFace(key, newGender);
+        totalLen += charLen;
+      }
+      return s.slice(0, cutIndex);
+    }
+
+    // よみのサニタイズ（ひらがな・カタカナ・長音のみ）
+    function sanitizeCustomReading(str) {
+      if (!str) return '';
+      // ひらがな(\u3040-\u309F)、カタカナ(\u30A0-\u30FF)、長音符(\u30FC)のみ許可
+      return str.replace(/[^\u3040-\u309F\u30A0-\u30FF\u30FC]/g, '').trim();
+    }
+
+    // 性別のパース
+    function parseCustomGender(str) {
+      if (!str) return 'any';
+      const s = str.trim().toLowerCase();
+      if (s === '男' || s === 'male' || s === 'm') return 'male';
+      if (s === '女' || s === 'female' || s === 'f') return 'female';
+      return 'any';
+    }
+
+    // 一括入力テキストのパース
+    function parseBulkInputLines(text) {
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      const results = [];
+      const warnings = [];
+
+      lines.forEach((line, idx) => {
+        // カンマまたはタブ区切り
+        const parts = line.split(/[,，\t]/).map(p => p.trim());
+        const rawName = parts[0] || '';
+        const rawGender = parts[1] || '';
+        const rawReading = parts[2] || '';
+
+        const cleanName = sanitizeCustomName(rawName);
+        if (rawName && cleanName !== rawName) {
+          warnings.push(`行 ${idx + 1}: 名前「${rawName}」を整形・短縮して「${cleanName}」にしました`);
+        }
+
+        const cleanGender = parseCustomGender(rawGender);
+        const cleanReading = sanitizeCustomReading(rawReading);
+        if (rawReading && cleanReading !== rawReading) {
+          warnings.push(`行 ${idx + 1}: よみ「${rawReading}」から非対応文字を除去し「${cleanReading}」にしました`);
+        }
+
+        if (cleanName) {
+          results.push({
+            name: cleanName,
+            gender: cleanGender,
+            reading: cleanReading
+          });
+        }
+      });
+
+      if (results.length > 30) {
+        warnings.unshift(`⚠️ 入力が${results.length}人分あります。村人最大数（30人）を超える余り${results.length - 30}人分は反映されません。`);
+      }
+
+      return { items: results, warnings };
+    }
+
+    // 一括入力プレビュー更新
+    function updateBulkPreview() {
+      const textarea = document.getElementById('bulk-name-textarea');
+      const previewBox = document.getElementById('bulk-preview-container');
+      const warnBox = document.getElementById('bulk-warning-box');
+      const startKey = document.getElementById('bulk-start-pos') ? document.getElementById('bulk-start-pos').value : 'A';
+      const order = document.getElementById('bulk-assign-order') ? document.getElementById('bulk-assign-order').value : 'sequential';
+
+      if (!textarea || !previewBox) return;
+
+      const { items, warnings } = parseBulkInputLines(textarea.value);
+
+      if (warnings.length > 0 && warnBox) {
+        warnBox.innerHTML = warnings.slice(0, 5).join('<br>') + (warnings.length > 5 ? `<br>他 ${warnings.length - 5} 件の警告` : '');
+        warnBox.style.display = 'block';
+      } else if (warnBox) {
+        warnBox.style.display = 'none';
+      }
+
+      if (items.length === 0) {
+        previewBox.innerHTML = '<span style="color:var(--text-muted);">テキストを入力してください</span>';
+        return;
+      }
+
+      let assignItems = [...items];
+      if (order === 'shuffle') {
+        assignItems.sort(() => Math.random() - 0.5);
+      }
+
+      const startIndex = CHAR_NAMES_20.indexOf(startKey);
+      let html = '<table style="width:100%; border-collapse:collapse; font-size:0.75rem;">';
+      html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.2); color:var(--accent-amber); text-align:left;"><th>ID</th><th>反映される名前</th><th>性別</th><th>よみ</th></tr>';
+
+      let appliedCount = 0;
+      for (let i = 0; i < assignItems.length; i++) {
+        const targetIdx = startIndex + i;
+        if (targetIdx >= CHAR_NAMES_20.length) break;
+        const key = CHAR_NAMES_20[targetIdx];
+        const item = assignItems[i];
+        const gLabel = item.gender === 'male' ? '👨 男' : (item.gender === 'female' ? '👩 女' : 'おまかせ');
+        html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.06); background:rgba(37,99,235,0.1);">
+          <td style="padding:0.2rem 0.4rem; font-weight:bold; color:var(--accent-gold);">ID ${key}</td>
+          <td style="padding:0.2rem 0.4rem; color:#fff;">${escapeHtml(item.name)}</td>
+          <td style="padding:0.2rem 0.4rem;">${gLabel}</td>
+          <td style="padding:0.2rem 0.4rem; color:#93c5fd;">${escapeHtml(item.reading || '-')}</td>
+        </tr>`;
+        appliedCount++;
+      }
+      html += '</table>';
+      html += `<div style="margin-top:0.3rem; color:var(--text-muted); font-size:0.7rem;">反映対象: ${appliedCount}人分 (ID ${startKey} から順に割り当て)</div>`;
+
+      previewBox.innerHTML = html;
+    }
+
+    // 一括入力を一覧に適用
+    function applyBulkInput() {
+      const textarea = document.getElementById('bulk-name-textarea');
+      const startKey = document.getElementById('bulk-start-pos') ? document.getElementById('bulk-start-pos').value : 'A';
+      const order = document.getElementById('bulk-assign-order') ? document.getElementById('bulk-assign-order').value : 'sequential';
+      if (!textarea) return;
+
+      const { items } = parseBulkInputLines(textarea.value);
+      if (items.length === 0) {
+        alert('入力された名前がありません');
+        return;
+      }
+
+      let assignItems = [...items];
+      if (order === 'shuffle') {
+        assignItems.sort(() => Math.random() - 0.5);
+      }
+
+      const startIndex = CHAR_NAMES_20.indexOf(startKey);
+      let count = 0;
+      for (let i = 0; i < assignItems.length; i++) {
+        const targetIdx = startIndex + i;
+        if (targetIdx >= CHAR_NAMES_20.length) break;
+        const key = CHAR_NAMES_20[targetIdx];
+        const item = assignItems[i];
+
+        const nameInp = document.getElementById(`name-input-${key}`);
+        if (nameInp) nameInp.value = item.name;
+
+        const genSel = document.getElementById(`gender-select-${key}`);
+        if (genSel) genSel.value = item.gender;
+
+        const readInp = document.getElementById(`reading-input-${key}`);
+        if (readInp) readInp.value = item.reading;
+
+        count++;
+      }
+
+      toggleNameSubPanel(null);
+    }
+
+    // 名前の書き出し（エクスポート）
+    function exportCurrentNames() {
+      const lines = [];
+      CHAR_NAMES_20.forEach(key => {
+        const nameInp = document.getElementById(`name-input-${key}`);
+        const genSel = document.getElementById(`gender-select-${key}`);
+        const readInp = document.getElementById(`reading-input-${key}`);
+
+        const name = nameInp ? nameInp.value.trim() : (playerCustomNames[key] || '');
+        const gender = genSel ? genSel.value : (playerCustomGenders[key] || 'any');
+        const reading = readInp ? readInp.value.trim() : (playerCustomReadings[key] || '');
+
+        const gStr = gender === 'male' ? '男' : (gender === 'female' ? '女' : '');
+        if (reading) {
+          lines.push(`${name},${gStr || 'おまかせ'},${reading}`);
+        } else if (gStr) {
+          lines.push(`${name},${gStr}`);
+        } else {
+          lines.push(`${name}`);
+        }
+      });
+
+      const exportText = lines.join('\n');
+      const textarea = document.getElementById('export-name-textarea');
+      if (textarea) textarea.value = exportText;
+
+      toggleNameSubPanel('export');
+
+      // クリップボードへ自動コピーを試行
+      copyExportedText();
+    }
+
+    // クリップボードコピー
+    function copyExportedText() {
+      const textarea = document.getElementById('export-name-textarea');
+      const msg = document.getElementById('export-status-msg');
+      if (!textarea) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          if (msg) {
+            msg.textContent = '✅ クリップボードにコピーしました！';
+            msg.style.color = '#4ade80';
           }
+        }).catch(() => {
+          if (msg) {
+            msg.textContent = 'テキストを選択してコピーしてください。';
+            msg.style.color = '#facc15';
+          }
+        });
+      } else {
+        textarea.select();
+        if (msg) {
+          msg.textContent = 'テキストを選択しました。Ctrl+C (Cmd+C) でコピーしてください。';
+          msg.style.color = '#facc15';
+        }
+      }
+    }
+
+    // 性別の一括設定
+    function applyBulkGenderSetting() {
+      const mode = document.getElementById('bulk-gender-mode') ? document.getElementById('bulk-gender-mode').value : 'any';
+      const range = document.getElementById('bulk-gender-range') ? document.getElementById('bulk-gender-range').value : 'all';
+
+      const maxCount = (range === 'current' && gameState && gameState.charList) ? gameState.charList.length : CHAR_NAMES_20.length;
+
+      for (let i = 0; i < maxCount; i++) {
+        const key = CHAR_NAMES_20[i];
+        const gSelect = document.getElementById(`gender-select-${key}`);
+        if (!gSelect) continue;
+
+        if (mode === 'any') {
+          gSelect.value = 'any';
+        } else if (mode === 'male') {
+          gSelect.value = 'male';
+        } else if (mode === 'female') {
+          gSelect.value = 'female';
+        } else if (mode === 'alternate') {
+          gSelect.value = (i % 2 === 0) ? 'male' : 'female';
+        } else if (mode === 'random') {
+          gSelect.value = (Math.random() < 0.5) ? 'male' : 'female';
+        }
+      }
+
+      toggleNameSubPanel(null);
+    }
+
+    // 名前セット管理 (localStorage: custom_name_sets)
+    function getNameSets() {
+      try {
+        const data = localStorage.getItem('custom_name_sets');
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveNameSets(sets) {
+      try {
+        localStorage.setItem('custom_name_sets', JSON.stringify(sets));
+        return true;
+      } catch (e) {
+        alert('⚠️ 保存容量（Quota）の上限を超えたため保存できませんでした。不要なセットを削除してください。');
+        return false;
+      }
+    }
+
+    function renderNameSetList() {
+      const container = document.getElementById('name-set-list-container');
+      if (!container) return;
+      const sets = getNameSets();
+
+      if (sets.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-muted); padding:0.4rem;">保存された名前セットはありません</span>';
+        return;
+      }
+
+      let html = '';
+      sets.forEach((set, idx) => {
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(30,41,59,0.7); padding:0.35rem 0.5rem; border-radius:4px; font-size:0.75rem;">
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">
+              <span style="font-weight:bold; color:#fff;">${escapeHtml(set.name)}</span>
+              <span style="color:var(--text-muted); font-size:0.7rem; margin-left:0.3rem;">(${new Date(set.savedAt).toLocaleDateString()})</span>
+            </div>
+            <div style="display:flex; gap:0.3rem; flex-shrink:0;">
+              <button class="btn btn-secondary" style="font-size:0.7rem; padding:0.15rem 0.4rem;" onclick="loadNameSet(${idx})">呼び出し</button>
+              <button class="btn btn-secondary" style="font-size:0.7rem; padding:0.15rem 0.4rem;" onclick="deleteNameSet(${idx})"><span style="color:#f87171;">削除</span></button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function saveCurrentToNameSet() {
+      const titleInput = document.getElementById('name-set-title-input');
+      const title = titleInput ? titleInput.value.trim() : '';
+      if (!title) {
+        alert('セット名を入力してください');
+        return;
+      }
+
+      const sets = getNameSets();
+      if (sets.length >= 20) {
+        alert('名前セットは最大20個まで保存できます。不要なセットを削除してください。');
+        return;
+      }
+
+      const currentNames = {};
+      const currentGenders = {};
+      const currentReadings = {};
+
+      CHAR_NAMES_20.forEach(key => {
+        const nInp = document.getElementById(`name-input-${key}`);
+        const gSel = document.getElementById(`gender-select-${key}`);
+        const rInp = document.getElementById(`reading-input-${key}`);
+
+        if (nInp) currentNames[key] = nInp.value.trim();
+        if (gSel) currentGenders[key] = gSel.value;
+        if (rInp) currentReadings[key] = rInp.value.trim();
+      });
+
+      // 既存同名セットがある場合は上書き確認
+      const existingIdx = sets.findIndex(s => s.name === title);
+      const newEntry = {
+        name: title,
+        names: currentNames,
+        genders: currentGenders,
+        readings: currentReadings,
+        savedAt: Date.now()
+      };
+
+      if (existingIdx >= 0) {
+        if (!confirm(`同名のセット「${title}」が存在します。上書きしますか？`)) {
+          return;
+        }
+        sets[existingIdx] = newEntry;
+      } else {
+        sets.unshift(newEntry);
+      }
+
+      if (saveNameSets(sets)) {
+        if (titleInput) titleInput.value = '';
+        renderNameSetList();
+      }
+    }
+
+    function loadNameSet(index) {
+      const sets = getNameSets();
+      const set = sets[index];
+      if (!set) return;
+
+      CHAR_NAMES_20.forEach(key => {
+        const nInp = document.getElementById(`name-input-${key}`);
+        const gSel = document.getElementById(`gender-select-${key}`);
+        const rInp = document.getElementById(`reading-input-${key}`);
+
+        if (nInp && set.names && set.names[key] !== undefined) {
+          nInp.value = set.names[key];
+        }
+        if (gSel && set.genders && set.genders[key] !== undefined) {
+          gSel.value = set.genders[key];
+        }
+        if (rInp && set.readings && set.readings[key] !== undefined) {
+          rInp.value = set.readings[key];
+        }
+      });
+
+      toggleNameSubPanel(null);
+    }
+
+    function deleteNameSet(index) {
+      const sets = getNameSets();
+      const set = sets[index];
+      if (!set) return;
+
+      if (!confirm(`名前セット「${set.name}」を削除しますか？`)) return;
+
+      sets.splice(index, 1);
+      saveNameSets(sets);
+      renderNameSetList();
+    }
+
+    // ファイルインポート (.txt / .csv, UTF-8 -> U+FFFD で Shift_JIS 再読み込み)
+    function handleNameFileImport(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const encInfo = document.getElementById('name-file-encoding-info');
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const buffer = e.target.result;
+        let detected = 'UTF-8';
+        let text = '';
+
+        try {
+          const utf8Decoder = new TextDecoder('utf-8', { fatal: false });
+          text = utf8Decoder.decode(buffer);
+
+          // 置換文字 U+FFFD が含まれる場合は Shift_JIS で再デコード
+          if (text.includes('\uFFFD')) {
+            try {
+              const sjisDecoder = new TextDecoder('shift-jis', { fatal: false });
+              text = sjisDecoder.decode(buffer);
+              detected = 'Shift_JIS';
+            } catch (err) {
+              console.warn('Shift_JIS decode fallback failed:', err);
+            }
+          }
+        } catch (err) {
+          console.warn('UTF-8 decode failed:', err);
+        }
+
+        if (encInfo) {
+          encInfo.textContent = `[文字コード: ${detected}]`;
+        }
+
+        const bulkTextarea = document.getElementById('bulk-name-textarea');
+        if (bulkTextarea) {
+          bulkTextarea.value = text;
+        }
+
+        // 一括入力パネルを開いてプレビューを更新
+        toggleNameSubPanel('bulk');
+        updateBulkPreview();
+
+        // inputをリセット
+        event.target.value = '';
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    // 重複検査と保存実行
+    let _pendingNamesToSave = null;
+    let _pendingGendersToSave = null;
+    let _pendingReadingsToSave = null;
+
+    function validateAndSaveCustomNames() {
+      const lang = currentAppLanguage || 'ja';
+      const names = {};
+      const genders = {};
+      const readings = {};
+      const nameCounts = new Map();
+      const duplicateNames = new Set();
+
+      CHAR_NAMES_20.forEach(key => {
+        const nInp = document.getElementById(`name-input-${key}`);
+        const gSel = document.getElementById(`gender-select-${key}`);
+        const rInp = document.getElementById(`reading-input-${key}`);
+
+        let val = nInp ? nInp.value.trim() : '';
+        if (!val) {
+          val = getDefaultCharName(key, lang);
+        } else {
+          val = sanitizeCustomName(val);
+        }
+        names[key] = val;
+
+        const gVal = gSel ? gSel.value : 'any';
+        genders[key] = gVal;
+
+        const rVal = rInp ? sanitizeCustomReading(rInp.value) : '';
+        readings[key] = rVal;
+
+        // 重複チェック
+        const count = nameCounts.get(val) || 0;
+        nameCounts.set(val, count + 1);
+        if (count >= 1) {
+          duplicateNames.add(val);
+        }
+      });
+
+      _pendingNamesToSave = names;
+      _pendingGendersToSave = genders;
+      _pendingReadingsToSave = readings;
+
+      if (duplicateNames.size > 0) {
+        // 重複警告モーダルを表示
+        const msgEl = document.getElementById('name-duplicate-msg');
+        const listEl = document.getElementById('name-duplicate-list');
+        if (msgEl) {
+          msgEl.innerHTML = `⚠️ <b>${duplicateNames.size}個の名前が重複しています。</b><br>重複したままだと議論や投票で混乱する恐れがあります。`;
+        }
+        if (listEl) {
+          let listHtml = '<ul>';
+          duplicateNames.forEach(name => {
+            const keys = CHAR_NAMES_20.filter(k => names[k] === name);
+            listHtml += `<li><b>${escapeHtml(name)}</b> (ID: ${keys.join(', ')})</li>`;
+          });
+          listHtml += '</ul>';
+          listEl.innerHTML = listHtml;
+        }
+        openModal('name-duplicate-modal');
+        return;
+      }
+
+      // 重複なし → そのまま保存
+      executeSaveCustomNames(names, genders, readings);
+    }
+
+    // 重複名に自動で番号を付けて保存
+    function resolveDuplicatesWithNumbers() {
+      closeModal('name-duplicate-modal');
+      if (!_pendingNamesToSave) return;
+
+      const seenCounts = new Map();
+      const resolvedNames = {};
+
+      CHAR_NAMES_20.forEach(key => {
+        const originalName = _pendingNamesToSave[key];
+        const count = seenCounts.get(originalName) || 0;
+        seenCounts.set(originalName, count + 1);
+
+        if (count > 0) {
+          resolvedNames[key] = `${originalName}${count + 1}`;
+        } else {
+          resolvedNames[key] = originalName;
+        }
+      });
+
+      executeSaveCustomNames(resolvedNames, _pendingGendersToSave, _pendingReadingsToSave);
+    }
+
+    // 実際の保存処理
+    function executeSaveCustomNames(names, genders, readings) {
+      CHAR_NAMES_20.forEach(key => {
+        playerCustomNames[key] = names[key];
+        const oldGender = playerCustomGenders[key] || 'any';
+        const newGender = genders[key] || 'any';
+        playerCustomGenders[key] = newGender;
+        playerCustomReadings[key] = readings[key] || '';
+
+        // 性別が変更された場合のみ顔を再抽選
+        if (oldGender !== newGender && gameState && gameState.charFaces && gameState.charFaces[key]) {
+          reassignSingleCharFace(key, newGender);
         }
       });
 
       saveSettings();
       closeNameModal();
-      updateNameSettingStatus(); // ラベルの設定内容表示を更新
+      updateNameSettingStatus();
 
       // ゲーム画面の表示を一括更新
       if (typeof renderCharacters === 'function') renderCharacters();
@@ -9152,6 +10257,10 @@ ${speakerName}の発言:`;
       if (typeof renderBulletinBoard === 'function') renderBulletinBoard();
       if (typeof renderMorningCommentsBox === 'function') renderMorningCommentsBox();
       if (typeof renderVoteHistoryPage === 'function') renderVoteHistoryPage();
+    }
+
+    function saveCustomNames() {
+      validateAndSaveCustomNames();
     }
 
     // 名前設定ステータス表示を更新する関数
@@ -9236,7 +10345,16 @@ ${speakerName}の発言:`;
         if (input) {
           input.value = getDefaultCharName(key, lang);
         }
+        const gSelect = document.getElementById(`gender-select-${key}`);
+        if (gSelect) {
+          gSelect.value = 'any';
+        }
+        const rInput = document.getElementById(`reading-input-${key}`);
+        if (rInput) {
+          rInput.value = '';
+        }
       });
+      toggleNameSubPanel(null);
     }
 
     function updateDiscussionTimeSetting(val) {
@@ -9303,12 +10421,6 @@ ${speakerName}の発言:`;
         syncFullscreenToggleUI();
       }
       openModal('settings-modal');
-      // 点滅設定の初期値を反映
-      const _blinkToggle = document.getElementById('speak-blink-toggle');
-      if (_blinkToggle) {
-        const _savedBlink = localStorage.getItem('jinnrou_speakBlink');
-        _blinkToggle.value = (_savedBlink === 'false') ? 'false' : 'true';
-      }
       // 会話AIモードの初期値を反映
       const _aiToggle = document.getElementById('ai-mode-toggle');
       if (_aiToggle) {
@@ -9984,6 +11096,40 @@ ${speakerName}の発言:`;
 
 
 
+    // 読み上げ用の村人名→よみ一括置換（長い名前優先、ひらがな・カタカナ・長音のみ）
+    function applyAllCharReadingsToText(text) {
+      if (!text || typeof text !== 'string' || !playerCustomReadings) return text;
+
+      // よみが登録されている村人一覧を抽出
+      const pairs = [];
+      const charKeys = (typeof CHAR_NAMES_20 !== 'undefined') ? CHAR_NAMES_20 : Object.keys(playerCustomReadings);
+      charKeys.forEach(key => {
+        const reading = playerCustomReadings[key];
+        if (reading && reading.trim()) {
+          const cleanReading = (typeof sanitizeCustomReading === 'function') 
+            ? sanitizeCustomReading(reading) 
+            : reading.replace(/[^\u3040-\u309F\u30A0-\u30FF\u30FC]/g, '').trim();
+          if (cleanReading) {
+            const name = (typeof getCharDisplayName === 'function') ? getCharDisplayName(key) : playerCustomNames[key];
+            if (name && name !== cleanReading) {
+              pairs.push({ name: name, reading: cleanReading });
+            }
+          }
+        }
+      });
+
+      // 長い名前から順にソート（「みおしゃ」→「みお」のように包含関係にある名前の誤置換を防止）
+      pairs.sort((a, b) => b.name.length - a.name.length);
+
+      let res = text;
+      pairs.forEach(pair => {
+        if (res.includes(pair.name)) {
+          res = res.split(pair.name).join(pair.reading);
+        }
+      });
+      return res;
+    }
+
     // Synchronous Speech Promise Function: Supports AndroidHost.speak + Web Speech API Fallback
     async function playSpeechAsync(text, voiceProfileKey = 'NARRATOR') {
       // 声一覧の準備完了を待つ（最大2秒）
@@ -10005,7 +11151,10 @@ ${speakerName}の発言:`;
           return;
         }
 
-        const processedText = formatTextForSpeech(text);
+        let processedText = formatTextForSpeech(text);
+        // 全村人の名前を「よみ」に置換（文中の名前すべて対象）
+        processedText = applyAllCharReadingsToText(processedText);
+
         if (!processedText) {
           resolve();
           return;
@@ -11567,6 +12716,11 @@ const SHOP_ROLE_DEFS = [
           recordDiscussionSpeechActivity();
         } else {
           recordDiscussionSpeechActivity();
+        }
+
+        // 読み上げ完了（またはスキップ終了）時に発言中カードの枠を確実に解除
+        if (typeof setSpeakingCard === 'function') {
+          setSpeakingCard(null);
         }
 
         // 発言間に少し間を空ける（1.5秒）
@@ -14430,6 +15584,7 @@ const SHOP_ROLE_DEFS = [
       renderStatus();
       renderCharacters();
       selectCharacter(null);
+      if (typeof setSpeakingCard === 'function') setSpeakingCard(null);
 
       // ★ 初日開戦時のオートセーブ
       autoSaveCurrentGame();
@@ -14886,6 +16041,7 @@ const SHOP_ROLE_DEFS = [
       renderStatus();
       renderCharacters();
       selectCharacter(null);
+      if (typeof setSpeakingCard === 'function') setSpeakingCard(null);
 
       // ★ 毎朝開戦時のオートセーブ
       autoSaveCurrentGame();
@@ -14893,6 +16049,49 @@ const SHOP_ROLE_DEFS = [
       if (!gameState.gameOver) {
         startDiscussionTimer();
       }
+    }
+
+    // 【第5段階: 偽賢者自滅防止シミュレーター】
+    // 難易度（村人数）ごとの不成立黒出し許容確率: 5人村=25%, 7人村=10%, 9人村以上=0%
+    const BUSTED_BLACK_BLUNDER_RATES = {
+      5: 0.25,
+      7: 0.10
+    };
+
+    function shouldAvoidBustedFakeSeerResult(speakerChar, targetChar, proposedResult) {
+      if (proposedResult !== '人狼') return false; // 白出しは破綻要因にならない
+      if (typeof deriveScenarios !== 'function') return false;
+
+      const simState = {
+        roleDistribution: gameState.roleDistribution ? [...gameState.roleDistribution] : [],
+        revealedRoles: gameState.revealedRoles ? { ...gameState.revealedRoles } : {},
+        coRoles: gameState.coRoles ? { ...gameState.coRoles } : {},
+        seerHistory: {}
+      };
+
+      if (!simState.coRoles[speakerChar]) {
+        simState.coRoles[speakerChar] = 'seer';
+      }
+
+      Object.keys(gameState.seerHistory || {}).forEach(k => {
+        simState.seerHistory[k] = [...(gameState.seerHistory[k] || [])];
+      });
+      if (!simState.seerHistory[speakerChar]) simState.seerHistory[speakerChar] = [];
+      simState.seerHistory[speakerChar].push({ day: gameState.day, target: targetChar, result: proposedResult });
+
+      const simRes = deriveScenarios(simState);
+      const isMyScenarioBusted = simRes.scenarios.some(s => s.seer === speakerChar && !s.isPossible);
+
+      if (isMyScenarioBusted) {
+        const villageSize = (gameState.charList || []).length;
+        const blunderRate = (villageSize <= 5) ? (BUSTED_BLACK_BLUNDER_RATES[5] ?? 0.25)
+          : (villageSize <= 7) ? (BUSTED_BLACK_BLUNDER_RATES[7] ?? 0.10)
+          : 0.00;
+        if (Math.random() >= blunderRate) {
+          return true; // 自滅回避（白出しに変更）
+        }
+      }
+      return false;
     }
 
     // Ability Calculations & History Archive
@@ -14960,8 +16159,12 @@ const SHOP_ROLE_DEFS = [
               result = '人間'; // 囲い白
             } else if (nonWolves.length > 0) {
               target = pickRandom(nonWolves);
-              // 30%で黒打ちブラフ、70%で白出し信用稼ぎ
-              result = Math.random() < 0.3 ? '人狼' : '人間';
+              // 30%で黒打ちブラフ、70%で白出し信用稼ぎ（破綻シミュレーションによる自滅防止）
+              let proposed = Math.random() < 0.3 ? '人狼' : '人間';
+              if (proposed === '人狼' && shouldAvoidBustedFakeSeerResult(char, target, proposed)) {
+                proposed = '人間';
+              }
+              result = proposed;
             } else {
               target = candidates[0];
               result = '人間';
@@ -14971,8 +16174,12 @@ const SHOP_ROLE_DEFS = [
             // 偽賢者(魔教徒): グレー中心に占う（擬態モンスター誤黒出しを避けるため慎重）
             const greys = candidates.filter(c => !gameState.coRoles[c] || gameState.coRoles[c] === 'villager' || gameState.coRoles[c] === 'grey');
             target = greys.length > 0 ? pickRandom(greys) : pickRandom(candidates);
-            // 70%で白出し（狼囲いを狙う）、30%で村人黒打ち乱立
-            result = Math.random() < 0.3 ? '人狼' : '人間';
+            // 70%で白出し（狼囲いを狙う）、30%で村人黒打ち乱立（破綻シミュレーションによる自滅防止）
+            let proposed = Math.random() < 0.3 ? '人狼' : '人間';
+            if (proposed === '人狼' && shouldAvoidBustedFakeSeerResult(char, target, proposed)) {
+              proposed = '人間';
+            }
+            result = proposed;
           }
 
           // 真賢者が妖狐を占った場合：2日目以降の夜のみ呪殺（即死）が発生（初日は初夜・無犠牲のため発生させない）
@@ -15274,7 +16481,9 @@ const SHOP_ROLE_DEFS = [
             const formattedMsg = formatSpeechMessage(char, rawMsg);
             
             addLogItem(`💬 ${displayName}`, '', formattedMsg, 'ai-discussion', char, false);
+            if (typeof setSpeakingCard === 'function') setSpeakingCard(char);
             await playSpeechAsync(speakMsg, getCharVoiceProfileKey(char));
+            if (typeof setSpeakingCard === 'function') setSpeakingCard(null);
 
             // ★ 占い黒出し（魔物判定）時の即時反論・必死の弁明の最優先割り込み
             if (rep.result === '人狼' && gameState.status[rep.target] === 'alive') {
@@ -15302,7 +16511,9 @@ const SHOP_ROLE_DEFS = [
 
               lastAISpeaker = accused;
               addLogItem(`💬 ${accusedDisplayName}`, '', formattedRebuttal, 'ai-discussion', accused, false);
+              if (typeof setSpeakingCard === 'function') setSpeakingCard(accused);
               await playSpeechAsync(formattedRebuttal, getCharVoiceProfileKey(accused));
+              if (typeof setSpeakingCard === 'function') setSpeakingCard(null);
             }
           }
         } else if (coRole === 'medium') {
@@ -15316,7 +16527,9 @@ const SHOP_ROLE_DEFS = [
             const formattedMsg = formatSpeechMessage(char, rawMsg);
             
             addLogItem(`💬 ${displayName}`, '', formattedMsg, 'ai-discussion', char, false);
+            if (typeof setSpeakingCard === 'function') setSpeakingCard(char);
             await playSpeechAsync(speakMsg, getCharVoiceProfileKey(char));
+            if (typeof setSpeakingCard === 'function') setSpeakingCard(null);
           }
         }
       }
@@ -15605,7 +16818,10 @@ const SHOP_ROLE_DEFS = [
             if (requestedRole === 'seer' && (!gameState.seerHistory[char] || gameState.seerHistory[char].length === 0)) {
               const aliveOthers = gameState.charList.filter(c => c !== char && gameState.status[c] === 'alive');
               const target = pickRandom(aliveOthers) || 'A';
-              const fakeResult = (realRole === 'wolf') ? '人間' : pickRandom(['人間', '人狼']);
+              let fakeResult = (realRole === 'wolf') ? '人間' : pickRandom(['人間', '人狼']);
+              if (fakeResult === '人狼' && shouldAvoidBustedFakeSeerResult(char, target, fakeResult)) {
+                fakeResult = '人間';
+              }
               gameState.seerHistory[char] = [{ day: gameState.day, target, result: fakeResult }];
               gameState.dailySeerReports[char] = { day: gameState.day, target, result: fakeResult };
             } else if (requestedRole === 'medium' && (!gameState.mediumHistory[char] || gameState.mediumHistory[char].length === 0)) {
@@ -16447,7 +17663,10 @@ const SHOP_ROLE_DEFS = [
         if (fakeRole === 'seer' && (!gameState.seerHistory[speaker] || gameState.seerHistory[speaker].length === 0)) {
           const aliveOthers = gameState.charList.filter(c => c !== speaker && gameState.status[c] === 'alive');
           const target = pickRandom(aliveOthers) || 'A';
-          const fakeResult = (realRole === 'wolf') ? '人間' : pickRandom(['人間', '人狼']);
+          let fakeResult = (realRole === 'wolf') ? '人間' : pickRandom(['人間', '人狼']);
+          if (fakeResult === '人狼' && shouldAvoidBustedFakeSeerResult(speaker, target, fakeResult)) {
+            fakeResult = '人間';
+          }
           gameState.seerHistory[speaker] = [{ day: gameState.day, target, result: fakeResult }];
           gameState.dailySeerReports[speaker] = { day: gameState.day, target, result: fakeResult };
         } else if (fakeRole === 'medium' && (!gameState.mediumHistory[speaker] || gameState.mediumHistory[speaker].length === 0)) {
@@ -16833,73 +18052,81 @@ const SHOP_ROLE_DEFS = [
       return styled;
     }
 
-    // 第2層: 文型テンプレート定義 (PIPELINE_TEMPLATES)
+    // 第2層: 文型テンプレート定義 (PIPELINE_TEMPLATES: 第5段階 改修版)
     // ============================================================
-    // 第2層: 文型テンプレート定義 (PIPELINE_TEMPLATES)
-    // 【C-1, C-4, C-5仕様】
-    // 1. 本文から【指摘】等のラベルを完全排除 (C-4)
-    // 2. 「皆さん」や日和見まとめ発言等の禁止フレーズを完全排除 (C-5)
-    // 3. 各意図ごとに最低6種類のバリエーションを確保 (C-1)
+    // 【第5段階仕様】
+    // 1. 宣言プレフィックス（「その質問に答えよう」等）を完全廃止
+    // 2. 質問の型と回答の型（賢者立場、疑い理由、所感）を1対1で整合
+    // 3. 盤面推理（deriveScenarios / scenario_fact）に基づく文型を新設
+    // 4. 各意図ごとに最低8種類（断定・短文・疑問返し・感情）を確保
     // ============================================================
     const PIPELINE_TEMPLATES = {
       // ------------------------------------------------------------
-      // 1. accuse (事実ゲート通過時の追及・非難)
+      // 1. accuse (事実ゲート通過時の追及・非難: 最低8種)
       // ------------------------------------------------------------
       'accuse.logic_busted.01': {
-        ja: "{addr:target}の主張は客観的に破綻している。{evidence}という事実がある以上、これ以上の弁解は通らない。",
-        en: "The testimony of {addr:target} has completely broken down. Given that {evidence}, no further excuse can stand."
+        ja: "{evidence}という事実がある以上、{addr:target}の主張は筋が通らない。明確な説明を求める。",
+        en: "Given that {evidence}, {addr:target}'s claim does not hold up. I demand a clear explanation."
       },
       'accuse.logic_busted.02': {
-        ja: "客観的ログを直視すべきだ。{addr:target}の言動には明白な矛盾がある。{evidence}。疑う余地はない。",
-        en: "Look directly upon the objective logs. {addr:target} bears blatant contradiction: {evidence}. There is no room left for doubt."
+        ja: "客観的なログを確認すべきだ。{evidence}。{addr:target}、この食い違いはどう説明する？",
+        en: "Examine the objective logs. {evidence}. {addr:target}, how dost thou explain this discrepancy?"
       },
       'accuse.silence.01': {
-        ja: "{addr:target}、先ほどから発言が極端に少ない。沈黙を保ち続けても疑念が晴れることはないぞ。",
-        en: "{addr:target}, thou hast spoken remarkably little. Remaining silent will not dispel our doubts."
+        ja: "{addr:target}、先ほどから発言が極端に少ない。沈黙を保ち続けても疑念は深まるばかりだぞ。",
+        en: "{addr:target}, thou hast spoken remarkably little. Remaining silent will only deepen suspicion."
       },
       'accuse.silence.02': {
-        ja: "周りの出方を伺うだけで自ら推理を語らない{addr:target}の姿勢、潜伏する魔物の動きそのものに見える。",
+        ja: "周りの出方を伺うだけで自ら推理を語らない{addr:target}の姿勢、潜伏する魔物の動きに見える。",
         en: "Merely observing the discussion without sharing thy own reasoning, {addr:target}, looks like the conduct of a lurking beast."
       },
       'accuse.silence.03': {
-        ja: "{addr:target}、沈黙を貫くことで追及の矛先をやり過ごそうとしていないか？今こそ明確な見解を示すべきだ。",
-        en: "{addr:target}, art thou staying silent merely to avoid suspicion? Step forward now and state thy view."
+        ja: "{addr:target}、沈黙でやり過ごそうとしても無駄だ。今こそ村のために見解を示してくれ。",
+        en: "{addr:target}, staying silent will not save thee. Step forward now and state thy view for the village."
+      },
+      'accuse.silence.04': {
+        ja: "寡黙を決め込む{addr:target}が気になる。村人なら怪しいと思う人物くらい挙げられるはずだ。",
+        en: "{addr:target}'s silence troubles me. An innocent villager should at least be able to name a suspect."
       },
       'accuse.contradiction.01': {
-        ja: "{addr:target}の発言には明らかな前言撤回がある。直前の主張と現在の発言が真っ向から食い違っているぞ。",
-        en: "There is an evident reversal in {addr:target}'s claims. Thy earlier words clash directly with thy current stance."
+        ja: "{evidence}。直前の発言と食い違っているぞ、{addr:target}。意見を変えた明確な根拠は何だ？",
+        en: "{evidence}. Thy words clash with thy previous stance, {addr:target}. What prompted this sudden change?"
       },
       'accuse.contradiction.02': {
-        ja: "状況に応じて都合よく主張を塗り替えている{addr:target}は信じられない。何のための意見変更なのか説明してほしい。",
-        en: "I cannot trust {addr:target}, who changes claims conveniently. Explain the reason for this sudden change."
+        ja: "状況に応じて発言を変えている{addr:target}の言動は不自然だ。何のための意見変更なのか教えてほしい。",
+        en: "I find it unnatural how {addr:target} alters statements to fit the situation. Tell us the reason for it."
       },
       'accuse.vote_flip.01': {
-        ja: "{addr:target}の投票行動の急変を見逃してはならない。直前で唐突に投票先を乗り換えた理由は何だ！？",
-        en: "We must not overlook {addr:target}'s sudden shift in votes. What prompted thee to change thy target so abruptly!?"
+        ja: "{evidence}。直前で唐突に投票先を乗り換えた理由を説明してほしい、{addr:target}！",
+        en: "{evidence}. Explain why thou didst abruptly change thy vote target at the last moment, {addr:target}!"
       },
       'accuse.vote_flip.02': {
-        ja: "土壇場で投票先を翻した{addr:target}の動きは、味方を救うための組織票の切り替えではないのか？",
-        en: "Did {addr:target} flip their vote at the final moment to rescue a disguised ally?"
+        ja: "土壇場で投票先を翻した{addr:target}の動き、誰かを救うための票操作ではないのか？",
+        en: "Did {addr:target} flip their vote at the final moment to steer away from a disguised ally?"
       },
       'accuse.statement_inconsistency.01': {
-        ja: "{addr:target}の発言ログにどうにも違和感がある。言動の変遷と投票先の動きに不自然な偏りがあるな。",
-        en: "There is clear discordance in the statements of {addr:target}. Thy shifting words and votes are unnatural."
+        ja: "{addr:target}の発言ログに違和感がある。言動の変遷と投票先の動きに不自然な偏りが見られるぞ。",
+        en: "There is clear discordance in the statements of {addr:target}. Shifting words and votes are unnatural."
       },
       'accuse.statement_inconsistency.02': {
-        ja: "{addr:target}、その判断の根拠はどこにあるのだ？他者に疑いを向けるばかりで、具体的な事実が何も語られていない。",
-        en: "{addr:target}, where is the ground for thy judgment? Casting suspicion on others without stating facts proves nothing."
+        ja: "{addr:target}、他者を疑うばかりで具体的な事実が示されていない。その判断の根拠はどこにある？",
+        en: "{addr:target}, thou castest doubt on others without pointing to facts. Where is the ground for thy judgment?"
       },
 
       // ------------------------------------------------------------
-      // 2. inquiry (質問型・根拠要求型・意見要求型)
+      // 2. inquiry (質問型・意見要求型: 最低8種)
       // ------------------------------------------------------------
       'inquiry.seer_stance.01': {
         ja: "{addr:target}、賢者が2人並び立っている現状について、どちらの占い結果をより信頼すべきだと考えている？",
         en: "{addr:target}, with two Sages standing, which divination result dost thou place greater trust in?"
       },
       'inquiry.seer_stance.02': {
-        ja: "{addr:target}の見解を聞かせてくれ。賢者COを行っている2人のうち、言動から真と見ているのはどちらだ？",
+        ja: "{addr:target}の見解を聞かせてくれ。賢者COを行っている2人のうち、真と見ているのはどちらだ？",
         en: "Tell us thy thought, {addr:target}. Between the two claiming Sage, which dost thou perceive as true?"
+      },
+      'inquiry.seer_stance.03': {
+        ja: "{addr:target}、対抗賢者が出ている盤面だが、そなたはどちらの主張を支持する方針だ？",
+        en: "{addr:target}, with rival Sages contesting, which claim dost thou intend to support?"
       },
       'inquiry.reason_request.01': {
         ja: "{addr:target}、今の盤面で最も怪しいと睨んでいる人物と、その判断に至った客観的な根拠を聞かせてほしい。",
@@ -16909,9 +18136,13 @@ const SHOP_ROLE_DEFS = [
         ja: "{addr:target}、その人物を疑う理由をもう少し具体的に説明してくれないか？判断の材料を共有してほしい。",
         en: "{addr:target}, couldst thou explain more concretely thy reason for doubting that person?"
       },
+      'inquiry.reason_request.03': {
+        ja: "{addr:target}、そなたが注視している人物は誰だ？不自然だと感じた言動があれば教えてくれ。",
+        en: "{addr:target}, who art thou observing most closely? Share any conduct thou felt was unnatural."
+      },
       'inquiry.general_view.01': {
         ja: "{addr:target}、これまでの議論の流れを見て、何か引っかかる点や不自然に思えた言動はなかったか？",
-        en: "{addr:target}, looking upon the course of discussion thus far, hast thou noticed any suspicious words?"
+        en: "{addr:target}, looking upon the discussion thus far, hast thou noticed any suspicious conduct?"
       },
       'inquiry.general_view.02': {
         ja: "{addr:target}、本日の処刑先を決定するにあたり、最も重視すべきファクトは何だと考えている？",
@@ -16920,118 +18151,258 @@ const SHOP_ROLE_DEFS = [
 
       // ------------------------------------------------------------
       // 3. contest (役職対抗の追及・真偽精査)
-      //    (A) 役職CO者限定 (speaker.coRole === 'seer')
       // ------------------------------------------------------------
       'contest.co_conflict.01': {
         ja: "真の賢者は{self}だ。{addr:target}の偽りの名乗りに惑わされてはならない。村を誤った判定で滅ぼす気か！",
         en: "I alone am the true Sage. Be not deceived by the false claim of {addr:target}!"
       },
       'contest.co_conflict.02': {
-        ja: "{addr:target}の占い結果の出し方はあまりに不自然だ。対抗者として、その鑑定の綻びを徹底的に追及する。",
+        ja: "{addr:target}の占い結果の出し方は不自然だ。対抗者として、その鑑定の綻びを徹底的に追及する。",
         en: "The manner in which {addr:target} presents divination is unnatural. As true rival, I shall dismantle those flaws."
       },
       'contest.co_conflict.03': {
-        ja: "賢者が2人出ている以上、一方は確実に魔物の騙りだ。{addr:target}のこれまでの言動との矛盾を洗えば真実は明らかになる。",
+        ja: "賢者が2人出ている以上、一方は確実に魔物の騙りだ。{addr:target}の言動との食い違いを検証しよう。",
         en: "With two claiming Sage, one is surely an impostor. Scrutinizing {addr:target}'s words will reveal the truth."
       },
       'contest.co_conflict.04': {
-        ja: "{addr:target}、神聖な役職を騙る罪の重さを知るがいい。その偽証の仮面を剥ぎ取ってやる。",
-        en: "{addr:target}, know the gravity of profaning a sacred mantle. I shall tear away thy mask of perjury."
-      },
-      'contest.co_conflict.05': {
-        ja: "{addr:target}、そなたの占いは後出しで都合のいい結果ばかり並べている。真の賢者として断じて看過できない。",
+        ja: "{addr:target}、後出しで都合のいい結果ばかり並べている。真の賢者として断じて看過できない。",
         en: "{addr:target}, thy divinations are convenient afterthoughts. As true Sage, I shall not tolerate it."
       },
-      'contest.co_conflict.06': {
-        ja: "村の命運がかかっているのだ。{addr:target}の曖昧な鑑定理由に騙されてはならない。余の視座こそが本物だ。",
-        en: "The fate of the village is at stake. Be not fooled by {addr:target}'s vague reasons. Mine eyes see the truth."
+      // 第三者による真偽精査
+      'contest.third_party_seer.different_targets': {
+        ja: "賢者COの2人は互いに別の人物を占っている。それぞれの占い理由の説得力を比較すべきだ。",
+        en: "Both Sages have inspected different individuals. We must weigh the plausibility of their respective reasons."
       },
-
-      //    (B) 一般村人による第三者視点の賢者精査 (非CO者向け・新設6種)
-      // ------------------------------------------------------------
-      'contest.third_party_seer.01': {
-        ja: "賢者が2人並び立っている以上、どちらかが嘘をついている。両者の占い理由とタイミングを比較すべきだ。",
-        en: "With two Sages standing, one must be lying. We must compare their reasoning and timings."
-      },
-      'contest.third_party_seer.02': {
-        ja: "{addr:target}の占い結果の出し方には気になる点がある。対抗の主張とも突き合わせて慎重に判断したい。",
-        en: "There are questionable points in how {addr:target} reveals divinations. Let us weigh them against the rival."
-      },
-      'contest.third_party_seer.03': {
-        ja: "賢者COの2人の言動を見極める必要がある。{addr:target}のこれまでの発言に不自然な点はないか精査しよう。",
-        en: "We must discern between both Sages. Let us examine if {addr:target}'s statements hold any unnatural flaws."
-      },
-      'contest.third_party_seer.04': {
-        ja: "真の賢者を見極められなければ村は敗北する。{addr:target}の出した結果の根拠を村全体で検証すべきだ。",
-        en: "If we fail to identify the true Sage, the village falls. We must verify the grounds of {addr:target}'s results."
-      },
-      'contest.third_party_seer.05': {
-        ja: "2人の賢者の主張が真っ向から対立している。{addr:target}の鑑定結果が本当に正しいのか、客観的事実と照らし合わせたい。",
-        en: "The claims of both Sages clash directly. We must cross-examine whether {addr:target}'s divination is true."
-      },
-      'contest.third_party_seer.06': {
-        ja: "安易にどちらかを信じるのは危険だ。{addr:target}と対抗賢者の発言ログを冷静に比較検討しよう。",
-        en: "It is reckless to trust blindly. Let us calmly compare the records of {addr:target} and the rival Sage."
-      },
-      // 【第4段階: 実事実差し込みテンプレート】seer_result / co_order の具体値を {evidence} に差し込む
-      'contest.third_party_seer.result_compare': {
-        ja: "賢者2人の占い結果を確認したい。{evidence}。どちらの鑑定が論理的に整合しているか検証すべきだ。",
-        en: "Let us examine both Sages' divination results. {evidence}. We must verify which reading holds logical consistency."
+      'contest.third_party_seer.result_conflict': {
+        ja: "{evidence}。同一の人物に対して白と黒が食い違っている以上、どちらか一方は確実に嘘をついている。",
+        en: "{evidence}. Since their results for the same person clash between human and monster, one is unequivocally lying."
       },
       'contest.third_party_seer.co_order_compare': {
-        ja: "名乗りの順番も判断材料になる。{evidence}。先出しと後出しのどちらに信頼が置けるか、冷静に判断したい。",
-        en: "The order of declarations also matters. {evidence}. Let us calmly judge whether the first or second claim deserves more trust."
+        ja: "{evidence}。名乗りの順番と発言の流れから、どちらに真の賢者としての確からしさがあるか見極めたい。",
+        en: "{evidence}. From the timing of declaration, let us discern which bears the mark of the true Sage."
       },
-      'contest.third_party_seer.black_reaction': {
-        ja: "{evidence}。黒出しされた側の反論に説得力があるか、論理的に精査することが優先事項だ。",
-        en: "{evidence}. It is paramount to logically examine whether the accused party's rebuttal carries persuasive merit."
-      },
-
-      //    (C) 賢者支持
-      // ------------------------------------------------------------
-      'contest.support_seer.01': {
-        ja: "賢者2人の発言ログを照らし合わせたが、{addr:target}の占い結果の提示順序と理由付けのほうが理にかなっている。",
-        en: "Comparing both logs, {addr:target}'s divination timing and rationale seem far more coherent."
-      },
-      'contest.support_seer.02': {
-        ja: "対抗COの状況を見る限り、{addr:target}の鑑定結果には論理的な一貫性がある。余はこちらの証言を重く見る。",
-        en: "Given this confrontation, {addr:target}'s divinations hold logical consistency. I weigh this testimony higher."
-      },
-      'contest.support_seer.03': {
-        ja: "両賢者の主張を精査したが、{addr:target}のほうが盤面の不自然な動きを的確に捉えているように見える。",
-        en: "Having reviewed both claims, {addr:target} appears to perceive the unnatural board dynamics more accurately."
+      'contest.third_party_seer.general_compare': {
+        ja: "賢者COが複数出ている現状、安易な盲信は命取りだ。出された判定の意図と背景を冷静に照らし合わせよう。",
+        en: "With multiple Sages declared, blind trust is lethal. Let us calmly compare their intents and backgrounds."
       },
 
       // ------------------------------------------------------------
-      // 4. defend (弁明・反論: 疑われた場合のみ発動)
+      // 4. scenario (盤面推理: deriveScenarios 連動: 最低8種)
       // ------------------------------------------------------------
-      'defend.innocence_claim.01': {
-        ja: "{addr:target}、なぜ{self}に疑いの目を向けるのだ？これまでの発言や投票行動を見れば、魔物でないことは自明のはずだ！",
-        en: "{addr:target}, why cast doubt upon me? My words and deeds make it evident I harbor no malice!"
+      'scenario.busted_wolves_over': {
+        ja: "{evidence}。数が合わない。このシナリオは論理的に破綻している。",
+        en: "{evidence}. The numbers do not add up. This scenario is logically impossible."
       },
-      'defend.innocence_claim.02': {
-        ja: "{addr:target}、身に覚えのない言いがかりはやめてくれ。{self}を処刑すれば無辜の民の血が流れることになるぞ。",
-        en: "{addr:target}, cease these groundless allegations. Executing me shall spill innocent blood."
+      'scenario.busted_inference': {
+        ja: "{evidence}。この仮定だと魔物の定数を超えてしまう。したがって{addr:target}は偽物と見るべきだ。",
+        en: "{evidence}. Under this premise, the monster count exceeds the village capacity. Thus {addr:target} must be false."
       },
-      'defend.innocence_claim.03': {
-        ja: "{addr:target}、恐慌に任せて{self}を疑うのは筋違いだ。今処刑すべき真の魔物は他にいるはずだ！",
+      'scenario.deduced_true': {
+        ja: "盤面の人数配分を照合した結果、{addr:target}の証言を真とする筋が最も整合する。論理的に見て、こちらを信用するのが妥当だ。",
+        en: "Checking the capacity distribution, {addr:target}'s testimony is the most consistent. It is reasonable to trust this side."
+      },
+      'scenario.agree.01': {
+        ja: "その盤面計算は正しい。魔物の人数制約を考えれば、確かにその線しか残らないな。",
+        en: "That capacity calculation is sound. Considering the monster count limit, only that path remains."
+      },
+      'scenario.agree.02': {
+        ja: "まったく同じ見立てだ。整合する推理に乗って議論を前に進めよう。",
+        en: "Exactly my read as well. Let us advance the discussion along the consistent line."
+      },
+      'scenario.question.01': {
+        ja: "その数の計算、もし魔教徒が潜んでいた場合でも同じ結論になるのか？念のため確認したい。",
+        en: "Does that numerical deduction hold even if a cultist is lurking among us? I wish to be certain."
+      },
+      'scenario.doubt.01': {
+        ja: "理屈はわかるが、まだ何か見落としている前提はないか？別の可能性も一度洗い出しておきたい。",
+        en: "The logic is sound, but have we overlooked any premise? I would examine any alternative possibilities."
+      },
+      'scenario.neutral_wait': {
+        ja: "現在の公開情報だけではまだどちらのシナリオも成立しうる。安易な決めつけは避け、次の結果を待ちたい。",
+        en: "With currently revealed intel, both scenarios remain possible. Let us avoid hasty assumptions."
+      },
+
+      // ------------------------------------------------------------
+      // 4b. scenario (処刑提案型: deriveScenarios 連動)
+      // ------------------------------------------------------------
+      'scenario.execute_proposal.01': {
+        ja: "{addr:target}の主張が論理的に成立しないなら、今日の処刑先はそこで決まりではないか。",
+        en: "If {addr:target}'s claim is logically untenable, should today's execution not fall there?"
+      },
+      'scenario.execute_proposal.02': {
+        ja: "盤面の計算と照合した結果が一致している以上、{addr:target}を本日の処刑候補として挙げたい。",
+        en: "Since the board calculation confirms the inconsistency, I nominate {addr:target} as today's execution candidate."
+      },
+      'scenario.execute_proposal.03': {
+        ja: "ここまで数字が合わないなら、議論を長引かせても答えは変わらない。{addr:target}への処刑を提案する。",
+        en: "With numbers this misaligned, prolonging the debate changes nothing. I propose execution of {addr:target}."
+      },
+      'scenario.execute_proposal.04': {
+        ja: "論理的に残るシナリオは限られている。今日は{addr:target}を処刑し、明日の盤面を確認しよう。",
+        en: "The remaining logical scenarios are few. Let us execute {addr:target} today and confirm the board tomorrow."
+      },
+
+      // ------------------------------------------------------------
+      // 4c. scenario (追加の疑問・懐疑型)
+      // ------------------------------------------------------------
+      'scenario.question.02': {
+        ja: "処刑後の役職が公開されていない場合は、盤面の仮定が変わってくる。その点も考慮しているか？",
+        en: "If the executed role was not revealed, the board premise shifts. Hast thou accounted for that?"
+      },
+      'scenario.question.03': {
+        ja: "賢者CO者が死亡した場合のシナリオも念頭に置く必要がある。その盤面での計算はどう変わる？",
+        en: "We must also consider scenarios where a Sage claimant has died. How does the calculation shift?"
+      },
+      'scenario.doubt.02': {
+        ja: "計算の前提は正しいか？公開されていない役職の可能性が抜けていないか確認したい。",
+        en: "Is the premise sound? I wish to verify no unrevealed role possibility has been overlooked."
+      },
+      'scenario.doubt.03': {
+        ja: "確かに整合はしているが、魔教徒が動いた場合に計算が変わる余地はないか？",
+        en: "It is consistent, but could the numbers shift if a cultist acted in a way we have not accounted for?"
+      },
+
+      // ------------------------------------------------------------
+      // 6a. answer (賢者CO者専用: 自分こそ真の賢者と主張)
+      // ------------------------------------------------------------
+      'answer.seer_stance.self_is_true.01': {
+        ja: "真の賢者は私だ。{evidence}がその証拠だ。対抗者の主張こそを精査してほしい。",
+        en: "I am the true Sage. {evidence} is the proof. I urge scrutiny of the rival's claim instead."
+      },
+      'answer.seer_stance.self_is_true.02': {
+        ja: "私の占い結果は事実だ。{addr:target}が偽者である以上、私の判定を信用してほしい。",
+        en: "My divination is fact. Since {addr:target} is the impostor, I ask that my reading be trusted."
+      },
+      'answer.seer_stance.self_is_true.03': {
+        ja: "{evidence}。対抗者の判定の出し方と一致しない部分がある。真の賢者として断言できる。",
+        en: "{evidence}. There are parts inconsistent with how the rival presents readings. I can state with certainty as the true Sage."
+      },
+      'answer.seer_stance.self_is_true.04': {
+        ja: "信じるべき賢者は私だ。{addr:target}の後出し判定は、私の結果を否定するためだけに存在している。",
+        en: "The Sage to trust is me. {addr:target}'s late-declared result exists solely to negate my reading."
+      },
+
+      // ------------------------------------------------------------
+      // 5. defend (弁明・反論: 強疑い・弱疑い・黒判定別: 最低8種)
+      // ------------------------------------------------------------
+      'defend.black_rebuttal.01': {
+        ja: "{self}は人間だ！{addr:target}の出した黒判定は明らかな偽りだ。村を騙そうとする偽者の証言に惑わされるな！",
+        en: "I am human! The monster judgment from {addr:target} is a blatant lie. Do not be fooled by an impostor!"
+      },
+      'defend.black_rebuttal.02': {
+        ja: "出鱈目を言うな、{addr:target}！{self}が魔物であるはずがない。本物の賢者なら決してそのような判定は出ない！",
+        en: "Speak no falsehood, {addr:target}! I cannot be a beast. A true Sage would never give such a reading!"
+      },
+      'defend.strong_accuse.01': {
+        ja: "{addr:target}、身に覚えのない言いがかりはやめてくれ！{self}を処刑すれば無辜の民を失うことになるぞ。",
+        en: "{addr:target}, cease these groundless allegations! Executing me shall rob the village of an innocent life."
+      },
+      'defend.strong_accuse.02': {
+        ja: "{addr:target}、恐慌に任せて{self}を疑うのは筋違いだ。今追及すべき真の魔物は他にいるはずだ！",
         en: "{addr:target}, doubting me in panic is misguided. The true beast to be executed lies elsewhere!"
       },
-      'defend.innocence_claim.04': {
-        ja: "{addr:target}、感情論で{self}を疑うのはやめてくれ。真の敵を見誤れば村は滅びるぞ。",
-        en: "{addr:target}, do not doubt me out of emotion. If we mistake the enemy, the village perishes."
+      'defend.calm_rebuttal.01': {
+        ja: "{addr:target}の指摘には誤解がある。これまでの発言や投票行動を冷静に見直せば、白であるとわかるはずだ。",
+        en: "{addr:target} misinterprets my deed. Reviewing my words and votes calmly will show I am innocent."
       },
-      'defend.innocence_claim.05': {
-        ja: "{addr:target}の指摘には誤解がある。{self}がその投票を行ったのは客観的事実に基づいた判断であって、私情ではない。",
-        en: "{addr:target} misinterprets my deed. My vote was grounded on objective facts, not personal whim."
+      'defend.calm_rebuttal.02': {
+        ja: "疑われる理由は理解できるが、{self}の行動は村の勝利を目指した結果だ。私情で動いてはいない。",
+        en: "I see why suspicion fell, yet my deeds aim solely for the village's victory, not self-interest."
       },
-      'defend.innocence_claim.06': {
-        ja: "{addr:target}、短絡的な疑念で処刑先を決めるのは危険だ。{self}の白さはこれからの言動でも証明してみせる。",
-        en: "{addr:target}, deciding execution on short-sighted doubt is perilous. My innocence shall be proven by my deeds."
+      'defend.calm_rebuttal.03': {
+        ja: "{self}の推理に不審な点があると言うなら、具体的にどこが間違っているのかを教えてほしい。",
+        en: "If my reasoning seems flawed, tell me specifically which premise thou deemest in error."
+      },
+      'defend.calm_rebuttal.04': {
+        ja: "短絡的な疑念で処刑先を決めるのは危険だ。{self}の潔白はこれからの議論でも証明してみせる。",
+        en: "Deciding execution on short-sighted doubt is perilous. My innocence shall be proven in upcoming debates."
+      },
+      'defend.scenario_rebuttal.01': {
+        ja: "盤面を整理してほしい。{self}が魔物なら、賢者COしている者と合わせて魔物の数が合わなくなる。その結果は偽りだ。",
+        en: "Please check the board. If I were a beast, combined with the Sage claimant, the monster count would not add up. That judgment is false."
+      },
+      'defend.scenario_rebuttal.02': {
+        ja: "{self}を魔物と仮定すると、残りの生存者の中で辻褄が合わなくなる組み合わせが出る。もう一度盤面を確認してくれ。",
+        en: "If I am assumed to be a beast, inconsistencies appear in the remaining survivors. Please recheck the board."
       },
 
       // ------------------------------------------------------------
-      // 5. observe (状況観察・所感の共有)
+      // 6. answer (質問への回答: サブタイプ別・最低8種)
+      // ------------------------------------------------------------
+      // (A) どちらの賢者を信じるか (answer.seer_stance.*)
+      'answer.seer_stance.support_target': {
+        ja: "{evidence}から見て、{self}は{addr:target}の主張のほうに理があると考えている。",
+        en: "Judging from {evidence}, I believe {addr:target}'s testimony carries greater reason."
+      },
+      'answer.seer_stance.support_with_order': {
+        ja: "{evidence}。名乗りのタイミングと判定理由を考慮し、{self}は{addr:target}を支持する姿勢だ。",
+        en: "{evidence}. Considering the declaration order and reasoning, I tend to support {addr:target}."
+      },
+      'answer.seer_stance.support_with_result': {
+        ja: "{evidence}。出された占い結果の一貫性を精査した結果、{addr:target}のほうを真と見ている。",
+        en: "{evidence}. Examining consistency of the readings, I regard {addr:target} as the true one."
+      },
+      'answer.seer_stance.neutral_undecided': {
+        ja: "どちらを信じるかという問いだが、現状の証言だけではまだ一方を真と断定するには材料が不足している。",
+        en: "Regarding whom to trust: current testimonies alone remain insufficient to pronounce one entirely true."
+      },
+      'answer.seer_stance.neutral_wait_reaction': {
+        ja: "まだ決めきれない。両者のこれからの発言と周囲の反応をもう少し観察した上で判断したい。",
+        en: "I cannot yet decide. I wish to observe their upcoming words and reactions before choosing."
+      },
+      'answer.seer_stance.neutral_caution': {
+        ja: "安易にどちらかに肩入れするのは危険だ。偽賢者の誘導に乗らないよう、慎重にログを比較中だ。",
+        en: "Taking sides hastily is dangerous. I am cautiously comparing logs to avoid falling for false steering."
+      },
+      'answer.seer_stance.support_scenario': {
+        ja: "{evidence}。盤面の人数配分とシナリオの整合性から、{addr:target}を真と考えるのが妥当だ。",
+        en: "{evidence}. Given capacity distribution and scenario consistency, trusting {addr:target} is reasonable."
+      },
+      'answer.seer_stance.oppose_fake': {
+        ja: "{evidence}。これを踏まえると、{addr:target}の主張を真とする根拠は薄い。",
+        en: "{evidence}. Given this, there is little basis to regard {addr:target}'s claim as true."
+      },
+
+      // (B) なぜその人物を疑うのか (answer.target_reason.*)
+      'answer.target_reason.vote_drift': {
+        ja: "{self}が{addr:target}を注視しているのは、投票行動の変遷に説明のつかない不自然さがあるからだ。",
+        en: "I watch {addr:target} because their vote transitions carry an inexplicable awkwardness."
+      },
+      'answer.target_reason.silence_lurking': {
+        ja: "{addr:target}を怪しんでいる理由は、極端に発言が少なく周囲の出方を伺う姿勢が目立つからだ。",
+        en: "I suspect {addr:target} because of their extreme quietness and tendency to merely observe others."
+      },
+      'answer.target_reason.contradiction': {
+        ja: "{addr:target}の主張には前後の食い違いがある。その点をうやむやにしているのが不審なのだ。",
+        en: "{addr:target}'s claims contradict earlier statements. Leaving that ambiguous is what makes them suspect."
+      },
+      'answer.target_reason.general_board': {
+        ja: "{self}の疑い先は感情ではなく盤面の整合性から導いている。{addr:target}の立ち回りは警戒に値する。",
+        en: "My suspicion comes from board consistency, not emotion. {addr:target}'s positioning warrants vigilance."
+      },
+
+      // (C) 何を重視して見ているか (answer.focus_point.*)
+      'answer.focus_point.facts_over_emotion': {
+        ja: "感情論ではなく、出揃った事実と投票の記録を最も重視すべきだと考えている。",
+        en: "I believe we must prioritize revealed facts and vote logs over emotional rhetoric."
+      },
+      'answer.focus_point.co_and_results': {
+        ja: "役職COのタイミングと占い結果が盤面の人数制約と矛盾していないかを最優先で見極めたい。",
+        en: "My focus is whether declaration timings and results contradict village capacity constraints."
+      },
+
+      // (D) 今日の処刑はどうすべきか (answer.general_opinion.*)
+      'answer.general_opinion.execute_inconsistent': {
+        ja: "本日の処刑先は、発言に最も矛盾が多く、盤面を混乱させている人物にするべきだと考えている。",
+        en: "I believe today's banishment should fall upon whoever causes most confusion through contradiction."
+      },
+      'answer.general_opinion.narrow_down': {
+        ja: "確定白の証言を軸に、怪しい言動を繰り返すグレー枠から候補を絞り込むべきだ。",
+        en: "Anchoring upon confirmed innocents, we should narrow targets among suspicious gray individuals."
+      },
+
+      // ------------------------------------------------------------
+      // 7. observe (状況観察・所感の共有: 最低8種)
       // ------------------------------------------------------------
       'observe.general_flow.01': {
         ja: "各人のこれまでの発言を見直しているが、まだ決定的な証拠には至っていない。もう少し議論の行方を見定める必要がある。",
@@ -17054,60 +18425,16 @@ const SHOP_ROLE_DEFS = [
         en: "Deciding guilt merely by speech count is precarious. Discern intent behind silence and flaws in loquacity."
       },
       'observe.general_flow.06': {
-        ja: "確定白の証言と矛盾する言動をしている者がいないか、霊媒や占いの記録と照合して精査を進めるべきだ。",
-        en: "Verify if anyone contradicts the words of confirmed innocents against divination logs."
+        ja: "出された判定と矛盾する言動をしている者がいないか、記録と照合して精査を進めるべきだ。",
+        en: "Verify if anyone contradicts revealed readings against divination records."
       },
-
-      // ------------------------------------------------------------
-      // 6. answer (質問への回答・見解表明: 新設6種含む計12種)
-      // ------------------------------------------------------------
-      'answer.inquiry_response.01': {
-        ja: "その質問に答えよう。{self}は客観的な状況証拠から{addr:target}の言動を最も注視している。",
-        en: "Let me answer thy question: looking at objective evidence, I am watching {addr:target} most closely."
+      'observe.general_flow.07': {
+        ja: "議論が堂々巡りになりつつある。いま一度、客観的な事実関係を再確認して整理しよう。",
+        en: "Discussion is circling. Let us re-examine and organize objective factual relationships once more."
       },
-      'answer.inquiry_response.02': {
-        ja: "どちらを信じるかという問いだが、現状の証言を見る限り、まだ一方を完全に真と断定するには材料が不足していると考えている。",
-        en: "Regarding whom to trust: looking at current testimonies, evidence remains insufficient to pronounce one entirely true."
-      },
-      'answer.inquiry_response.03': {
-        ja: "{self}の視点を説明しよう。疑いを向けているのは、これまでの発言の流れに説明のつかない違和感があるからだ。",
-        en: "Allow me to explain: I suspect them because their statements hold an inexplicable anomaly."
-      },
-      'answer.inquiry_response.04': {
-        ja: "質問への回答だが、本日の処刑先は最も発言に矛盾が多く、村に混乱を招いている人物にするべきだと考えている。",
-        en: "To answer thy question: I believe today's execution should fall upon whoever causes most confusion through contradiction."
-      },
-      'answer.inquiry_response.05': {
-        ja: "私の見解を求められたので答えよう。2人の主張のうち、より筋が通っている側の証言を軸に議論を進めるべきだ。",
-        en: "As my thought is asked: we should build our debate upon the testimony of whoever speaks with greater reason."
-      },
-      'answer.inquiry_response.06': {
-        ja: "その点については、先ほどから注目していた。{addr:target}の行動に不自然さを感じているのは事実だ。",
-        en: "On that matter, I have been watching. It is true that I find {addr:target}'s conduct suspicious."
-      },
-      'answer.clarification.01': {
-        ja: "疑念に対する答えを述べよう。{self}がその発言をしたのは、議論を前進させるための問題提起に過ぎない。",
-        en: "In response to that doubt: I spoke those words merely to provoke inquiry and advance debate."
-      },
-      'answer.clarification.02': {
-        ja: "{self}の推理に不審な点があると言うなら、具体的にどの前提が間違っているのかを指摘してほしい。",
-        en: "If my reasoning seems suspicious, point out specifically which premise thou deemest flawed."
-      },
-      'answer.clarification.03': {
-        ja: "質問の意図は理解した。だが、{self}が怪しいと見ている根拠は感情ではなく、盤面の投票差分にある。",
-        en: "I see thy intent. Yet my suspicion rests upon the vote distribution, not subjective feeling."
-      },
-      'answer.clarification.04': {
-        ja: "指摘された点について釈明しよう。{self}は自らの役職を利するためではなく、村の勝利のために発言している。",
-        en: "To clarify: I speak not to advance my own standing, but solely to bring victory unto the village."
-      },
-      'answer.clarification.05': {
-        ja: "{addr:target}、疑念を投げかける前に、自分自身のこれまでの言動に不審な点がないか振り返るべきだ。",
-        en: "{addr:target}, before directing doubt, reflect upon whether thy own conduct bears any suspicion."
-      },
-      'answer.clarification.06': {
-        ja: "単刀直入に答えよう。{self}はすでに怪しいと睨む人物に投票先を定めている。その判断は揺るがない。",
-        en: "I answer plainly: my vote is already cast upon the person I deem suspicious. That choice will not waver."
+      'observe.general_flow.08': {
+        ja: "残り人数と魔物の潜伏可能数を意識しながら、ミスリードを誘う発言に惑わされないようにしたい。",
+        en: "Mindful of survivor count and lurking capacity, let us avoid being swayed by misleading words."
       }
     };
 
@@ -17121,6 +18448,7 @@ const SHOP_ROLE_DEFS = [
       if (templateId.startsWith('accuse.vote_flip')) return 'vote_stance';
       if (templateId.startsWith('accuse.contradiction') || templateId.startsWith('accuse.statement_inconsistency')) return 'contradiction';
       if (templateId.startsWith('accuse.logic_busted')) return 'logic_bust';
+      if (templateId.startsWith('scenario')) return 'scenario';
       if (templateId.startsWith('defend')) return 'defend_self';
       if (templateId.startsWith('answer')) return 'answer';
       if (templateId.startsWith('inquiry')) return 'inquiry';
@@ -17152,6 +18480,90 @@ const SHOP_ROLE_DEFS = [
     const _recentCharTemplateIds = {};   // キャラごとの直近3回IDリングバッファ
     const _speechIntentHistory = [];     // 直近発言計画の履歴 [{ speaker, intent, target, templateId, factData, timestamp }]
 
+    // ============================================================
+    // 【第5段階: 盤面推論エンジン deriveScenarios()】
+    // 公開情報（配役構成、CO、占い結果、公開役職）のみから
+    // 各賢者COシナリオの数理的成立性を計算する
+    // ============================================================
+    function deriveScenarios(state = gameState) {
+      if (!state || !state.roleDistribution) return { scenarios: [], bustedCount: 0, scenarioFact: null };
+
+      // 1. 公開情報から村の定数を計算
+      const totalWolves = state.roleDistribution.filter(r => r === 'wolf').length;
+      const hasMadman = state.roleDistribution.includes('madman');
+
+      // 既に公開（処刑・霊媒確定）された死亡魔物の数
+      const revealedWolvesCount = Object.values(state.revealedRoles || {}).filter(r => r === 'wolf').length;
+      const remainingWolvesCapacity = Math.max(0, totalWolves - revealedWolvesCount);
+
+      // 賢者CO者のリスト
+      const seerClaimants = Object.keys(state.coRoles || {}).filter(c => state.coRoles[c] === 'seer');
+      if (seerClaimants.length <= 1) {
+        return { scenarios: [], bustedCount: 0, scenarioFact: null };
+      }
+
+      const results = [];
+      let bustedFact = null;
+
+      // 賢者CO者それぞれを「真賢者」と仮定して検証
+      seerClaimants.forEach(trueSeer => {
+        const rivalSeers = seerClaimants.filter(c => c !== trueSeer);
+        const trueSeerReports = (state.seerHistory && state.seerHistory[trueSeer]) || [];
+        const blackTargets = [...new Set(trueSeerReports.filter(r => r.result === '人狼').map(r => r.target))];
+        const blackNonRivals = blackTargets.filter(t => !rivalSeers.includes(t));
+
+        let isPossible = true;
+        let bustReason = '';
+        let requiredWolves = 0;
+
+        if (!hasMadman) {
+          // 魔教徒なし: 偽賢者は必ず魔物！
+          requiredWolves = rivalSeers.length + blackNonRivals.length;
+          if (requiredWolves > remainingWolvesCapacity) {
+            isPossible = false;
+            const rivalNames = rivalSeers.map(c => (typeof getCharDisplayName === 'function' ? getCharDisplayName(c) : c)).join('・');
+            const blackNames = blackNonRivals.map(c => (typeof getCharDisplayName === 'function' ? getCharDisplayName(c) : c)).join('・');
+            bustReason = `魔物の定数（残り${remainingWolvesCapacity}人）に対し、対抗の${rivalNames}と黒出しされた${blackNames}で計${requiredWolves}人となり数が合わない`;
+          }
+        } else {
+          // 魔教徒あり: 偽賢者のうち1人は魔教徒の可能性あり（魔物免除）
+          const minWolvesFromRivals = Math.max(0, rivalSeers.length - 1);
+          requiredWolves = minWolvesFromRivals + blackNonRivals.length;
+          if (requiredWolves > remainingWolvesCapacity) {
+            isPossible = false;
+            const blackNames = blackNonRivals.map(c => (typeof getCharDisplayName === 'function' ? getCharDisplayName(c) : c)).join('・');
+            bustReason = `魔教徒の潜伏を考慮しても、必要魔物数${requiredWolves}人が残存定数${remainingWolvesCapacity}人を超過して破綻`;
+          }
+        }
+
+        results.push({
+          seer: trueSeer,
+          isPossible,
+          requiredWolves,
+          remainingWolvesCapacity,
+          bustReason,
+          blackTargets
+        });
+
+        if (!isPossible && !bustedFact) {
+          bustedFact = {
+            type: 'scenario_busted',
+            fakeSeer: trueSeer,
+            deducedTrueSeer: rivalSeers.length === 1 ? rivalSeers[0] : null,
+            reason: bustReason,
+            requiredWolves,
+            capacity: remainingWolvesCapacity
+          };
+        }
+      });
+
+      return {
+        scenarios: results,
+        bustedCount: results.filter(s => !s.isPossible).length,
+        scenarioFact: bustedFact
+      };
+    }
+
     /**
      * 【第3段階: 構造化事実データの生成と事実ゲート】
      * テンプレートが要求する事実条件（requires）を客観ゲーム状態から照合し、
@@ -17163,6 +18575,25 @@ const SHOP_ROLE_DEFS = [
       const speechCounts = gameState.speechCounts || {};
       const speakerCoRole = (gameState.coRoles && gameState.coRoles[speaker]) || null;
       const targetCoRole = (target && gameState.coRoles && gameState.coRoles[target]) || null;
+
+      // 0. 賢者CO者専用回答ゲート (answer.seer_stance.self_is_true.*)
+      if (templateId.startsWith('answer.seer_stance.self_is_true.')) {
+        if (speakerCoRole !== 'seer') return null;
+        const seers = aliveChars.filter(c => gameState.coRoles && gameState.coRoles[c] === 'seer');
+        if (seers.length < 2) return null;
+        const rival = seers.find(c => c !== speaker);
+        if (!rival) return null;
+        return { type: 'self_is_true_seer', subject: rival };
+      }
+
+      // 0b. 黒出し被弾者の盤面推理反論ゲート (defend.scenario_rebuttal.*)
+      if (templateId.startsWith('defend.scenario_rebuttal.')) {
+        // 発言者が賢者から黒を出されている場合のみ
+        const seerReports = gameState.dailySeerReports || {};
+        const isBlacked = Object.values(seerReports).some(r => r && r.target === speaker && r.result === '人狼');
+        if (!isBlacked) return null;
+        return { type: 'scenario_rebuttal', subject: speaker };
+      }
 
       // 1. 役職CO者限定台詞のゲート (coRole === 'seer')
       if (templateId.startsWith('contest.co_conflict.')) {
@@ -17181,22 +18612,46 @@ const SHOP_ROLE_DEFS = [
         const seers = aliveChars.filter(c => gameState.coRoles && gameState.coRoles[c] === 'seer');
         if (seers.length < 2) return null;
 
-        // 【第4段階: 実事実テンプレートの追加ゲート】
-        if (templateId === 'contest.third_party_seer.result_compare') {
-          // seer_result が2件以上必要
-          const reports = gameState.dailySeerReports || {};
-          const resultCount = Object.keys(reports).filter(s => seers.includes(s)).length;
-          if (resultCount < 2) return null;
-          const seerNames = seers.map(s => getCharDisplayName(s));
+        const reports = gameState.dailySeerReports || {};
+        const seerReports = seers.map(s => reports[s]).filter(Boolean);
+
+        // 【第5段階: 白黒食い違いと別対象占いの厳格判定】
+        if (templateId === 'contest.third_party_seer.result_conflict') {
+          // 同一人物に対して白と黒が食い違っている場合のみ許可
+          if (seerReports.length < 2) return null;
+          const targetMap = {};
+          let conflictFound = false;
+          let conflictTarget = null;
+          seers.forEach(s => {
+            const rep = reports[s];
+            if (rep) {
+              if (targetMap[rep.target] && targetMap[rep.target] !== rep.result) {
+                conflictFound = true;
+                conflictTarget = rep.target;
+              }
+              targetMap[rep.target] = rep.result;
+            }
+          });
+          if (!conflictFound) return null;
           return {
-            type: 'seer_result',
-            subject: target || seers[0],
-            seers: seerNames,
-            count: resultCount
+            type: 'result_conflict',
+            subject: conflictTarget,
+            evidenceText: `${getCharDisplayName(conflictTarget)}に対する鑑定結果の食い違い`
           };
         }
+
+        if (templateId === 'contest.third_party_seer.different_targets') {
+          // 占った人物が異なる場合のみ許可
+          if (seerReports.length < 2) return null;
+          const targets = new Set(seerReports.map(r => r.target));
+          if (targets.size < 2) return null; // 同じ人を占っているなら別対象ではない
+          return {
+            type: 'different_targets',
+            subject: seers[0]
+          };
+        }
+
         if (templateId === 'contest.third_party_seer.co_order_compare') {
-          // co_order: 2人のCO順序データが必要
           const coOrder = gameState.coOrderHistory || null;
           if (!coOrder || coOrder.filter(o => seers.includes(o.char)).length < 2) return null;
           const orderedSeers = coOrder.filter(o => seers.includes(o.char)).map(o => getCharDisplayName(o.char));
@@ -17204,19 +18659,7 @@ const SHOP_ROLE_DEFS = [
             type: 'co_order',
             first: orderedSeers[0],
             second: orderedSeers[1] || orderedSeers[0],
-            seers: orderedSeers
-          };
-        }
-        if (templateId === 'contest.third_party_seer.black_reaction') {
-          // seer_result に黒出しが存在するか
-          const reports = gameState.dailySeerReports || {};
-          const hasBlack = seers.some(s => reports[s] && reports[s].result === '人狼');
-          if (!hasBlack) return null;
-          const blackSeer = seers.find(s => reports[s] && reports[s].result === '人狼');
-          return {
-            type: 'seer_result',
-            subject: blackSeer ? (reports[blackSeer].target || target) : target,
-            blackSeer: blackSeer ? getCharDisplayName(blackSeer) : null
+            evidenceText: `賢者COの順序（先出し: ${orderedSeers[0]}、後出し: ${orderedSeers[1] || ''}）`
           };
         }
 
@@ -17226,6 +18669,52 @@ const SHOP_ROLE_DEFS = [
           seers: seers.map(s => getCharDisplayName(s)),
           count: seers.length
         };
+      }
+
+      // 2.5 【第5段階: 盤面推論 scenario.* テンプレートの事実ゲート】
+      if (templateId.startsWith('scenario.')) {
+        const scenarioRes = deriveScenarios(gameState);
+        const hasBusted = scenarioRes.bustedCount > 0;
+        const bFact = scenarioRes.scenarioFact;
+
+        // 破綻断定型: 実際に不成立が1件以上ある場合のみ許可（追加指示2）
+        if (templateId.startsWith('scenario.busted_') || templateId === 'scenario.deduced_true') {
+          if (!hasBusted || !bFact) return null;
+          // 発言者が破綻賢者自身の場合は自己批判しない
+          if (speaker === bFact.fakeSeer) return null;
+          return {
+            type: 'scenario_busted',
+            subject: bFact.fakeSeer,
+            evidenceText: bFact.reason
+          };
+        }
+
+        // 同意・疑問型: 直近6発言以内に scenario.busted_* または scenario.deduced_true が出ている場合のみ許可
+        if (templateId.startsWith('scenario.agree.') || templateId.startsWith('scenario.question.') || templateId.startsWith('scenario.doubt.')) {
+          const recentScenario = _speechIntentHistory.slice(-6).some(h => h.templateId && (h.templateId.startsWith('scenario.busted_') || h.templateId === 'scenario.deduced_true'));
+          if (!recentScenario) return null;
+          return {
+            type: 'scenario_reaction',
+            subject: target
+          };
+        }
+
+        // 処刑提案型: 破綻が確定している場合のみ許可
+        if (templateId.startsWith('scenario.execute_proposal.')) {
+          if (!hasBusted || !bFact) return null;
+          if (speaker === bFact.fakeSeer) return null;
+          return {
+            type: 'scenario_execute',
+            subject: bFact.fakeSeer,
+            evidenceText: bFact.reason
+          };
+        }
+
+        // 保留・様子見型: 破綻がない場合のみ
+        if (templateId === 'scenario.neutral_wait') {
+          if (hasBusted) return null;
+          return { type: 'scenario_neutral' };
+        }
       }
 
       // 3. 過去の投票行動を言及する台詞 (defend.innocence_claim.05)
@@ -17382,12 +18871,16 @@ const SHOP_ROLE_DEFS = [
     }
 
     /**
-     * 【第3段階: 弁明ピンポン連鎖検知】
-     * 直近の発言履歴で、speaker と target の間で defend が既に1往復（計2回）以上発生しているか
+     * 【第5段階: 弁明ピンポン連鎖検知】
+     * 直近の発言履歴で、直前の発言者が defend している場合は defend の連鎖を完全禁止
      */
     function hasDefendPingPongExceeded(speaker, target) {
       if (!target) return false;
-      const recent = _speechIntentHistory.slice(-6);
+      const recent = _speechIntentHistory.slice(-4);
+      if (recent.length > 0) {
+        const last = recent[recent.length - 1];
+        if (last.intent === 'defend') return true; // 直前が defend なら連鎖禁止
+      }
       let defendCount = 0;
       for (const item of recent) {
         if (item.intent === 'defend' &&
@@ -17395,33 +18888,55 @@ const SHOP_ROLE_DEFS = [
           defendCount++;
         }
       }
-      return defendCount >= 2;
+      return defendCount >= 1;
     }
 
     /**
-     * 【第3段階: 「疑われた」判定の厳格化】
-     * 直近5件の中に、target === speaker かつ intent が accuse / contest / defend の発言がある場合のみ真
+     * 【第5段階: 「疑われた」判定の厳格化（直近3発言以内・強弱判定）】
+     * 直近3発言の中に、target === speaker かつ intent が accuse / contest の発言がある場合のみ真（defend は除外）
      */
     function checkWasActuallyAccused(speaker) {
-      const recent = _speechIntentHistory.slice(-5);
+      const recent = _speechIntentHistory.slice(-3);
       for (let i = recent.length - 1; i >= 0; i--) {
         const item = recent[i];
-        if (item.target === speaker && (item.intent === 'accuse' || item.intent === 'contest' || item.intent === 'defend')) {
-          return item.speaker; // 疑ってきた相手
+        if (item.target === speaker && (item.intent === 'accuse' || item.intent === 'contest')) {
+          // 強疑い判定: accuse、賢者直接追及(co_conflict)、または黒出し
+          const isBlackAccused = (gameState.dailySeerReports && Object.values(gameState.dailySeerReports).some(r => r.target === speaker && r.result === '人狼'));
+          const isStrong = (item.intent === 'accuse') || 
+                           (item.templateId && item.templateId.startsWith('contest.co_conflict')) ||
+                           isBlackAccused;
+          return {
+            accuser: item.speaker,
+            isStrong,
+            isBlackAccused,
+            templateId: item.templateId || ''
+          };
         }
       }
       return null;
     }
 
     /**
-     * 【第3段階: 「質問された」判定】
-     * 直前の発言が inquiry かつ target === speaker の場合
+     * 【第5段階: 「質問された」判定（直近3発言以内・名指し必須）】
+     * 直近3発言の中に、intent === 'inquiry' かつ target === speaker の発言がある場合のみ真
      */
     function checkWasInquired(speaker) {
-      if (_speechIntentHistory.length === 0) return null;
-      const last = _speechIntentHistory[_speechIntentHistory.length - 1];
-      if (last.intent === 'inquiry' && (last.target === speaker || !last.target)) {
-        return last.speaker;
+      const recent = _speechIntentHistory.slice(-3);
+      for (let i = recent.length - 1; i >= 0; i--) {
+        const item = recent[i];
+        if (item.intent === 'inquiry' && item.target === speaker) {
+          let subType = 'general_view';
+          if (item.templateId) {
+            if (item.templateId.includes('seer_stance')) subType = 'seer_stance';
+            else if (item.templateId.includes('reason_request')) subType = 'reason_request';
+            else if (item.templateId.includes('general_view')) subType = 'general_view';
+          }
+          return {
+            questioner: item.speaker,
+            subType,
+            templateId: item.templateId || ''
+          };
+        }
       }
       return null;
     }
@@ -17502,48 +19017,163 @@ function planSpeechAct(speaker, context = {}) {
         };
       }
 
-      // --- 4. 【第3段階改修】質問された場合の回答 (answer: 弁明ではなく回答を強制) ---
-      const inquirier = checkWasInquired(speaker);
-      if (inquirier && inquirier !== speaker && aliveChars.includes(inquirier)) {
-        const answerTarget = inquirier;
-        return {
-          intent: 'answer',
-          target: answerTarget,
-          addressee: answerTarget,
-          evidences: [{
-            type: 'question_received',
-            fact: `${getCharDisplayName(answerTarget)}からの質問に対する回答`,
-            factData: { type: 'question_received', questioner: answerTarget }
-          }],
-          emotion: 'calm',
-          tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
-          length: 2,
-          coAnnounce: false
-        };
+      // --- 4. 【第5段階改修】質問された場合の回答 (answer: 質問種別と1対1整合) ---
+      const inqInfo = checkWasInquired(speaker);
+      if (inqInfo && inqInfo.questioner !== speaker && aliveChars.includes(inqInfo.questioner)) {
+        const questioner = inqInfo.questioner;
+        const subType = inqInfo.subType; // 'seer_stance' | 'reason_request' | 'general_view'
+
+        if (subType === 'seer_stance') {
+          // 賢者CO者たちの取得
+          const seers = aliveChars.filter(c => gameState.coRoles && gameState.coRoles[c] === 'seer');
+          // 既存の記憶があればそれを優先
+          if (!gameState.charMemory) gameState.charMemory = {};
+          if (!gameState.charMemory[speaker]) gameState.charMemory[speaker] = {};
+
+          // 【第5.1段階】賢者COしている発言者は「私こそが真の賢者」型のみ返す
+          if (coRole === 'seer' && seers.length >= 2) {
+            const rival = seers.find(s => s !== speaker);
+            return {
+              intent: 'answer',
+              subType: 'seer_stance.self_is_true',
+              target: rival,
+              addressee: questioner,
+              evidences: [{
+                type: 'self_is_true',
+                fact: '自分こそが真の賢者であるという主張',
+                factData: { type: 'self_is_true', rival }
+              }],
+              emotion: 'confident',
+              tactic: (realRole === 'wolf') ? 'cut_loose' : null,
+              length: 2,
+              coAnnounce: false
+            };
+          }
+
+          let myStance = gameState.charMemory[speaker].seerStance;
+          let stanceTarget = null;
+          let stanceType = 'neutral_undecided';
+
+          if (myStance) {
+            stanceTarget = myStance.target;
+            stanceType = myStance.stanceType;
+          } else if (seers.length >= 2) {
+            // 新規に立場を決定（自身の仮想投票やCO順・盤面推理から）
+            const targetSeer = seers.find(s => myVote && myVote.target === s) || null;
+            if (targetSeer) {
+              // 疑っている賢者の「逆」の賢者を支持
+              stanceTarget = seers.find(s => s !== targetSeer) || seers[0];
+              stanceType = 'support_target';
+            } else if (Math.random() < 0.6) {
+              stanceTarget = pickRandom(seers);
+              stanceType = 'support_target';
+            } else {
+              stanceTarget = seers[0];
+              stanceType = 'neutral_undecided';
+            }
+            // charMemory に記憶して立場を一貫させる
+            gameState.charMemory[speaker].seerStance = { target: stanceTarget, stanceType };
+          } else if (seers.length === 1) {
+            stanceTarget = seers[0];
+            stanceType = 'support_target';
+          }
+
+          const factData = { type: 'seer_stance', subType: stanceType, target: stanceTarget };
+          return {
+            intent: 'answer',
+            subType: 'seer_stance',
+            target: stanceTarget,
+            addressee: questioner,
+            evidences: [{
+              type: 'seer_stance',
+              fact: stanceType.includes('support') ? `${getCharDisplayName(stanceTarget)}を真の賢者と考えている` : '賢者判断はまだ保留中',
+              factData
+            }],
+            emotion: 'calm',
+            tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
+            length: 2,
+            coAnnounce: false
+          };
+
+        } else if (subType === 'reason_request') {
+          // なぜ疑うかの回答: 質問者ではなく、自身の本命疑い先（myVote.target）について答える
+          const mySuspect = (myVote && aliveOthers.includes(myVote.target) && myVote.target !== speaker)
+            ? myVote.target
+            : (logicalDeduction ? logicalDeduction.target : pickRandom(aliveOthers.filter(c => c !== questioner)));
+          const suspectName = getCharDisplayName(mySuspect);
+
+          return {
+            intent: 'answer',
+            subType: 'target_reason',
+            target: mySuspect,
+            addressee: questioner,
+            evidences: [{
+              type: 'target_reason',
+              fact: `${suspectName}を注視している客観的根拠`,
+              factData: { type: 'target_reason', suspect: mySuspect }
+            }],
+            emotion: 'calm',
+            tactic: null,
+            length: 2,
+            coAnnounce: false
+          };
+
+        } else {
+          // 一般見解 (general_opinion / focus_point)
+          return {
+            intent: 'answer',
+            subType: 'general_opinion',
+            target: questioner,
+            addressee: questioner,
+            evidences: [{
+              type: 'general_opinion',
+              fact: `${getCharDisplayName(questioner)}への見解表明`,
+              factData: { type: 'general_opinion', questioner }
+            }],
+            emotion: 'calm',
+            tactic: null,
+            length: 2,
+            coAnnounce: false
+          };
+        }
       }
 
-      // --- 5. 【第4段階: 強/弱疑い2段階 defend/answer 制御】---
-      // 強疑い: accuse/contest の直接名指し → defend
-      // 弱疑い: inquiry/observe での言及 → answer (穏やかな回答)
-      // defend→defend の連鎖は完全禁止
-      const actualAccuser = checkWasActuallyAccused(speaker);
-      if (actualAccuser && actualAccuser !== speaker && aliveChars.includes(actualAccuser)) {
-        // ピンポン連鎖チェック: defend が既に1往復以上なら answer へ格下げ
+      // --- 5. 【第5段階: 強/弱疑い2段階 defend 制御】---
+      const accInfo = checkWasActuallyAccused(speaker);
+      if (accInfo && accInfo.accuser !== speaker && aliveChars.includes(accInfo.accuser)) {
+        const actualAccuser = accInfo.accuser;
         const isPingPong = hasDefendPingPongExceeded(speaker, actualAccuser);
-        // 強疑い判定: 直近5件に accuse/contest かつ target===speaker が存在
-        const isStrongAccuse = _speechIntentHistory.slice(-5).some(item =>
-          item.target === speaker && (item.intent === 'accuse' || item.intent === 'contest')
-        );
 
-        if (!isPingPong && isStrongAccuse) {
+        // 黒出しされた本人の場合: defend.black_rebuttal
+        if (accInfo.isBlackAccused) {
           return {
             intent: 'defend',
+            subType: 'black_rebuttal',
             target: actualAccuser,
             addressee: actualAccuser,
             evidences: [{
-              type: 'innocence_claim',
-              fact: `${getCharDisplayName(actualAccuser)}からの直接非難に対する弁明`,
-              factData: { type: 'accused_by_peer', accuser: actualAccuser }
+              type: 'black_rebuttal',
+              fact: `${getCharDisplayName(actualAccuser)}による虚偽の魔物判定への反論`,
+              factData: { type: 'black_rebuttal', accuser: actualAccuser }
+            }],
+            emotion: 'angry',
+            tactic: (realRole === 'wolf') ? 'distract' : null,
+            length: 2,
+            coAnnounce: false
+          };
+        }
+
+        // 強疑い（直接非難、連鎖なし）の場合: defend.strong_accuse
+        if (accInfo.isStrong && !isPingPong) {
+          return {
+            intent: 'defend',
+            subType: 'strong_accuse',
+            target: actualAccuser,
+            addressee: actualAccuser,
+            evidences: [{
+              type: 'strong_accuse',
+              fact: `${getCharDisplayName(actualAccuser)}からの直接非難に対する無実の主張`,
+              factData: { type: 'strong_accuse', accuser: actualAccuser }
             }],
             emotion: 'panic',
             tactic: (realRole === 'wolf') ? 'distract' : null,
@@ -17551,18 +19181,19 @@ function planSpeechAct(speaker, context = {}) {
             coAnnounce: false
           };
         } else {
-          // 弱疑い or ピンポン連鎖 → answer に切り替え
+          // 弱疑いまたは連鎖防止: defend.calm_rebuttal
           return {
-            intent: 'answer',
+            intent: 'defend',
+            subType: 'calm_rebuttal',
             target: actualAccuser,
             addressee: actualAccuser,
             evidences: [{
-              type: 'question_received',
-              fact: `${getCharDisplayName(actualAccuser)}への穏やかな見解の表明`,
-              factData: { type: 'question_received', questioner: actualAccuser }
+              type: 'calm_rebuttal',
+              fact: `${getCharDisplayName(actualAccuser)}からの疑いに対する冷静な反論`,
+              factData: { type: 'calm_rebuttal', accuser: actualAccuser }
             }],
             emotion: 'calm',
-            tactic: (realRole === 'wolf') ? 'avoid_silence' : null,
+            tactic: null,
             length: 2,
             coAnnounce: false
           };
@@ -17625,8 +19256,8 @@ function planSpeechAct(speaker, context = {}) {
               coAnnounce: false
             };
           } else {
-            // 相手への意見要求 (inquiry.seer_stance)
-            const askTarget = pickRandom(aliveOthers.filter(c => !rivalSeers.includes(c))) || targetSeer;
+            // 相手への意見要求 (inquiry.seer_stance): 賢者CO者には聞かない（彼らは常に自分を支持する答えになるため）
+            const askTarget = pickRandom(aliveOthers.filter(c => !rivalSeers.includes(c))) || pickRandom(aliveOthers.filter(c => !rivalSeers.includes(c) && c !== speaker));
             return {
               intent: 'inquiry',
               target: askTarget,
@@ -17746,7 +19377,13 @@ function realizeSpeech(plan, speaker, mode = 'template') {
       const target = plan.target || null;
 
       // 1. 計画の intent に合致するテンプレートIDを抽出
-      let candidateIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith(plan.intent));
+      //    subType が 'seer_stance.self_is_true' の場合は専用IDを使用
+      let candidateIds;
+      if (plan.subType === 'seer_stance.self_is_true') {
+        candidateIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith('answer.seer_stance.self_is_true.'));
+      } else {
+        candidateIds = Object.keys(PIPELINE_TEMPLATES).filter(id => id.startsWith(plan.intent));
+      }
       if (plan.evidences && plan.evidences.length > 0) {
         const evType = plan.evidences[0].type;
         const subIds = candidateIds.filter(id => id.includes(evType));
@@ -17833,6 +19470,42 @@ function realizeSpeech(plan, speaker, mode = 'template') {
       }
       const filled = rawTemplate.replace(/\{evidence\}/g, evidenceFact);
       const styled = applyVoiceStyle(filled, speaker, plan);
+
+      // 【第5.1段階】リント: 説明文パターン・自己名前三人称チェック
+      if (styled) {
+        const speakerDisplayName = typeof getCharDisplayName === 'function' ? getCharDisplayName(speaker) : '';
+        // 1. 説明文パターン違反チェック（述語なし名詞句で始まる文）
+        const descPatterns = [
+          /^[^s。！？]{2,20}への(?:説明|表明|反論|回答|追及|弁明)/,
+          /^.{2,30}?(?:支持表明|弁明説明|反論説明)[。、s]/,
+        ];
+        for (const dp of descPatterns) {
+          if (dp.test(styled)) {
+            if (window.DEBUG_DISCUSSION) console.warn('[realizeSpeech] 説明文パターン違反:', styled.substring(0, 60));
+            return null; // 別テンプレートで再試行させる
+          }
+        }
+        // 2. 発言者の表示名が台詞内に三人称として出ていないかチェック
+        //    （引用符「」内・一人称fpが表示名と同じ場合・evidenceにたまたま名前が入る場合は除外）
+        if (speakerDisplayName && speakerDisplayName.length >= 2) {
+          const prof2 = gameState.charProfiles && gameState.charProfiles[speaker];
+          const fp2 = (prof2 && prof2.firstPerson && typeof prof2.firstPerson === 'string') ? prof2.firstPerson : '私';
+          // 一人称と表示名が同じならチェック不要（例：firstPerson='まつり'）
+          if (fp2 !== speakerDisplayName) {
+            // 「」内・fpから来た一人称部分・evidence展開部分を除去してチェック
+            // evidence部分の除去: styled中で自分の名前が出るのは主にevidence展開によるもの
+            // → 文全体を検査するのは厳しすぎるため、文の「主語」部分だけチェック
+            // 具体的には: 文頭〜最初の「。」「！」「？」まで の中に名前があるかチェック
+            const firstSentence = styled.replace(/「[^」]*」/g, '').split(/[。！？]/)[0] || '';
+            // firstPersonを除いた文頭文で三人称チェック
+            const checkStr = firstSentence.replace(new RegExp(fp2, 'g'), '');
+            if (checkStr.includes(speakerDisplayName)) {
+              if (window.DEBUG_DISCUSSION) console.warn('[realizeSpeech] 自己名三人称違反:', styled.substring(0, 60));
+              return null;
+            }
+          }
+        }
+      }
 
       return styled;
     }
@@ -18394,13 +20067,6 @@ function generatePipelineDiscussionSpeech(speaker, context) {
         speaker = pickRandom(weightedPool) || pickRandom(candidates);
       }
 
-      lastAISpeaker = speaker;
-      if (!gameState.speechCounts[speaker]) gameState.speechCounts[speaker] = 0;
-      gameState.speechCounts[speaker]++;
-
-      consecutiveSpeakerHistory.push(speaker);
-      if (consecutiveSpeakerHistory.length > 10) consecutiveSpeakerHistory.shift();
-
       if (typeof window._discProfiler !== 'undefined') {
         window._discProfiler.recordStepDetail('speaker', speaker);
         window._discProfiler.setAwaitLoc('generateAIDiscussionStep:planning');
@@ -18440,7 +20106,6 @@ function generatePipelineDiscussionSpeech(speaker, context) {
             msg = await realizeSpeech(altPlan, altSpeaker, chosenMode);
             if (msg) {
               speaker = altSpeaker;
-              lastAISpeaker = altSpeaker;
               if (window.DEBUG_DISCUSSION) console.log(`[realizeSpeech] 発言者再試行成功: ${altSpeaker}`);
               break;
             }
@@ -18448,7 +20113,7 @@ function generatePipelineDiscussionSpeech(speaker, context) {
         }
       }
 
-      // 2. それでも作れなければ、事実を主張しない質問型・観察型の重複許容候補で試行
+      // 2. それでも作れなければ、事実を主張しない質問型・観察型の重複許容候補で安全フォールバック生成
       if (!msg) {
         const safeFallbackKeys = Object.keys(PIPELINE_TEMPLATES).filter(k => k.startsWith('observe') || k.startsWith('inquiry'));
         if (safeFallbackKeys.length > 0) {
@@ -18456,7 +20121,10 @@ function generatePipelineDiscussionSpeech(speaker, context) {
           const tmpl = PIPELINE_TEMPLATES[fallbackKey];
           const raw = tmpl[currentAppLanguage || 'ja'] || tmpl.ja;
           const targetChar = aliveChars.find(c => c !== speaker) || speaker;
-          msg = resolveTemplatePlaceholders(raw, speaker, targetChar);
+          const fallbackPlan = { intent: fallbackKey.split('.')[0], target: targetChar };
+          const filled = raw.replace(/\{evidence\}/g, '状況の推移');
+          msg = applyVoiceStyle(filled, speaker, fallbackPlan);
+          window._lastSpeechIntent = fallbackPlan.intent;
         }
       }
 
@@ -18467,6 +20135,13 @@ function generatePipelineDiscussionSpeech(speaker, context) {
         }
         return null;
       }
+
+      // ★ 発言が正常に確定した時点で初めて lastAISpeaker と発言履歴を記録
+      lastAISpeaker = speaker;
+      if (!gameState.speechCounts[speaker]) gameState.speechCounts[speaker] = 0;
+      gameState.speechCounts[speaker]++;
+      consecutiveSpeakerHistory.push(speaker);
+      if (consecutiveSpeakerHistory.length > 10) consecutiveSpeakerHistory.shift();
 
       // 防衛CO発生時の仮想投票・ログ同期
       if (plan.coAnnounce) {
@@ -18506,7 +20181,7 @@ function generatePipelineDiscussionSpeech(speaker, context) {
 
       const formattedMsg = msg;
       const speakerDisplayName = getCharDisplayName(speaker);
-addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', speaker, false);
+addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', speaker, false, window._lastSpeechIntent);
 
       // [BUG FIX] setSpeakingCard は playSpeechAsync の後(cancelSpeech完了後)に呼ぶ
       // playSpeechAsync冒頭のcancelSpeechがspeakingカードIDをリセットするため、
@@ -18669,9 +20344,11 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
         credibility += 0.05;
       }
 
-      // D. 破綻検知（3人目COや白黒矛盾）
+      // D. 破綻検知（deriveScenarios 数理破綻、3人目COや白黒矛盾）
       const bustedList = typeof getDefiniteBustedPlayers === 'function' ? getDefiniteBustedPlayers() : [];
-      if (bustedList.some(b => b.target === seerChar)) {
+      const scenarioCheck = typeof deriveScenarios === 'function' ? deriveScenarios(gameState) : null;
+      const isScenarioBusted = scenarioCheck && scenarioCheck.scenarios && scenarioCheck.scenarios.some(s => s.seer === seerChar && !s.isPossible);
+      if (isScenarioBusted || bustedList.some(b => b.target === seerChar)) {
         credibility = 0.05;
       }
 
@@ -18757,6 +20434,22 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
             });
           }
         });
+      }
+
+      // 4. 【第5段階: deriveScenarios() による盤面定数超過・論理破綻賢者】
+      if (typeof deriveScenarios === 'function') {
+        const sRes = deriveScenarios(gameState);
+        if (sRes && sRes.scenarios) {
+          sRes.scenarios.forEach(sc => {
+            if (!sc.isPossible && sc.seer && !busted.some(b => b.target === sc.seer)) {
+              busted.push({
+                target: sc.seer,
+                reason: sc.bustReason || '魔物の定数制約を超過した論理破綻',
+                isCertain: true
+              });
+            }
+          });
+        }
       }
 
       return busted;
@@ -19563,19 +21256,12 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           nextCard.classList.remove('face-suspected');
           _currentSpeakingCardId = charId;
         }
+      } else {
+        // 発言枠クリア時は発言中状態を完全にリセット
+        _currentSpeakingCardId = null;
       }
       // 発言者通知帯も更新
       updateSpeakerViewStatus();
-    }
-
-    function toggleSpeakBlink(val) {
-      const isOn = (val === 'true');
-      localStorage.setItem('jinnrou_speakBlink', isOn ? 'true' : 'false');
-      if (isOn) {
-        document.body.classList.remove('no-speak-blink');
-      } else {
-        document.body.classList.add('no-speak-blink');
-      }
     }
 
     // Render Character Grid
@@ -19613,7 +21299,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           card.classList.add('is-dead');
         }
 
-        const isSpeaking = (typeof lastAISpeaker !== 'undefined' && lastAISpeaker === char);
+        const isSpeaking = (typeof _currentSpeakingCardId !== 'undefined' && _currentSpeakingCardId === char);
         const isSuspected = (maxSuspicionChar === char);
         if (isSpeaking) card.classList.add('face-speaking');
         if (isSuspected && !isSpeaking) card.classList.add('face-suspected');
@@ -19685,21 +21371,16 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       });
       // face-speaking の _currentSpeakingCardId キャッシュをリセット
       // (innerHTML='' でカードを作り直したため、setSpeakingCard のキャッシュと実DOMが乖離する)
-      _currentSpeakingCardId = (typeof lastAISpeaker !== 'undefined' && lastAISpeaker) ? lastAISpeaker : null;
+      if (_currentSpeakingCardId) {
+        const card = document.getElementById('char-card-' + _currentSpeakingCardId);
+        if (card) card.classList.add('face-speaking');
+      }
       updateSpeakerViewStatus();
     }
 
     
     // 発言者スクロール制御機能
     let autoScrollToSpeaker = (localStorage.getItem('autoScrollToSpeaker') === 'true');
-    // 点滅設定の初期適用（保存済みの設定を即時反映）
-    (function() {
-      const _savedBlink = localStorage.getItem('jinnrou_speakBlink');
-      if (_savedBlink === 'false') {
-        document.body.classList.add('no-speak-blink');
-      }
-    })();
-
     
     function updateFaceAssignmentMode(mode) {
       localStorage.setItem('jinnrou_faceAssignmentMode', mode);
@@ -19726,12 +21407,13 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       const grid = document.getElementById('character-grid');
       if (!indicator || !grid) return;
 
-      if (typeof lastAISpeaker === 'undefined' || !lastAISpeaker) {
+      const currentSpeaker = (typeof _currentSpeakingCardId !== 'undefined' && _currentSpeakingCardId) ? _currentSpeakingCardId : null;
+      if (!currentSpeaker) {
         indicator.style.display = 'none';
         return;
       }
 
-      const speakerCard = document.getElementById(`char-card-${lastAISpeaker}`);
+      const speakerCard = document.getElementById(`char-card-${currentSpeaker}`);
       if (!speakerCard) {
         indicator.style.display = 'none';
         return;
@@ -19749,7 +21431,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       const isVisible = (cardRect.top >= gridRect.top - 20 && cardRect.bottom <= gridRect.bottom + 20);
 
       if (!isVisible) {
-        const speakerName = getCharDisplayName(lastAISpeaker);
+        const speakerName = getCharDisplayName(currentSpeaker);
         textEl.textContent = `🎙️ 発言中: ${speakerName}`;
         indicator.style.display = 'flex';
       } else {
@@ -20927,20 +22609,23 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
     }
 
     // Add Log Entry (機能A: ログID発行・マーカー対応)
-    function getIntentBadgeLabel(intent) {
+    function getIntentBadgeLabel(intent, lang = (currentAppLanguage || 'ja')) {
       const map = {
-        accuse: '指摘',
-        contest: '真偽追及',
-        defend: '弁明',
-        answer: '回答',
-        inquiry: '質問',
-        observe: '観察',
-        distance: '同調'
+        accuse: { ja: '指摘', en: 'Accusation', fr: 'Accusation', zh: '指责', ko: '지적' },
+        contest: { ja: '真偽追及', en: 'Challenge', fr: 'Contestation', zh: '追究真伪', ko: '진위추궁' },
+        scenario: { ja: '盤面推理', en: 'Deduction', fr: 'Déduction', zh: '盘面推理', ko: '국면추리' },
+        defend: { ja: '弁明', en: 'Defense', fr: 'Défense', zh: '辩解', ko: '변명' },
+        answer: { ja: '回答', en: 'Answer', fr: 'Réponse', zh: '回答', ko: '답변' },
+        inquiry: { ja: '質問', en: 'Inquiry', fr: 'Question', zh: '提问', ko: '질문' },
+        observe: { ja: '所感', en: 'Observation', fr: 'Observation', zh: '感想', ko: '소감' },
+        distance: { ja: '同調', en: 'Agreement', fr: 'Accord', zh: '同调', ko: '동조' }
       };
-      return map[intent] || '発言';
+      const item = map[intent];
+      if (!item) return { ja: '発言', en: 'Speech', fr: 'Parole', zh: '发言', ko: '발언' }[lang] || '発言';
+      return item[lang] || item.ja;
     }
 
-    function addLogItem(title, question, answer, typeClass = '', charSeed = null, autoSpeak = false) {
+    function addLogItem(title, question, answer, typeClass = '', charSeed = null, autoSpeak = false, explicitIntent = null) {
       const timeline = document.getElementById('log-timeline');
       if (!timeline) return;
 
@@ -20984,7 +22669,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       item.innerHTML = `
         <div class="log-header">
           <span style="display:flex; align-items:center; gap:0.4rem;">
-            <span>${displayTitle}</span>${(typeClass === 'ai-discussion' && window._lastSpeechIntent) ? `<span class="speech-intent-badge badge-${window._lastSpeechIntent}">${getIntentBadgeLabel(window._lastSpeechIntent)}</span>` : ''}
+            <span>${displayTitle}</span>${(typeClass === 'ai-discussion' && (explicitIntent || window._lastSpeechIntent)) ? `<span class="speech-intent-badge badge-${explicitIntent || window._lastSpeechIntent}">${getIntentBadgeLabel(explicitIntent || window._lastSpeechIntent)}</span>` : ''}
           </span>
           <div style="display:flex; align-items:center; gap:0.4rem;">
             <span class="log-marker-badge" id="marker-badge-${logId}" style="display:none;" onclick="cycleLogMarker('${logId}', event)"></span>
@@ -22856,14 +24541,14 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
         const returnTitleText = t.result_btn_to_title || t.resultReturnTitle || '🏠 タイトルへ';
         const playAgainText = t.result_btn_replay || t.resultPlayAgain || '🔄 もう一度プレイ';
         const grandEndingText = t.result_btn_grand_ending || (lang === 'en' 
-          ? 'Next (To Ending) ▶' 
+          ? '✨📜 To Ending' 
           : (lang === 'fr' 
-              ? 'Suivant (Vers la fin) ▶' 
+              ? '✨📜 Vers la Fin' 
               : (lang === 'zh' 
-                  ? '下一步（前往结局） ▶' 
+                  ? '✨📜 前往结局' 
                   : (lang === 'ko' 
-                      ? '다음으로 (엔딩으로) ▶' 
-                      : '次へ進む（エンディングへ） ▶'))));
+                      ? '✨📜 엔딩으로' 
+                      : '✨📜 エンディングへ'))));
 
         if (currentPlayMode === 'story' && result === true) {
           const nextChapter = currentStoryChapter + 1;
@@ -22876,14 +24561,15 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
               <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">${returnTitleText}</button>
             `;
           } else {
-            // 第5章勝利 ＝ 「次へ進む（エンディングへ）」ボタン
-            // [BUG FIX] 信頼度は実際のgameState.playerTrustを参照（ハードコード100から修正）
-            const ch5Trust = typeof gameState.playerTrust === 'number' ? gameState.playerTrust : 100;
+            // 第5章勝利 ＝ 「エンディングへ」ボタンのみ表示（タイトルボタンは削除）
+            // 信頼度（gameState.playerTrust）に応じたエンディングへ直接遷移
+            const ch5Trust = (typeof gameState !== 'undefined' && typeof gameState.playerTrust === 'number') 
+              ? gameState.playerTrust 
+              : 100;
             actionBtnsContainer.innerHTML = `
-              <button class="btn-result-action btn-result-restart" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="triggerGrandEndingTest(${ch5Trust})">
+              <button class="btn-result-action btn-result-restart" style="width: 100%; padding: 0.8rem 1rem; font-size: 1.05rem; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);" onclick="triggerGrandEndingTest(${ch5Trust})">
                 ${grandEndingText}
               </button>
-              <button class="btn-result-action btn-result-title" onclick="showTitleScreen()">${returnTitleText}</button>
             `;
           }
         } else {
@@ -23483,6 +25169,10 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
      * @param {number}  [opts.fadeOut=0] フェードアウト時間(ms)。0なら即非表示
      * @returns {Promise<void>}
      */
+    // 開発用動画計測フラグ・ログ保管（window.DEBUG_VIDEO = true で有効）
+    window.DEBUG_VIDEO = true;
+    window._videoPerformanceLogs = [];
+
     function playEndingVideoAsync(srcs, opts) {
       const fadeOutMs = (opts && opts.fadeOut) ? opts.fadeOut : 0;
       return new Promise((resolve) => {
@@ -23495,9 +25185,40 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
 
         // BGMはムービー中も流し続ける（停止しない）
 
+        let loadStartTime = 0;
+        let canPlayThroughTime = 0;
+        let playCalledTime = 0;
+        let firstFrameTime = 0;
+        let currentPlayingSrc = "";
+
         // 終了 / スキップ 共通後処理
         const finish = () => {
+          if (window.DEBUG_VIDEO) {
+            let quality = null;
+            if (typeof video.getVideoPlaybackQuality === 'function') {
+              quality = video.getVideoPlaybackQuality();
+            }
+            const logEntry = {
+              src: currentPlayingSrc,
+              totalVideoFrames: quality ? quality.totalVideoFrames : (video.webkitDecodedFrameCount || 0),
+              droppedVideoFrames: quality ? quality.droppedVideoFrames : (video.webkitDroppedFrameCount || 0),
+              dropRate: quality && quality.totalVideoFrames > 0 
+                ? ((quality.droppedVideoFrames / quality.totalVideoFrames) * 100).toFixed(2) + '%' 
+                : '0%',
+              timeToCanPlayThroughMs: canPlayThroughTime && loadStartTime ? (canPlayThroughTime - loadStartTime) : null,
+              timeToActualPlayMs: firstFrameTime && playCalledTime ? (firstFrameTime - playCalledTime) : null,
+              totalPlaybackDurationMs: Date.now() - (firstFrameTime || playCalledTime || Date.now())
+            };
+            window._videoPerformanceLogs.push(logEntry);
+            console.log('[DEBUG_VIDEO] 再生計測結果:', logEntry);
+          }
+
           _endingVideoSkipResolve = null;
+          video.oncanplaythrough = null;
+          video.ontimeupdate = null;
+          video.onended = null;
+          video.onerror = null;
+
           video.pause();
           video.removeAttribute('src');
           video.load();
@@ -23527,6 +25248,30 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
             return;
           }
           const src = srcs[srcIndex++];
+          currentPlayingSrc = src;
+          loadStartTime = performance.now();
+          canPlayThroughTime = 0;
+          playCalledTime = 0;
+          firstFrameTime = 0;
+
+          video.oncanplaythrough = () => {
+            if (!canPlayThroughTime) {
+              canPlayThroughTime = performance.now();
+              if (window.DEBUG_VIDEO) {
+                console.log(`[DEBUG_VIDEO] canplaythrough到達: ${src} (所要時間: ${(canPlayThroughTime - loadStartTime).toFixed(1)}ms)`);
+              }
+            }
+          };
+
+          video.ontimeupdate = () => {
+            if (!firstFrameTime && video.currentTime > 0) {
+              firstFrameTime = performance.now();
+              if (window.DEBUG_VIDEO) {
+                console.log(`[DEBUG_VIDEO] 実際の描画・再生開始: ${src} (play呼び出しから: ${(firstFrameTime - playCalledTime).toFixed(1)}ms)`);
+              }
+            }
+          };
+
           video.src = src;
           video.currentTime = 0;
           video.onended  = finish;
@@ -23536,6 +25281,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           };
           overlay.style.opacity = '1';
           overlay.style.display = 'flex';
+          playCalledTime = performance.now();
           const playPromise = video.play();
           if (playPromise && typeof playPromise.then === 'function') {
             playPromise.catch(() => { tryNext(); });
@@ -24114,11 +25860,35 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           (lang === 'ko' ? '🎉 전 5장 완전 클리어 달성' :
           '🎉 全5章完全クリア達成')));
 
+        // 🏆 回収エンディング記録の更新・取得 (S: 真 / A: 通常 / C: バッド の全3種)
+        let collectedEndings = [];
+        try {
+          const stored = localStorage.getItem('jinnrou_cleared_endings');
+          if (stored) {
+            collectedEndings = JSON.parse(stored);
+          }
+        } catch (e) {}
+        if (!Array.isArray(collectedEndings)) collectedEndings = [];
+        if (endingRankType && !collectedEndings.includes(endingRankType)) {
+          collectedEndings.push(endingRankType);
+          try {
+            localStorage.setItem('jinnrou_cleared_endings', JSON.stringify(collectedEndings));
+          } catch (e) {}
+        }
+        const collectedCount = collectedEndings.length;
+
+        const endingCollectionLabel = lang === 'en' ? '🏆 Endings Collected' :
+          (lang === 'fr' ? '🏆 Fins Débloquées' :
+          (lang === 'zh' ? '🏆 回收结局数' :
+          (lang === 'ko' ? '🏆 회수 엔딩' :
+          '🏆 回収エンディング')));
+
         statsEl.innerHTML = `
           <div>${headingLabel}</div>
           <div>${trustLabel}: <strong style="color:${trust>=60?'#10b981':(trust>=30?'#fbbf24':'#ef4444')};">${trust}%</strong> | ${rankLabel}: <strong style="color:#fbbf24;">【${rank}】</strong></div>
           <div>${iqLabel}: <strong style="color:#60a5fa;">${heroIQ}</strong> | ${scoreLabel}: <strong style="color:#34d399;">${scoreVal.toLocaleString()} pt</strong></div>
           <div style="color:#34d399; font-weight:bold; margin-top:0.25rem;">${allClearLabel}</div>
+          <div style="color:#fbbf24; font-weight:bold; margin-top:0.25rem;">${endingCollectionLabel}: <strong style="color:#60a5fa;">${collectedCount} / 3</strong></div>
         `;
       }
 
@@ -24154,6 +25924,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           1: ['ED_MOVE/EDRANK_A002.mp4'],
           2: ['ED_MOVE/ED_RANK_A003.mp4', 'ED_MOVE/ED_RANK_A%23003.mp4', 'ED_MOVE/ED_RANK_A#003.mp4'],
           4: ['ED_MOVE/EDRANK_A004.mp4'],
+          6: ['ED_MOVE/ED_RANKA_005.mp4'],
           7: ['ED_MOVE/ED_RANKA007.mp4']
         };
 
