@@ -1121,6 +1121,12 @@
       border: 1px solid var(--medium-color);
     }
 
+    .co-knight {
+      background-color: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid #60a5fa;
+    }
+
     .co-freemason {
       background-color: rgba(52, 211, 153, 0.15);
       color: var(--freemason-color);
@@ -5588,6 +5594,15 @@
         seerInfo = `あなたの占い履歴: ${seerHistory.map(h => `${getCharDisplayName(h.target)}→${h.result}`).join('、')}\n`;
       }
 
+      // 聖騎士の護衛履歴
+      let knightInfo = '';
+      const knightHistory = (gameState.knightGuardHistory && gameState.knightGuardHistory[speakerChar]) || [];
+      if (knightHistory.length > 0) {
+        knightInfo = `あなたの護衛履歴: ${knightHistory.map(h => `${h.day}日目の夜→${getCharDisplayName(h.target)}を護衛`).join('、')}\n`;
+      } else if (gameState.lastKnightGuardTarget && (realRole === 'knight' || coRole === 'knight')) {
+        knightInfo = `あなたの護衛履歴: 昨夜は${getCharDisplayName(gameState.lastKnightGuardTarget)}を護衛した\n`;
+      }
+
       // 投票先
       let voteInfo = '';
       const myVote = (gameState.virtualVotes && gameState.virtualVotes[speakerChar]);
@@ -5623,7 +5638,7 @@
 口調: ${prof.speechStyle || '丁寧語'}
 
 ${gameContext}
-${seerInfo}${voteInfo}
+${seerInfo}${knightInfo}${voteInfo}
 
 【会話・絶対ルール】
 1. 自分の役職（村人/賢者/聖職者/聖騎士/魔教徒/擬態モンスター等）になりきって発言してください。
@@ -7154,6 +7169,7 @@ ${speakerName}の発言:`;
         co_badge_grey: "👤 グレー",
         co_badge_seer: "🔮 賢者CO",
         co_badge_medium: "👻 聖職者CO",
+        co_badge_knight: "🛡️ 聖騎士CO",
         co_badge_freemason: "🤝 共有CO",
         status_alive: "生存",
         status_attacked_dead: "【犠牲者】死亡",
@@ -7374,6 +7390,7 @@ ${speakerName}の発言:`;
         co_badge_grey: "👤 Grey",
         co_badge_seer: "🔮 Seer CO",
         co_badge_medium: "👻 Medium CO",
+        co_badge_knight: "🛡️ Knight CO",
         co_badge_freemason: "🤝 Mason CO",
         status_alive: "Alive",
         status_attacked_dead: "[Victim] Dead",
@@ -7594,6 +7611,7 @@ ${speakerName}の発言:`;
         co_badge_grey: "👤 未报身份",
         co_badge_seer: "🔮 预言家CO",
         co_badge_medium: "👻 通灵师CO",
+        co_badge_knight: "🛡️ 圣骑士CO",
         co_badge_freemason: "🤝 共有者CO",
         status_alive: "存活",
         status_attacked_dead: "【遇害】死亡",
@@ -7814,6 +7832,7 @@ ${speakerName}の発言:`;
         co_badge_grey: "👤 그레이",
         co_badge_seer: "🔮 현자 CO",
         co_badge_medium: "👻 성직자 CO",
+        co_badge_knight: "🛡️ 성기사 CO",
         co_badge_freemason: "🤝 공유자 CO",
         status_alive: "생존",
         status_attacked_dead: "【희생자】사망",
@@ -8025,6 +8044,7 @@ ${speakerName}の発言:`;
         co_badge_grey: "👤 Neutre",
         co_badge_seer: "🔮 Voyant CO",
         co_badge_medium: "👻 Médium CO",
+        co_badge_knight: "🛡️ Chevalier CO",
         co_badge_freemason: "🤝 Frère CO",
         status_alive: "Vivant",
         status_attacked_dead: "【Victime】 Mort",
@@ -14358,6 +14378,7 @@ const SHOP_ROLE_DEFS = [
         charFaces: {},
         seerHistory: {},
         mediumHistory: {},
+        knightGuardHistory: {},
         alibis: {},
         dailySeerReports: {},
         dailyMediumReports: {},
@@ -15358,6 +15379,7 @@ const SHOP_ROLE_DEFS = [
         gameState.isStealthing[c] = false;
         gameState.seerHistory[c] = [];
         gameState.mediumHistory[c] = [];
+        gameState.knightGuardHistory[c] = [];
       });
 
       // Setup Role Intentions & Stealth Choices
@@ -21126,6 +21148,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           let voterCoText = `（${(t.co_badge_grey || 'グレー').replace(/[👤\s]/g, '')}）`;
           if (gameState.coRoles[voter] === 'seer') voterCoText = `（${(t.co_badge_seer || '賢者CO').replace(/[🔮\s]/g, '')}）`;
           if (gameState.coRoles[voter] === 'medium') voterCoText = `（${(t.co_badge_medium || '聖職者CO').replace(/[👻\s]/g, '')}）`;
+          if (gameState.coRoles[voter] === 'knight') voterCoText = `（${(t.co_badge_knight || '聖騎士CO').replace(/[🛡️\s]/g, '')}）`;
           if (gameState.coRoles[voter] === 'freemason') voterCoText = `（${(t.co_badge_freemason || '共有CO').replace(/[🤝\s]/g, '')}）`;
 
           const suspicionFmt = t.vote_suspicion_badge || '疑念 {score}%';
@@ -21313,6 +21336,9 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
         } else if (coRole === 'medium') {
           coBadgeClass = 'co-medium';
           coBadgeText = t.co_badge_medium || '👻 聖職者CO';
+        } else if (coRole === 'knight') {
+          coBadgeClass = 'co-knight';
+          coBadgeText = t.co_badge_knight || '🛡️ 聖騎士CO';
         } else if (coRole === 'freemason') {
           coBadgeClass = 'co-freemason';
           coBadgeText = t.co_badge_freemason || '🤝 共有CO';
@@ -21500,6 +21526,7 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
         let coText = `（${(t.co_badge_grey || 'グレー').replace(/[👤\s]/g, '')}）`;
         if (gameState.coRoles[gameState.selectedChar] === 'seer') coText = `（${(t.co_badge_seer || '賢者CO').replace(/[🔮\s]/g, '')}）`;
         if (gameState.coRoles[gameState.selectedChar] === 'medium') coText = `（${(t.co_badge_medium || '聖職者CO').replace(/[👻\s]/g, '')}）`;
+        if (gameState.coRoles[gameState.selectedChar] === 'knight') coText = `（${(t.co_badge_knight || '聖騎士CO').replace(/[🛡️\s]/g, '')}）`;
         if (gameState.coRoles[gameState.selectedChar] === 'freemason') coText = `（${(t.co_badge_freemason || '共有CO').replace(/[🤝\s]/g, '')}）`;
 
         const profile = (gameState.charProfiles && gameState.charProfiles[gameState.selectedChar]) || AI_PROFILES[0];
@@ -21982,7 +22009,12 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
         return { category: 'role_claim', targetChar, isEvasion: false };
       }
 
-      // (c) seer_reason: 占った理由 / なぜその人を占ったか
+      // (c) guard_who / knight_guard: 誰を守ったか / 護衛先・護衛理由
+      if (/誰を守|誰を護衛|守った人|護衛した人|護衛先|守った対象|なぜ守|なぜ護衛|守った理由|護衛理由|who\s*did\s*you\s*guard|who\s*did\s*you\s*protect|guard\s*target|guard\s*reason/i.test(lower) || (/守っ|護衛/i.test(lower) && /誰|なぜ|どうして|理由|どこ|昨日|昨夜|初日/i.test(lower))) {
+        return { category: 'guard_who', targetChar, isEvasion: false };
+      }
+
+      // (c-2) seer_reason: 占った理由 / なぜその人を占ったか
       if (/占った理由|なぜ占|どうして占|占いの根拠|鑑定した理由|なぜその人を|why\s*did\s*you\s*divine|divine\s*reason/i.test(lower) || (/占|鑑定/i.test(lower) && /理由|なぜ|どうして/i.test(lower))) {
         return { category: 'seer_reason', targetChar, isEvasion: false };
       }
@@ -22314,6 +22346,38 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
         }
       ],
 
+      // guard_who (聖騎士の護衛先・誰を守ったか)
+      guard_who: [
+        {
+          ja: "{evidence}",
+          en: "{evidence}",
+          zh: "{evidence}",
+          ko: "{evidence}",
+          fr: "{evidence}"
+        },
+        {
+          ja: "{self}の護衛行動についてだな。{evidence}",
+          en: "Regarding my guarding actions: {evidence}",
+          zh: "关于{self}之护卫行径：{evidence}",
+          ko: "{self}의 호위 행동에 대해서인가. {evidence}",
+          fr: "Concernant mes actions de protection : {evidence}"
+        },
+        {
+          ja: "魔物の牙から村を守るのが聖騎士の務めだ。{evidence}",
+          en: "Protecting the village from monster fangs is a knight's sacred duty. {evidence}",
+          zh: "自魔物獠牙下守护村庄乃圣骑士之天职。{evidence}",
+          ko: "마물의 이빨로부터 마을을 지키는 것이 성기사의 책무다. {evidence}",
+          fr: "Protéger le village des crocs des monstres est le devoir du chevalier. {evidence}"
+        },
+        {
+          ja: "{evidence}。村の防衛線を守るため全力を尽くしている。",
+          en: "{evidence}. I devote everything to holding our village's defensive line.",
+          zh: "{evidence}。吾正竭尽全力固守村庄防线。",
+          ko: "{evidence}. 마을의 방어선을 지키기 위해 전력을 다하고 있다.",
+          fr: "{evidence}. Je fais tout pour tenir notre ligne de défense."
+        }
+      ],
+
       // 10. other (上記以外 / メタ質問へのはぐらかし)
       other: [
         {
@@ -22393,6 +22457,78 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
       // (a) 占い結果 (seer_result)
       const seerHistory = (gameState.seerHistory && gameState.seerHistory[speakerChar]) || [];
       const dailyReports = gameState.dailySeerReports || {};
+
+      // (guard_who) 聖騎士・護衛質問への応答
+      if (cat === 'guard_who') {
+        const realRole = gameState.roles ? gameState.roles[speakerChar] : 'villager';
+        const isKnight = (coRole === 'knight' || realRole === 'knight' || realRole === 'hunter' || realRole === 'bodyguard');
+        
+        if (isKnight) {
+          // 護衛履歴の取得
+          const gHistory = (gameState.knightGuardHistory && gameState.knightGuardHistory[speakerChar]) || [];
+          let lastTarget = null;
+          let guardDay = gameState.day ? gameState.day - 1 : 1;
+          
+          if (gHistory.length > 0) {
+            const lastEntry = gHistory[gHistory.length - 1];
+            lastTarget = lastEntry.target;
+            guardDay = lastEntry.day;
+          } else if (gameState.lastKnightGuardTarget) {
+            lastTarget = gameState.lastKnightGuardTarget;
+          }
+
+          if (lastTarget) {
+            const guardName = getCharDisplayName(lastTarget);
+            const guardTargetRole = (gameState.coRoles && gameState.coRoles[lastTarget]) || '';
+            let reasonSuffix = '';
+            if (guardTargetRole === 'seer') {
+              reasonSuffix = lang === 'en' ? ' as the claimed Sage was prime prey for monsters' :
+                (lang === 'fr' ? ' car le Sage déclaré était la cible idéale des monstres' :
+                (lang === 'zh' ? '，因声明贤者之人乃魔物首要猎物' :
+                (lang === 'ko' ? ', 현자 선언자는 마물의 최우선 표적이었기 때문이다' :
+                '、賢者CO者は魔物に最も狙われやすいためだ')));
+            } else if (guardTargetRole === 'medium') {
+              reasonSuffix = lang === 'en' ? ' to secure the medium spiritual records' :
+                (lang === 'fr' ? ' pour sécuriser les visions du médium' :
+                (lang === 'zh' ? '，以保全圣职者之通灵记录' :
+                (lang === 'ko' ? ', 성직자의 영매 결과를 보전하기 위해서다' :
+                '、聖職者の貴重な霊視記録を守るためだ')));
+            } else {
+              reasonSuffix = lang === 'en' ? ' reading that monsters would target the sharp gray villagers' :
+                (lang === 'fr' ? ' anticipant une attaque sur les villageois neutres influents' :
+                (lang === 'zh' ? '，料想魔物将偷袭具有洞察力的灰色村民' :
+                (lang === 'ko' ? ', 마물이 날카로운 그레이 주민을 노릴 것으로 읽었기 때문이다' :
+                '、魔物が役職を避けて発言力のあるグレーを狙うと読んだためだ')));
+            }
+
+            if (lang === 'en') {
+              evidenceText = `Last night (Day ${guardDay} night), {self} guarded ${guardName}${reasonSuffix}`;
+            } else if (lang === 'fr') {
+              evidenceText = `La nuit dernière (nuit du Jour ${guardDay}), {self} a protégé ${guardName}${reasonSuffix}`;
+            } else if (lang === 'zh') {
+              evidenceText = `昨夜（第${guardDay}日夜晚），{self}护卫了${guardName}${reasonSuffix}`;
+            } else if (lang === 'ko') {
+              evidenceText = `어젯밤(${guardDay}일째 밤), {self}은(는) ${guardName}을(를) 호위했다${reasonSuffix}`;
+            } else {
+              evidenceText = `昨夜（${guardDay}日目の夜）は${guardName}殿を護衛した${reasonSuffix}`;
+            }
+          } else {
+            // 初日などまだ夜の護衛を行っていない場合
+            evidenceText = lang === 'en' ? 'Night has not yet fallen, so no protection has been conducted yet' :
+              (lang === 'fr' ? 'La nuit n\'est pas encore tombée, aucune protection n\'a encore été effectuée' :
+              (lang === 'zh' ? '黑夜尚未降临，故尚未执行任何护卫' :
+              (lang === 'ko' ? '아직 밤이 지나지 않아 호위를 실행하지 않은 상태다' :
+              'まだ夜が明けておらず、初日の護衛行動は行われていない段階だ')));
+          }
+        } else {
+          // 聖騎士でもなく聖騎士COもしていない人物が「誰を守ったか」と問われた場合
+          evidenceText = lang === 'en' ? '{self} does not hold the power of the Holy Knight to guard anyone' :
+            (lang === 'fr' ? '{self} ne possède aucun pouvoir de Chevalier pour protéger qui que ce soit' :
+            (lang === 'zh' ? '{self}并非圣骑士，不具备守护他人之权能' :
+            (lang === 'ko' ? '{self}은(는) 성기사가 아니기에 누군가를 호위할 권능이 없다' :
+            '{self}は聖騎士の役職ではないため、誰かを護衛する能力は持っていない')));
+        }
+      }
 
       if (cat === 'seer_reason' || cat === 'trust_who') {
         if (coRole === 'seer') {
@@ -23791,6 +23927,9 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
             }
 
             gameState.lastKnightGuardTarget = guardedChar;
+            if (!gameState.knightGuardHistory) gameState.knightGuardHistory = {};
+            if (!gameState.knightGuardHistory[knightChar]) gameState.knightGuardHistory[knightChar] = [];
+            gameState.knightGuardHistory[knightChar].push({ day: gameState.day, target: guardedChar });
           }
         }
 
@@ -25933,13 +26072,19 @@ addLogItem(`💬 ${speakerDisplayName}`, '', formattedMsg, 'ai-discussion', spea
           openModal('grand-ending-modal');
         }, aEndingVideos);
       } else if (cParagraphs && cParagraphs.length > 0) {
-        // Cランクバッドエンド：全画面10画面演出（動画なし）で表示
+        // Cランクバッドエンド（エンディング3）：全画面演出＋幕間ムービー（ED_MOVE）
         if (contentEl) contentEl.style.display = 'none';
+
+        const cEndingVideos = {
+          1: ['ED_MOVE/EDLANK_C0001.mp4', 'ED_MOVE/ED_RANK_C0001.mp4'],
+          4: ['ED_MOVE/ED_RANKC0002.mp4', 'ED_MOVE/ED_RANK_C0002.mp4'],
+          6: ['ED_MOVE/ED_RANKC0003.mp4', 'ED_MOVE/ED_RANK_C0003.mp4']
+        };
 
         playEndingBgm(endingRankType);
         playTrueEndingFullscreenSequence(cParagraphs, () => {
           openModal('grand-ending-modal');
-        }, {}); // 動画なし（空のvideoMap）
+        }, cEndingVideos);
       } else {
         if (contentEl) contentEl.style.display = 'block';
         openModal('grand-ending-modal');
